@@ -11,6 +11,7 @@ map.addControl( new mapboxgl.NavigationControl() );
 // 縮尺ボタンを設定
 map.addControl( new mapboxgl.ScaleControl( {maxWidth: 250, unit: 'metric'} ) );
 
+let zscale = 1.0;
 
 // parameters to ensure the model is georeferenced correctly on the map
 var modelOrigin = MAP_CENTER;
@@ -43,7 +44,7 @@ var customLayer = {
   id: '3d-model',
   type: 'custom',
   renderingMode: '3d',
-  onAdd: function(map, gl) {
+  onAdd: ( map, gl ) => {
     this.camera = new THREE.Camera();
     this.scene = new THREE.Scene();
 
@@ -77,7 +78,7 @@ var customLayer = {
 
     this.renderer.autoClear = false;
   },
-  render: function(gl, matrix) {
+  render: ( gl, matrix ) => {
     var rotationX = new THREE.Matrix4().makeRotationAxis(
       new THREE.Vector3(1, 0, 0),
       modelTransform.rotateX
@@ -102,7 +103,7 @@ var customLayer = {
         new THREE.Vector3(
           modelTransform.scale,
           -modelTransform.scale,
-          modelTransform.scale
+          modelTransform.scale * zscale
         )
       )
       .multiply(rotationX)
@@ -117,5 +118,10 @@ var customLayer = {
 };
 
 map.on('style.load', function() {
-  map.addLayer(customLayer, 'waterway-label');
+  map.addLayer( customLayer, 'waterway-label' );
 });
+
+document.getElementById('blue_button' ).addEventListener('click', () => {
+  zscale *= 2;
+  map.triggerRepaint();
+} );
