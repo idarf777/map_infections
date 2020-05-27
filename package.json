@@ -1,0 +1,22 @@
+{
+  "name": "map_infections",
+  "version": "1.0.0",
+  "description": "COVID-19感染者数マップ",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idarf777/map_infections.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/idarf777/map_infections/issues"
+  },
+  "homepage": "https://github.com/idarf777/map_infections#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
