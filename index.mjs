@@ -1,24 +1,23 @@
-var express = require("express");
-var app = express();
+import express from 'express';
+import ejs from 'ejs';
+import { AppLogger as log } from './logger.mjs';
+import { app_config as config } from './config.mjs'
 
-var server = app.listen(3000, function(){
-  console.log("Node.js is listening to PORT:" + server.address().port);
+const APP_PORT = 3000;
+
+const app = express();
+app.set( 'view engine', 'ejs' );
+app.use('', express.static( `${config.ROOTDIR}/public` ) );
+app.get( '/', ( req, res ) => {
+  res.render( `${config.VIEWDIR}/index.ejs`, { accessToken: config.MAPBOX_TOKEN } );
 });
 
-var photoList = [
+const server = app.listen( APP_PORT, ( ex ) => {
+  if ( ex )
   {
-    id: "001",
-    name: "photo001.jpg",
-    type: "jpg",
-    dataUrl: "http://localhost:3000/data/photo001.jpg"
-  },{
-    id: "002",
-    name: "photo002.jpg",
-    type: "jpg",
-    dataUrl: "http://localhost:3000/data/photo002.jpg"
+    log.error( `ERROR: PORT ${server.address().port} is in use now` );
+    return;
   }
-]
+  log.info( `Now listening PORT ${server.address().port}` );
+} );
 
-app.get("/api/photo/list", function(req, res, next){
-  res.json(photoList);
-});
