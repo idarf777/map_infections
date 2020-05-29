@@ -11,7 +11,7 @@
     #map { position:absolute; top:0; bottom:0; width:100%; }
 
     .map-overlay {
-      font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      font: medium 'Helvetica Neue', Arial, Helvetica, sans-serif;
       position: absolute;
       width: 200px;
       top: 0;
@@ -25,6 +25,31 @@
       border-radius: 3px;
       padding: 10px;
       margin-bottom: 10px;
+    }
+
+    .map-overlay h2 {
+      line-height: 24px;
+      display: block;
+      margin: 0 0 10px;
+    }
+
+    .map-overlay .legend .bar {
+      height: 10px;
+      width: 100%;
+      background: linear-gradient(to right, #f0c010, #ff0000);
+    }
+
+    .map-overlay input {
+      background-color: transparent;
+      display: inline-block;
+      width: 100%;
+      position: relative;
+      margin: 0;
+      cursor: ew-resize;
+    }
+
+    .map-overlay input #slider_date {
+      height: 2em;
     }
 
     .map-overlay-inner fieldset {
@@ -45,6 +70,10 @@
       display: block;
       font-weight: bold;
       margin: 0 0 5px;
+    }
+
+    .map-overlay-inner .date label {
+      font-size: xx-large;
     }
 
     .map-overlay-inner button {
@@ -75,6 +104,20 @@
 
 <div id='map'></div>
 <div class="map-overlay top">
+
+  <div class="map-overlay-inner">
+    <h2>XXX</h2>
+    <div class="date"><label id="current_date"><br/></label></div>
+    <input id="slider_date" type="range" min="0" max="<%- n_days-1 %>" step="1" value="0" />
+  </div>
+
+  <div class="map-overlay-inner">
+    <div id="legend" class="legend">
+      <div class="bar"></div>
+      <div>Magnitude (m)</div>
+    </div>
+  </div>
+
   <div class="map-overlay-inner">
     <fieldset>
       <label>Select layer</label>
@@ -96,7 +139,13 @@
 <script src="https://unpkg.com/three@0.106.2/build/three.min.js"></script>
 <script src="https://unpkg.com/three@0.106.2/examples/js/loaders/GLTFLoader.js"></script>
 <script>
-  mapboxgl.accessToken = '<%- accessToken %>';
+  mapboxgl.accessToken = '<%- app_config.MAPBOX_TOKEN %>';
+  config = {
+    DEBUG: <%- app_config.is_debug ? 'true' : 'false' %>,
+    LOGLEVEL: <%- app_config.LOGLEVEL %>,
+    DATE_BEGIN: <%- app_config.DATE_BEGIN %>,
+    DATE_PERIOD_MSEC: <%- app_config.DATE_PERIOD_MSEC %>
+  };
 </script>
 <script src="util.js"></script>
 <script src="map.js"></script>

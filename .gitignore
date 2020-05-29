@@ -68,3 +68,5 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 node_modules/
 token.js
+*.sqlite3
+parse-tokyo-covid-report-pdf/

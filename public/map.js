@@ -112,8 +112,18 @@ const createLayer = ( desc ) => {
 // configuration of the custom layer for a 3D model per the CustomLayerInterface
 map.on( 'style.load', () => {
   map.addLayer( createLayer( { id: '3dgram', type: 'custom', renderingMode: '3d' } ), 'waterway-label' );
+  set_slider_date( 0 )
 } );
 
+const set_slider_date = v => {
+  const t = config.DATE_BEGIN + v*config.DATE_PERIOD_MSEC;
+  const date = new Date( t );
+  document.getElementById( 'current_date' ).textContent = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+};
+
+document.getElementById('slider_date').addEventListener('input', ( e ) => {
+  set_slider_date( parseInt( e.target.value, 10 ) );
+} );
 document.getElementById('blue_button' ).addEventListener('click', () => {
   // 高さを倍にする
   const model = scene.getObjectByName( 'bar0002' );
