@@ -1,25 +1,41 @@
 {
-  "name": "map_infections",
-  "version": "1.0.0",
-  "description": "COVID-19感染者数マップ",
-  "main": "index.mjs",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/idarf777/map_infections.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/idarf777/map_infections/issues"
-  },
-  "homepage": "https://github.com/idarf777/map_infections#readme",
+  "name": "map_r_infections",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
-    "agh.sprintf": "0.0.11",
-    "ejs": "^3.1.3",
-    "express": "^4.17.1",
-    "sqlite3": "^4.2.0"
+    "@deck.gl/aggregation-layers": "^8.1.8",
+    "@deck.gl/core": "^8.1.8",
+    "@deck.gl/layers": "^8.1.8",
+    "@deck.gl/mapbox": "^8.1.8",
+    "@deck.gl/react": "^8.1.8",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^7.2.1",
+    "dotenv": "^8.2.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-map-gl": "^5.2.5",
+    "react-scripts": "3.4.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

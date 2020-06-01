@@ -1,0 +1,82 @@
+body {
+  margin: 0;
+  font-family: Helvetica, Arial, sans-serif;
+}
+#map {
+  width: 100vw;
+  height: 100vh;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+.control-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  max-width: 320px;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  padding: 12px 24px;
+  margin: 20px;
+  font-size: 13px;
+  line-height: 2;
+  color: #6b6b76;
+  text-transform: uppercase;
+  outline: none;
+}
+
+.fullscreen-control {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 10px;
+  zIndex: 1;
+}
+
+.navigation-control {
+  position: absolute;
+  top: 36px;
+  left: 0;
+  padding: 10px;
+  zIndex: 1;
+}
+
+.scale-control {
+  position: absolute;
+  bottom: 36px;
+  left: 0;
+  padding: 10px;
+  zIndex: 1;
+}
+
+.tooltip {
+  position: absolute;
+  zIndex: 1;
+  pointerEvents: none;
+}
+.tooltip-desc {
+  padding: 10px;
+  font-size: 12px;
+  line-height: 1.6em;
+  color: #fff;
+  border-radius: 5px;
+  background: #000;
+  width: 100%;
+}
