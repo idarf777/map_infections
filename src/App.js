@@ -3,47 +3,42 @@ import agh from 'agh.sprintf';
 import * as React from 'react';
 import MapGL, {_MapContext as MapContext, NavigationControl} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
+import { config } from './config.js';
+import Log from './logger.js';
 import InfectorsLayer from "./infectors_layer.js";
 import ControlPanel from './control-panel.js';
 import './App.css';
 
 dotenv.config();
-const MAP_STYLE = 'mapbox://styles/mapbox/light-v10';
-const MAP_ZOOM = 10;
-const MAP_PITCH = 40;
-const MAP_CENTER = [138.6728926, 35.1637692];
-const colorRange = [
-  [1, 152, 189],
-  [73, 227, 206],
-  [216, 254, 181],
-  [254, 237, 177],
-  [254, 173, 84],
-  [209, 55, 78]
+
+const src_places = new Map();
+src_places.set( 1, [ config.MAP_CENTER[ 0 ], config.MAP_CENTER[ 1 ], '富士市瓜島町' ] );
+src_places.set( 2, [ 138.621662, 35.222224, '富士宮市役所' ] );
+const src_values = [
+  [ config.MAP_CENTER[ 0 ], config.MAP_CENTER[ 1 ], 100 ],
+  [ 138.621662, 35.222224, 10 ]
 ];
-const coverage = 1.0;
-const upperPercentile = 100;
-const MAX_INFECTORS = 100;
-const data = [ { geopos: [ MAP_CENTER[ 0 ], MAP_CENTER[ 1 ] ], value: 100, desc: '富士市瓜島町' }, { geopos: [138.621662, 35.222224], value: 10, desc: '富士宮市役所' } ];
+const data = [ [ config.MAP_CENTER[ 0 ], config.MAP_CENTER[ 1 ], 100, '富士市瓜島町' ], [ 138.621662, 35.222224, 10, '富士宮市役所' ] ];
 
 export default class App extends React.Component
 {
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
     data,
-    coverage: coverage,
-    getColorValue: d => d[ 0 ].value,
+    coverage: config.MAP_COVERAGE,
+    getColorValue: this.getColorValue,
     getElevationValue: this.getElevationValue,
-    elevationScale: 10,
-    elevationDomain: [0, MAX_INFECTORS], // 棒の高さについて、この幅で入力値を正規化する デフォルトでは各マスに入る行の密度(points.length)となる
-    elevationRange: [0, 1000],           // 入力値をelevationDomainで正規化したあと、この幅で高さを決める
-    colorDomain: [0, MAX_INFECTORS],     // 棒の色について、この幅で入力値を正規化する
-    colorRange: colorRange,
+    elevationScale: 1.0,
+    elevationDomain: [0, config.MAX_INFECTORS], // 棒の高さについて、この幅で入力値を正規化する デフォルトでは各マスに入る行の密度(points.length)となる
+    elevationRange: [0, config.MAP_ELEVATION],  // 入力値をelevationDomainで正規化したあと、この幅で高さを決める
+    colorDomain: [0, config.MAX_INFECTORS],     // 棒の色について、この幅で入力値を正規化する
+    colorRange: config.MAP_COLORRANGE,
     extruded: true,
-    getPosition: d => d.geopos,
+    getPosition: this.getPositionValue,
     opacity: 1.0,
     pickable: true,
     radius: 500,
-    upperPercentile: upperPercentile,
+    upperPercentile: config.MAP_UPPERPERCENTILE,
     onHover: info => this.setState({
       hoveredObject: info.object,
       pointerX: info.x,
@@ -53,20 +48,30 @@ export default class App extends React.Component
 
   state = {
     viewState: {
-      latitude: MAP_CENTER[ 1 ],
-      longitude: MAP_CENTER[ 0 ],
-      zoom: MAP_ZOOM,
-      bearing: 0,
-      pitch: MAP_PITCH
+      latitude: config.MAP_CENTER[ 1 ],
+      longitude: config.MAP_CENTER[ 0 ],
+      zoom: config.MAP_ZOOM,
+      bearing: config.MAP_BEARING,
+      pitch: config.MAP_PITCH
     },
-    layercount: 0,
-    maplayer: this.createLayer( 0 )
+    layer_count: 0,
+    layer_histogram: this.createLayer( 0 )
   };
 
+  getPositionValue( d )
+  {
+    Log.debug( `getPositionValue: ${d}` );
+    return d;
+  }
+  getColorValue( d )
+  {
+    Log.debug( `getColorValue: ${d[ 0 ][ 2 ]}` );
+    return d[ 0 ][ 2 ];
+  }
   getElevationValue( d )
   {
-    //console.log( `VALUE: ${d}` );
-    return d[ 0 ].value;
+    Log.debug( `getElevationValue: ${d}` );
+    return d[ 0 ][ 2 ];
   }
 
   renderTooltip()
@@ -74,16 +79,17 @@ export default class App extends React.Component
     const {hoveredObject, pointerX, pointerY} = this.state || {};
     return hoveredObject && (
       <div className="tooltip" style={{left: pointerX, top: pointerY}}>
-        <div className="tooltip-desc">{ hoveredObject.points[ 0 ].desc }</div>
+        <div className="tooltip-desc">{ hoveredObject.points[ 0 ][ 3 ] }</div>
       </div>
     );
   }
 
   redrawLayer()
   {
+    // レイヤーのIDを変えて再設定する
     this.setState(
-      (state, props) => { return { layercount: this.state.layercount ^ 1 } },
-      () => this.setState( { maplayer: this.createLayer( this.state.layercount ) } )
+      (state, props) => { return { layer_count: this.state.layer_count ^ 1 } },
+      () => this.setState( { layer_histogram: this.createLayer( this.state.layer_count ) } )
     );
   }
 
@@ -93,8 +99,19 @@ export default class App extends React.Component
 
   onDebug01 = () =>
   {
-    data[ 0 ].value *= 0.5;
+    //data[ 0 ][ 2 ] *= 0.5;
     this.redrawLayer();
+  }
+  onDebug02 = () =>
+  {
+  }
+  onClickStart = () =>
+  {
+    Log.debug("START");
+
+
+
+    Log.debug("START COMPLETE");
   }
 
   render() {
@@ -104,10 +121,10 @@ export default class App extends React.Component
         onViewStateChange={this._onViewStateChange}
         controller={true}
         ContextProvider={MapContext.Provider}
-        layers={[ this.state.maplayer ]}
+        layers={[ this.state.layer_histogram ]}
       >
         <MapGL
-          mapStyle={MAP_STYLE}
+          mapStyle={config.MAP_STYLE}
           mapboxApiAccessToken={process.env.REACT_APP_MapboxAccessToken}
         />
         <div className="navigation-control">
@@ -126,7 +143,7 @@ export default class App extends React.Component
               <div className="bar"></div>
             </div>
             <div style={{float: "left"}}>0</div>
-            <div style={{float: "right"}}>{MAX_INFECTORS}</div>
+            <div style={{float: "right"}}>{config.MAX_INFECTORS}</div>
             <div><br/></div>
           </div>
           <div className="map-overlay-inner">
@@ -144,8 +161,9 @@ export default class App extends React.Component
                   <button id="blue_button" onClick={this.onDebug01} />
                 </div>
                 <div className="green">
-                  <button id="green_button" />
+                  <button id="green_button" onClick={this.onDebug02} />
                 </div>
+                <a href="/#" className="btn-square" onClick={this.onClickStart}>START</a>
               </div>
             </fieldset>
           </div>
