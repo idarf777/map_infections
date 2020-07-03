@@ -11,20 +11,20 @@ import './App.css';
 
 dotenv.config();
 
+//const data = [ [ 1, config.MAP_CENTER[ 0 ], config.MAP_CENTER[ 1 ], 100, '富士市瓜島町' ], [ 2, 138.621662, 35.222224, 10, '富士宮市役所' ] ];
 const src_places = new Map();
+const src_values = new Map();
 src_places.set( 1, [ config.MAP_CENTER[ 0 ], config.MAP_CENTER[ 1 ], '富士市瓜島町' ] );
+src_values.set( 1, 100 );
 src_places.set( 2, [ 138.621662, 35.222224, '富士宮市役所' ] );
-const src_values = [
-  [ config.MAP_CENTER[ 0 ], config.MAP_CENTER[ 1 ], 100 ],
-  [ 138.621662, 35.222224, 10 ]
-];
-const data = [ [ config.MAP_CENTER[ 0 ], config.MAP_CENTER[ 1 ], 100, '富士市瓜島町' ], [ 138.621662, 35.222224, 10, '富士宮市役所' ] ];
+src_values.set( 2, 10 );
+const idxs = Array.from( src_places.keys() ).map( k => [ k ] );
 
 export default class App extends React.Component
 {
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
-    data,
+    data: idxs,
     coverage: config.MAP_COVERAGE,
     getColorValue: this.getColorValue,
     getElevationValue: this.getElevationValue,
@@ -40,7 +40,7 @@ export default class App extends React.Component
     radius: 500,
     upperPercentile: config.MAP_UPPERPERCENTILE,
     onHover: info => this.setState({
-      hoveredObject: info.object,
+      hoveredObject: info.object && src_places.get( info.object.points[ 0 ] ),
       pointerX: info.x,
       pointerY: info.y
     })
@@ -60,18 +60,15 @@ export default class App extends React.Component
 
   getPositionValue( d )
   {
-    Log.debug( `getPositionValue: ${d}` );
-    return d;
+    return src_places.get( d[ 0 ] );
   }
   getColorValue( d )
   {
-    Log.debug( `getColorValue: ${d[ 0 ][ 2 ]}` );
-    return d[ 0 ][ 2 ];
+    return src_values.get( d[ 0 ][ 0 ] );
   }
   getElevationValue( d )
   {
-    Log.debug( `getElevationValue: ${d}` );
-    return d[ 0 ][ 2 ];
+    return src_values.get( d[ 0 ][ 0 ] );
   }
 
   renderTooltip()
@@ -79,7 +76,7 @@ export default class App extends React.Component
     const {hoveredObject, pointerX, pointerY} = this.state || {};
     return hoveredObject && (
       <div className="tooltip" style={{left: pointerX, top: pointerY}}>
-        <div className="tooltip-desc">{ hoveredObject.points[ 0 ][ 3 ] }</div>
+        <div className="tooltip-desc">{ hoveredObject[ 2 ] }</div>
       </div>
     );
   }
@@ -99,7 +96,7 @@ export default class App extends React.Component
 
   onDebug01 = () =>
   {
-    //data[ 0 ][ 2 ] *= 0.5;
+    src_values.set( 1, src_values.get( 1 )*0.5 );
     this.redrawLayer();
   }
   onDebug02 = () =>

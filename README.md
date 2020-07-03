@@ -1,3 +1,13 @@
+## デバッグ方法
+
+npm startで走らせてから、Debug JavaScriptでhttp://localhost:3000にデバッガをアタッチする。
+
+WebStrom 2020.2だとなぜかうまくいかないので、Chromeから直接アタッチする。
+Settings - debuggingのデバッグ用ポートとChrome拡張機能Jetbrains IDE supportのポートを合わせておき、Chromeの拡張機能ボタンJetbrains IDE supportから、Inspect in WebStormを実行する。
+
+
+---
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
