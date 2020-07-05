@@ -7,24 +7,21 @@ import { config } from './config.js';
 import Log from './logger.js';
 import InfectorsLayer from "./infectors_layer.js";
 import ControlPanel from './control-panel.js';
+import loader from "./loader.js";
+import { example_data } from './example_data.js';
 import './App.css';
 
 dotenv.config();
 
-//const data = [ [ 1, config.MAP_CENTER[ 0 ], config.MAP_CENTER[ 1 ], 100, '富士市瓜島町' ], [ 2, 138.621662, 35.222224, 10, '富士宮市役所' ] ];
-const src_places = new Map();
-const src_values = new Map();
-src_places.set( 1, [ config.MAP_CENTER[ 0 ], config.MAP_CENTER[ 1 ], '富士市瓜島町' ] );
-src_values.set( 1, 100 );
-src_places.set( 2, [ 138.621662, 35.222224, '富士宮市役所' ] );
-src_values.set( 2, 10 );
-const idxs = Array.from( src_places.keys() ).map( k => [ k ] );
+const srcdata = loader( example_data );
+const src_places = srcdata.places;
+const src_values = srcdata.values;
 
 export default class App extends React.Component
 {
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
-    data: idxs,
+    data: Array.from( src_places.keys() ).map( k => [ k ] ),  // 配列の配列を指定する
     coverage: config.MAP_COVERAGE,
     getColorValue: this.getColorValue,
     getElevationValue: this.getElevationValue,
@@ -37,10 +34,10 @@ export default class App extends React.Component
     getPosition: this.getPositionValue,
     opacity: 1.0,
     pickable: true,
-    radius: 500,
+    radius: config.MAP_POI_RADIUS,
     upperPercentile: config.MAP_UPPERPERCENTILE,
     onHover: info => this.setState({
-      hoveredObject: info.object && src_places.get( info.object.points[ 0 ] ),
+      hoveredObject: info.object && src_places.get( info.object.points[ 0 ][ 0 ] ),
       pointerX: info.x,
       pointerY: info.y
     })
@@ -55,20 +52,24 @@ export default class App extends React.Component
       pitch: config.MAP_PITCH
     },
     layer_count: 0,
-    layer_histogram: this.createLayer( 0 )
+    layer_histogram: this.createLayer( 0 ),
+    current_date: srcdata.begin_at,
+    current_day: 0
   };
 
   getPositionValue( d )
   {
-    return src_places.get( d[ 0 ] );
+    return src_places.get( d[ 0 ] ).geopos;
   }
   getColorValue( d )
   {
-    return src_values.get( d[ 0 ][ 0 ] );
+    const { current_day } = (this && this.state) || { current_day: 0 };
+    return src_values.get( d[ 0 ][ 0 ] )[ current_day ];
   }
   getElevationValue( d )
   {
-    return src_values.get( d[ 0 ][ 0 ] );
+    const { current_day } = (this && this.state) || { current_day: 0 };
+    return src_values.get( d[ 0 ][ 0 ] )[ current_day ];
   }
 
   renderTooltip()
@@ -76,7 +77,7 @@ export default class App extends React.Component
     const {hoveredObject, pointerX, pointerY} = this.state || {};
     return hoveredObject && (
       <div className="tooltip" style={{left: pointerX, top: pointerY}}>
-        <div className="tooltip-desc">{ hoveredObject[ 2 ] }</div>
+        <div className="tooltip-desc">{ hoveredObject.name }</div>
       </div>
     );
   }
@@ -96,7 +97,7 @@ export default class App extends React.Component
 
   onDebug01 = () =>
   {
-    src_values.set( 1, src_values.get( 1 )*0.5 );
+    src_values.get( 1 )[ this.state.current_day ] *= 0.5;
     this.redrawLayer();
   }
   onDebug02 = () =>
@@ -105,6 +106,7 @@ export default class App extends React.Component
   onClickStart = () =>
   {
     Log.debug("START");
+
 
 
 
