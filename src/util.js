@@ -32,3 +32,9 @@ export function merge_object( dst, src )
   }
   return dst;
 }
+export function datetostring( ctm, elapsed_day )
+{
+  const date = new Date( ctm || Date.now() );
+  date.setDate( date.getDate() + (elapsed_day || 0) );
+  return agh.sprintf( '%04d-%02d-%02d',  date.getFullYear(), date.getMonth()+1, date.getDate() );
+}

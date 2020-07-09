@@ -7,6 +7,7 @@ import { config } from './config.js';
 import Log from './logger.js';
 import InfectorsLayer from "./infectors_layer.js";
 import ControlPanel from './control-panel.js';
+import { datetostring } from "./util.js";
 import loader from "./loader.js";
 import { example_data } from './example_data.js';
 import './App.css';
@@ -19,10 +20,11 @@ const src_values = srcdata.values;
 const src_ids = Array.from( src_places.keys() );
 const src_days = srcdata.num_days;
 const PLAYBUTTON_TEXT = { start: 'START', stop: 'STOP' };
+const INFECTOR_ID = id => `inf_${id}`;
 
 export default class App extends React.Component
 {
-  _getElevationValue = d => (this.state && this.state[ `inf_${d[ 0 ][ 0 ]}` ]) || src_values.get( d[ 0 ][ 0 ] )[ 0 ] || 0;
+  _getElevationValue = d => (this.state && this.state[ INFECTOR_ID( d[ 0 ][ 0 ] ) ]) || src_values.get( d[ 0 ][ 0 ] )[ 0 ] || 0;
 
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
@@ -58,8 +60,9 @@ export default class App extends React.Component
     },
     layer_count: 0,
     layer_histogram: this.createLayer( 0 ),
-    current_date: srcdata.begin_at,
+    begin_date: srcdata.begin_at,
     current_day: 0,
+    max_day: src_days,
     timer_id: null,
     start_button_text: PLAYBUTTON_TEXT.start
   };
@@ -92,24 +95,9 @@ export default class App extends React.Component
     if ( !this.state.timer_id || this.state.current_day >= src_days - 1 )
       return;
     const etm = Date.now() - this.state.timer_start_time; // [msec]
-    const eday = Math.floor( etm / config.ANIMATION_SPEED );  // [day]
-    const emod = (etm - eday * config.ANIMATION_SPEED) / config.ANIMATION_SPEED;
-    let cday = Math.min( eday, src_days - 1 );
-    const nextstate = {};
-    src_ids.forEach( id => {
-      const vals = src_values.get( id );
-      let curval = vals[ cday ];
-      if ( cday < src_days - 1 )
-      {
-        let nextval = vals[ cday + 1 ];
-        curval += (nextval - curval) * emod;
-      }
-      nextstate[ `inf_${id}` ] = curval;
-    } );
-    this.setState(
-      (state, props) => { return { ...nextstate, current_day: eday } },
-      () => this.redrawLayer()
-    );
+    const eday = Math.min( Math.floor( etm / config.ANIMATION_SPEED ), src_days - 1 );  // [day]
+    const emod = (eday >= src_days - 1) ? 0 : ((etm - eday * config.ANIMATION_SPEED) / config.ANIMATION_SPEED);
+    this.doAnimation( eday, emod );
   };
 
   onDebug01 = () =>
@@ -122,24 +110,53 @@ export default class App extends React.Component
   onDebug02 = () =>
   {
   };
-  onClickStart = () =>
+
+  doAnimation( day, ratio )
+  {
+    const nextstate = {};
+    src_ids.forEach( id => {
+      const vals = src_values.get( id );
+      let curval = vals[ day ];
+      if ( day < src_days - 1 )
+      {
+        let nextval = vals[ day + 1 ];
+        curval += (nextval - curval) * (ratio || 0);
+      }
+      nextstate[ INFECTOR_ID( id ) ] = curval;
+    } );
+    this.setState(
+      (state, props) => { return { ...nextstate, current_day: day } },
+      () => this.redrawLayer()
+    );
+  }
+  startAnimation( cb )
   {
     if ( this.state.timer_id )
-    {
-      clearInterval( this.state.timer_id );
-      Log.debug( `timer ${this.state.timer_id} cleared` );
-      this.setState( { timer_id: null, start_button_text: PLAYBUTTON_TEXT.start } );
-    }
-    else
-    {
-      let tid = setInterval( this._onInterval, config.ANIMATION_TIME_RESOLUTION );
-      Log.debug( `timer ${tid} set` );
-      const beginday = 0; // 表示開始日
-      const dnow = new Date( Date.now() );
-      dnow.setDate( dnow.getDate() - beginday );
-      this.setState( { timer_id: tid, timer_start_time: dnow.getTime(), start_button_text: PLAYBUTTON_TEXT.stop, current_day: 0 } );
-    }
-  };
+      return cb && cb();
+    let tid = setInterval( this._onInterval, config.ANIMATION_TIME_RESOLUTION );
+    Log.debug( `timer ${tid} set` );
+    const beginday = 0; // 表示開始日
+    const dnow = new Date( Date.now() );
+    dnow.setDate( dnow.getDate() - beginday );
+    this.setState(
+      (state, props) => { return { timer_id: tid, timer_start_time: dnow.getTime(), start_button_text: PLAYBUTTON_TEXT.stop, current_day: 0 } },
+      () => cb && cb()
+    );
+  }
+  stopAnimation( cb )
+  {
+    if ( !this.state.timer_id )
+      return cb && cb();
+    clearInterval( this.state.timer_id );
+    Log.debug( `timer ${this.state.timer_id} cleared` );
+    this.setState(
+      (state, props) => { return { timer_id: null, start_button_text: PLAYBUTTON_TEXT.start } },
+      () => cb && cb()
+    );
+  }
+  onClickStart = () => this.state.timer_id ? this.stopAnimation() : this.startAnimation();
+
+  onDateChanged = ( ev ) => this.stopAnimation( () => this.doAnimation( parseInt( ev.target.value ) ) );
 
   render() {
     return (
@@ -160,9 +177,9 @@ export default class App extends React.Component
         <ControlPanel containerComponent={this.props.containerComponent} />
         <div className="map-overlay top">
           <div className="map-overlay-inner">
-            <h2>XXX</h2>
+            <h2>{ datetostring( this.state.begin_date.getTime(), this.state.current_day ) }</h2>
             <div className="date"><label id="current_date"><br/></label></div>
-            <input id="slider_date" type="range" min="0" max="10" step="1"/>
+            <input id="slider_date" type="range" min="0" max={this.state.max_day - 1} step="1" value={this.state.current_day} onChange={this.onDateChanged} />
           </div>
           <div className="map-overlay-inner">
             <div>person</div>
@@ -174,6 +191,7 @@ export default class App extends React.Component
             <div><br/></div>
           </div>
           <div className="map-overlay-inner">
+{/*
             <fieldset>
               <label>Select layer</label>
               <select id="layer" name="layer">
@@ -181,8 +199,11 @@ export default class App extends React.Component
                 <option value="building">Buildings</option>
               </select>
             </fieldset>
+*/}
             <fieldset>
-              <label>Choose a color</label>
+{/*
+              <label></label>
+*/}
               <div id="swatches">
                 <div className="blue">
                   <button id="blue_button" onClick={this.onDebug01} />

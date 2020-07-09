@@ -2,7 +2,7 @@ import {config, loglevel} from './config.js'
 import agh from 'agh.sprintf';
 
 // console.logとconsole.errorをオーバーライドする
-export function datetostring( date )
+function datetostring( date )
 {
   if ( !date )
     date = new Date();
