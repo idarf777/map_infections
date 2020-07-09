@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 //import agh from 'agh.sprintf';
 import * as React from 'react';
+import axios from 'axios';
 import MapGL, {_MapContext as MapContext, NavigationControl} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import { config } from './config.js';
@@ -21,6 +22,7 @@ const src_ids = Array.from( src_places.keys() );
 const src_days = srcdata.num_days;
 const PLAYBUTTON_TEXT = { start: 'START', stop: 'STOP' };
 const INFECTOR_ID = id => `inf_${id}`;
+const DATA_API_STATUS = { unloaded: 'UNLOAD', loading: 'LOADING', loaded: 'LOADED', error: 'ERROR' };
 
 export default class App extends React.Component
 {
@@ -65,8 +67,22 @@ export default class App extends React.Component
     current_day: 0,
     max_day: src_days,
     timer_id: null,
-    start_button_text: PLAYBUTTON_TEXT.start
+    start_button_text: PLAYBUTTON_TEXT.start,
+    data_api_loaded: DATA_API_STATUS.unloaded
   };
+
+  componentDidMount()
+  {
+    axios.get( 'http://localhost:3001/api/1.0/infectors' )
+      .then( ( response ) => {
+        Log.debug( response );
+        this.setState( { data_api_loaded: DATA_API_STATUS.loaded } );
+      } )
+      .catch( ( ex ) => {
+        Log.error( ex );
+        this.setState( { data_api_loaded: DATA_API_STATUS.error } );
+      } );
+  }
 
   renderTooltip()
   {
@@ -175,7 +191,7 @@ export default class App extends React.Component
         <div className="navigation-control">
           <NavigationControl />
         </div>
-        <ControlPanel containerComponent={this.props.containerComponent} />
+        <ControlPanel containerComponent={this.props.containerComponent} apimsg={this.state.data_api_loaded}/>
         <div className="map-overlay top">
           <div className="map-overlay-inner">
             <div className="date">
