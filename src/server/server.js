@@ -9,14 +9,14 @@ dotenv.config();
 
 const app = express();
 
-app.use(express.static(path.join('./', 'dist')));
+app.use(express.static(path.join(config.ROOT_DIRECTORY, 'dist')));
 
 app.get('/api', (req, res) => {
   res.send({api: 'test'});
 })
 
 app.get('*', function (req, res) {
-  res.sendFile(path.join('./', 'dist', 'index.html'))
+  res.sendFile(path.join(config.ROOT_DIRECTORY, 'dist', 'index.html'))
 })
 
 app.listen( config.SERVER_PORT, () => {
