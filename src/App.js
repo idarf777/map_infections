@@ -18,20 +18,18 @@ const src_places = srcdata.places;
 const src_values = srcdata.values;
 const src_ids = Array.from( src_places.keys() );
 const src_days = srcdata.num_days;
-
-const current_infectors = new Map();  // 本当はstateに含めるべきだが、速度優先
-src_values.forEach( (v, k) => current_infectors.set( k, v[ 0 ] || 0 ) );
-
 const PLAYBUTTON_TEXT = { start: 'START', stop: 'STOP' };
 
 export default class App extends React.Component
 {
+  _getElevationValue = d => (this.state && this.state[ `inf_${d[ 0 ][ 0 ]}` ]) || src_values.get( d[ 0 ][ 0 ] )[ 0 ] || 0;
+
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
     data: src_ids.map( k => [ k ] ),  // 配列の配列を指定する
     coverage: config.MAP_COVERAGE,
-    getColorValue: this.getElevationValue,
-    getElevationValue: this.getElevationValue,
+    getColorValue: this._getElevationValue,
+    getElevationValue: this._getElevationValue,
     elevationScale: 1.0,
     elevationDomain: [0, config.MAX_INFECTORS], // 棒の高さについて、この幅で入力値を正規化する デフォルトでは各マスに入る行の密度(points.length)となる
     elevationRange: [0, config.MAP_ELEVATION],  // 入力値をelevationDomainで正規化したあと、この幅で高さを決める
@@ -66,13 +64,6 @@ export default class App extends React.Component
     start_button_text: PLAYBUTTON_TEXT.start
   };
 
-  getElevationValue( d )
-  {
-    //const { current_day } = (this && this.state) || { current_day: 0 };
-    //return src_values.get( d[ 0 ][ 0 ] )[ current_day ];
-    return current_infectors.get( d[ 0 ][ 0 ] );
-  }
-
   renderTooltip()
   {
     const {hoveredObject, pointerX, pointerY} = this.state || {};
@@ -104,6 +95,7 @@ export default class App extends React.Component
     const eday = Math.floor( etm / config.ANIMATION_SPEED );  // [day]
     const emod = (etm - eday * config.ANIMATION_SPEED) / config.ANIMATION_SPEED;
     let cday = Math.min( eday, src_days - 1 );
+    const nextstate = {};
     src_ids.forEach( id => {
       const vals = src_values.get( id );
       let curval = vals[ cday ];
@@ -112,18 +104,20 @@ export default class App extends React.Component
         let nextval = vals[ cday + 1 ];
         curval += (nextval - curval) * emod;
       }
-      current_infectors.set( id, curval );
+      nextstate[ `inf_${id}` ] = curval;
     } );
     this.setState(
-      (state, props) => { return { current_day: eday } },
+      (state, props) => { return { ...nextstate, current_day: eday } },
       () => this.redrawLayer()
     );
   };
 
   onDebug01 = () =>
   {
-    src_values.get( 1 )[ this.state.current_day ] *= 0.5;
-    this.redrawLayer();
+    this.setState(
+      (state, props) => { return { inf_1: state.inf_1 ? 100 : (state.inf_1 * 0.5) } },
+      () => this.redrawLayer()
+    );
   };
   onDebug02 = () =>
   {
