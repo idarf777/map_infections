@@ -1,4 +1,6 @@
 import { to_bool } from "./util.js";
+import dotenv from 'dotenv';
+dotenv.config();
 const __dirname = process.cwd();
 
 const is_debug = to_bool( process.env.REACT_APP_DEBUG );
@@ -33,6 +35,7 @@ export const config = Object.freeze( {
   MAP_UPPERPERCENTILE: 100,
   MAP_POI_RADIUS: 500,  // [m]
   ANIMATION_TIME_RESOLUTION: 100, // [msec]
-  ANIMATION_SPEED: 1000 // [msec] msec/day
+  ANIMATION_SPEED: 1000, // [msec] msec/day
+  SERVER_PORT: is_debug ? 3001 : 80
 } );
 
