@@ -11,7 +11,7 @@ export default function Loader( json )
     src_places.set( curspot, { geopos: spot.geopos, name: spot.name } );
     const vs = [];
     let curdata = 0;
-    for ( let d = new Date( bgn ), e = fin.getTime();  d.getTime() < e;  d.setDate( d.getDate() + 1 ) )
+    for ( let d = new Date( bgn ), e = fin.getTime();  d.getTime() <= e;  d.setDate( d.getDate() + 1 ) )
     {
       let infectors = 0;
       if ( curdata < spot.data.length )
@@ -28,5 +28,5 @@ export default function Loader( json )
     src_values.set( curspot, vs );
     curspot++;
   }
-  return { begin_at: bgn, finish_at: fin, places: src_places, values: src_values };
+  return { begin_at: bgn, finish_at: fin, num_days: ((src_values.size === 0) ? 0 : src_values.entries().next().value[ 1 ].length), places: src_places, values: src_values };
 }

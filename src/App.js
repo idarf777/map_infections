@@ -16,14 +16,21 @@ dotenv.config();
 const srcdata = loader( example_data );
 const src_places = srcdata.places;
 const src_values = srcdata.values;
+const src_ids = Array.from( src_places.keys() );
+const src_days = srcdata.num_days;
+
+const current_infectors = new Map();  // 本当はstateに含めるべきだが、速度優先
+src_values.forEach( (v, k) => current_infectors.set( k, v[ 0 ] || 0 ) );
+
+const PLAYBUTTON_TEXT = { start: 'START', stop: 'STOP' };
 
 export default class App extends React.Component
 {
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
-    data: Array.from( src_places.keys() ).map( k => [ k ] ),  // 配列の配列を指定する
+    data: src_ids.map( k => [ k ] ),  // 配列の配列を指定する
     coverage: config.MAP_COVERAGE,
-    getColorValue: this.getColorValue,
+    getColorValue: this.getElevationValue,
     getElevationValue: this.getElevationValue,
     elevationScale: 1.0,
     elevationDomain: [0, config.MAX_INFECTORS], // 棒の高さについて、この幅で入力値を正規化する デフォルトでは各マスに入る行の密度(points.length)となる
@@ -31,7 +38,7 @@ export default class App extends React.Component
     colorDomain: [0, config.MAX_INFECTORS],     // 棒の色について、この幅で入力値を正規化する
     colorRange: config.MAP_COLORRANGE,
     extruded: true,
-    getPosition: this.getPositionValue,
+    getPosition: d => src_places.get( d[ 0 ] ).geopos,
     opacity: 1.0,
     pickable: true,
     radius: config.MAP_POI_RADIUS,
@@ -54,22 +61,16 @@ export default class App extends React.Component
     layer_count: 0,
     layer_histogram: this.createLayer( 0 ),
     current_date: srcdata.begin_at,
-    current_day: 0
+    current_day: 0,
+    timer_id: null,
+    start_button_text: PLAYBUTTON_TEXT.start
   };
 
-  getPositionValue( d )
-  {
-    return src_places.get( d[ 0 ] ).geopos;
-  }
-  getColorValue( d )
-  {
-    const { current_day } = (this && this.state) || { current_day: 0 };
-    return src_values.get( d[ 0 ][ 0 ] )[ current_day ];
-  }
   getElevationValue( d )
   {
-    const { current_day } = (this && this.state) || { current_day: 0 };
-    return src_values.get( d[ 0 ][ 0 ] )[ current_day ];
+    //const { current_day } = (this && this.state) || { current_day: 0 };
+    //return src_values.get( d[ 0 ][ 0 ] )[ current_day ];
+    return current_infectors.get( d[ 0 ][ 0 ] );
   }
 
   renderTooltip()
@@ -86,7 +87,7 @@ export default class App extends React.Component
   {
     // レイヤーのIDを変えて再設定する
     this.setState(
-      (state, props) => { return { layer_count: this.state.layer_count ^ 1 } },
+      (state, props) => { return { layer_count: state.layer_count ^ 1 } },
       () => this.setState( { layer_histogram: this.createLayer( this.state.layer_count ) } )
     );
   }
@@ -95,23 +96,56 @@ export default class App extends React.Component
     this.setState( {viewState} );
   };
 
+  _onInterval = () => {
+    //Log.debug( `timer awaken` );
+    if ( !this.state.timer_id || this.state.current_day >= src_days - 1 )
+      return;
+    const etm = Date.now() - this.state.timer_start_time; // [msec]
+    const eday = Math.floor( etm / config.ANIMATION_SPEED );  // [day]
+    const emod = (etm - eday * config.ANIMATION_SPEED) / config.ANIMATION_SPEED;
+    let cday = Math.min( eday, src_days - 1 );
+    src_ids.forEach( id => {
+      const vals = src_values.get( id );
+      let curval = vals[ cday ];
+      if ( cday < src_days - 1 )
+      {
+        let nextval = vals[ cday + 1 ];
+        curval += (nextval - curval) * emod;
+      }
+      current_infectors.set( id, curval );
+    } );
+    this.setState(
+      (state, props) => { return { current_day: eday } },
+      () => this.redrawLayer()
+    );
+  };
+
   onDebug01 = () =>
   {
     src_values.get( 1 )[ this.state.current_day ] *= 0.5;
     this.redrawLayer();
-  }
+  };
   onDebug02 = () =>
   {
-  }
+  };
   onClickStart = () =>
   {
-    Log.debug("START");
-
-
-
-
-    Log.debug("START COMPLETE");
-  }
+    if ( this.state.timer_id )
+    {
+      clearInterval( this.state.timer_id );
+      Log.debug( `timer ${this.state.timer_id} cleared` );
+      this.setState( { timer_id: null, start_button_text: PLAYBUTTON_TEXT.start } );
+    }
+    else
+    {
+      let tid = setInterval( this._onInterval, config.ANIMATION_TIME_RESOLUTION );
+      Log.debug( `timer ${tid} set` );
+      const beginday = 0; // 表示開始日
+      const dnow = new Date( Date.now() );
+      dnow.setDate( dnow.getDate() - beginday );
+      this.setState( { timer_id: tid, timer_start_time: dnow.getTime(), start_button_text: PLAYBUTTON_TEXT.stop, current_day: 0 } );
+    }
+  };
 
   render() {
     return (
@@ -162,7 +196,7 @@ export default class App extends React.Component
                 <div className="green">
                   <button id="green_button" onClick={this.onDebug02} />
                 </div>
-                <a href="/#" className="btn-square" onClick={this.onClickStart}>START</a>
+                <a href="/#" className="btn-square" onClick={this.onClickStart}>{this.state.start_button_text}</a>
               </div>
             </fieldset>
           </div>

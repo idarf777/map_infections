@@ -32,6 +32,7 @@ export const config = Object.freeze( {
   MAP_COVERAGE: 1.0,
   MAP_UPPERPERCENTILE: 100,
   MAP_POI_RADIUS: 500,  // [m]
-  ANIMATION_TIME_RESOLUTION: 100  // [msec]
+  ANIMATION_TIME_RESOLUTION: 100, // [msec]
+  ANIMATION_SPEED: 1000 // [msec] msec/day
 } );
 
