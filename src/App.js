@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import agh from 'agh.sprintf';
+//import agh from 'agh.sprintf';
 import * as React from 'react';
 import MapGL, {_MapContext as MapContext, NavigationControl} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
@@ -61,6 +61,7 @@ export default class App extends React.Component
     layer_count: 0,
     layer_histogram: this.createLayer( 0 ),
     begin_date: srcdata.begin_at,
+    finish_date: srcdata.finish_at,
     current_day: 0,
     max_day: src_days,
     timer_id: null,
@@ -177,9 +178,13 @@ export default class App extends React.Component
         <ControlPanel containerComponent={this.props.containerComponent} />
         <div className="map-overlay top">
           <div className="map-overlay-inner">
-            <h2>{ datetostring( this.state.begin_date.getTime(), this.state.current_day ) }</h2>
-            <div className="date"><label id="current_date"><br/></label></div>
+            <div className="date">
+              <label id="current_date">{ datetostring( this.state.begin_date.getTime(), this.state.current_day ) }</label>
+            </div>
             <input id="slider_date" type="range" min="0" max={this.state.max_day - 1} step="1" value={this.state.current_day} onChange={this.onDateChanged} />
+            <div style={{float: "left"}}>{datetostring(this.state.begin_date.getTime())}</div>
+            <div style={{float: "right"}}>{datetostring(this.state.finish_date.getTime())}</div>
+            <div><br/></div>
           </div>
           <div className="map-overlay-inner">
             <div>person</div>
