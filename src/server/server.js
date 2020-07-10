@@ -7,7 +7,8 @@ import axios from 'axios';
 import path from 'path';
 import helmet from 'helmet';
 // CSRFは後の課題とする
-import { example_data } from "../example_data.js";
+import { poi_tokyo } from './poi_tokyo.js';
+import { example_data } from '../example_data.js';
 
 dotenv.config();
 
