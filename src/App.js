@@ -23,7 +23,15 @@ const DATA_API_STATUS = { unloaded: 'UNLOAD', loading: 'LOADING...', loaded: 'LO
 
 export default class App extends React.Component
 {
-  _getElevationValue = d => (this.state && this.state[ INFECTOR_ID( d[ 0 ][ 0 ] ) ]) || srcdata?.values?.get( d[ 0 ][ 0 ] )[ 0 ] || 0;
+  _getElevationValue = d => {
+    let v = this.state && this.state[ INFECTOR_ID( d[ 0 ][ 0 ] ) ];
+    if ( !v )
+    {
+      const s = srcdata?.values?.get( d[ 0 ][ 0 ] );
+      v = (s && s[ 0 ]) || 0;
+    }
+    return v;
+  };
 
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
@@ -37,7 +45,7 @@ export default class App extends React.Component
     colorDomain: [0, config.MAX_INFECTORS],     // 棒の色について、この幅で入力値を正規化する
     colorRange: config.MAP_COLORRANGE,
     extruded: true,
-    getPosition: d => srcdata && srcdata.places.get( d[ 0 ] ).geopos,
+    getPosition: d => srcdata && srcdata.places.get( d[ 0 ] )?.geopos,
     opacity: 1.0,
     pickable: true,
     radius: config.MAP_POI_RADIUS,
