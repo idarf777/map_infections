@@ -9,28 +9,25 @@ import Log from './logger.js';
 import InfectorsLayer from "./infectors_layer.js";
 import ControlPanel from './control-panel.js';
 import { datetostring } from "./util.js";
+import { example_data } from "./example_data.js";
 import loader from "./loader.js";
-import { example_data } from './example_data.js';
 import './App.css';
 
 dotenv.config();
 
-const srcdata = loader( example_data );
-const src_places = srcdata.places;
-const src_values = srcdata.values;
-const src_ids = Array.from( src_places.keys() );
-const src_days = srcdata.num_days;
+let srcdata;// = loader( example_data );
+let src_ids;// = Array.from( srcdata.places.keys() );
 const PLAYBUTTON_TEXT = { start: 'START', stop: 'STOP' };
 const INFECTOR_ID = id => `inf_${id}`;
-const DATA_API_STATUS = { unloaded: 'UNLOAD', loading: 'LOADING', loaded: 'LOADED', error: 'ERROR' };
+const DATA_API_STATUS = { unloaded: 'UNLOAD', loading: 'LOADING...', loaded: 'LOADED', error: 'ERROR' };
 
 export default class App extends React.Component
 {
-  _getElevationValue = d => (this.state && this.state[ INFECTOR_ID( d[ 0 ][ 0 ] ) ]) || src_values.get( d[ 0 ][ 0 ] )[ 0 ] || 0;
+  _getElevationValue = d => (this.state && this.state[ INFECTOR_ID( d[ 0 ][ 0 ] ) ]) || srcdata?.values?.get( d[ 0 ][ 0 ] )[ 0 ] || 0;
 
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
-    data: src_ids.map( k => [ k ] ),  // 配列の配列を指定する
+    data: src_ids?.map( k => [ k ] ) || [],  // 配列の配列を指定する
     coverage: config.MAP_COVERAGE,
     getColorValue: this._getElevationValue,
     getElevationValue: this._getElevationValue,
@@ -40,13 +37,13 @@ export default class App extends React.Component
     colorDomain: [0, config.MAX_INFECTORS],     // 棒の色について、この幅で入力値を正規化する
     colorRange: config.MAP_COLORRANGE,
     extruded: true,
-    getPosition: d => src_places.get( d[ 0 ] ).geopos,
+    getPosition: d => srcdata && srcdata.places.get( d[ 0 ] ).geopos,
     opacity: 1.0,
     pickable: true,
     radius: config.MAP_POI_RADIUS,
     upperPercentile: config.MAP_UPPERPERCENTILE,
     onHover: info => this.setState({
-      hoveredObject: info.object && src_places.get( info.object.points[ 0 ][ 0 ] ),
+      hoveredObject: info.object && srcdata?.places && { ...(srcdata.places.get( info.object.points[ 0 ][ 0 ] ) || {}), infectors: this._getElevationValue( info.object.points ) },
       pointerX: info.x,
       pointerY: info.y
     })
@@ -62,26 +59,40 @@ export default class App extends React.Component
     },
     layer_count: 0,
     layer_histogram: this.createLayer( 0 ),
-    begin_date: srcdata.begin_at,
-    finish_date: srcdata.finish_at,
+    begin_date: new Date(),//srcdata.begin_at,
+    finish_date: new Date(),//srcdata.finish_at,
+    max_day: 1,//srcdata.num_days,
     current_day: 0,
-    max_day: src_days,
     timer_id: null,
     start_button_text: PLAYBUTTON_TEXT.start,
     data_api_loaded: DATA_API_STATUS.unloaded
   };
 
+  loadData( data )
+  {
+    srcdata = loader( data );
+    src_ids = Array.from( srcdata.places.keys() );
+    this.redrawLayer( { data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days } );
+  }
   componentDidMount()
   {
-    axios.get( 'http://localhost:3001/api/1.0/infectors' )
-      .then( ( response ) => {
-        Log.debug( response );
-        this.setState( { data_api_loaded: DATA_API_STATUS.loaded } );
-      } )
-      .catch( ( ex ) => {
-        Log.error( ex );
-        this.setState( { data_api_loaded: DATA_API_STATUS.error } );
-      } );
+    if ( config.STANDALONE )
+    {
+      this.loadData( example_data );
+      return;
+    }
+    this.setState(
+      (state, prop) => { return { data_api_loaded: DATA_API_STATUS.loading } },
+      () => axios.get( `${config.SERVER_HOST}:${config.SERVER_PORT}${config.SERVER_URI}` )
+              .then( ( response ) => {
+                //Log.debug( response );
+                this.loadData( response.data );
+              } )
+              .catch( ( ex ) => {
+                Log.error( ex );
+                this.setState( { data_api_loaded: DATA_API_STATUS.error } );
+              } )
+    );
   }
 
   renderTooltip()
@@ -89,16 +100,16 @@ export default class App extends React.Component
     const {hoveredObject, pointerX, pointerY} = this.state || {};
     return hoveredObject && (
       <div className="tooltip" style={{left: pointerX, top: pointerY}}>
-        <div className="tooltip-desc">{ hoveredObject.name }</div>
+        <div className="tooltip-desc">{ `${hoveredObject.name} : ${hoveredObject.infectors}` }</div>
       </div>
     );
   }
 
-  redrawLayer()
+  redrawLayer( state_after )
   {
     // レイヤーのIDを変えて再設定する
     this.setState(
-      (state, props) => { return { layer_count: state.layer_count ^ 1 } },
+      (state, props) => { return { ...(state_after || {}), layer_count: state.layer_count ^ 1 } },
       () => this.setState( { layer_histogram: this.createLayer( this.state.layer_count ) } )
     );
   }
@@ -109,20 +120,17 @@ export default class App extends React.Component
 
   _onInterval = () => {
     //Log.debug( `timer awaken` );
-    if ( !this.state.timer_id || this.state.current_day >= src_days - 1 )
+    if ( !this.state.timer_id || !srcdata || this.state.current_day >= srcdata.num_days - 1 )
       return;
     const etm = Date.now() - this.state.timer_start_time; // [msec]
-    const eday = Math.min( Math.floor( etm / config.ANIMATION_SPEED ), src_days - 1 );  // [day]
-    const emod = (eday >= src_days - 1) ? 0 : ((etm - eday * config.ANIMATION_SPEED) / config.ANIMATION_SPEED);
+    const eday = Math.min( Math.floor( etm / config.ANIMATION_SPEED ), srcdata.num_days - 1 );  // [day]
+    const emod = (eday >= srcdata.num_days - 1) ? 0 : ((etm - eday * config.ANIMATION_SPEED) / config.ANIMATION_SPEED);
     this.doAnimation( eday, emod );
   };
 
   onDebug01 = () =>
   {
-    this.setState(
-      (state, props) => { return { inf_1: state.inf_1 ? 100 : (state.inf_1 * 0.5) } },
-      () => this.redrawLayer()
-    );
+    this.redrawLayer( { inf_1: this.state.inf_1 ? 100 : (this.state.inf_1 * 0.5) } );
   };
   onDebug02 = () =>
   {
@@ -130,21 +138,20 @@ export default class App extends React.Component
 
   doAnimation( day, ratio )
   {
+    if ( !srcdata )
+      return;
     const nextstate = {};
     src_ids.forEach( id => {
-      const vals = src_values.get( id );
+      const vals = srcdata.values.get( id );
       let curval = vals[ day ];
-      if ( day < src_days - 1 )
+      if ( day < srcdata.num_days - 1 )
       {
         let nextval = vals[ day + 1 ];
         curval += (nextval - curval) * (ratio || 0);
       }
       nextstate[ INFECTOR_ID( id ) ] = curval;
     } );
-    this.setState(
-      (state, props) => { return { ...nextstate, current_day: day } },
-      () => this.redrawLayer()
-    );
+    this.redrawLayer( { ...nextstate, current_day: day } );
   }
   startAnimation( cb )
   {

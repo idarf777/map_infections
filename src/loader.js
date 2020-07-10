@@ -2,7 +2,7 @@ export default function Loader( json )
 {
   const src_places = new Map();
   const src_values = new Map();
-  const data = JSON.parse( json );
+  const data = (typeof json === 'string') ? JSON.parse( json ) : json;
   const bgn = new Date( data.begin_at );
   const fin = new Date( data.finish_at );
   let curspot = 1;

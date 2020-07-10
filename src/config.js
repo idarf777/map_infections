@@ -36,6 +36,9 @@ export const config = Object.freeze( {
   MAP_POI_RADIUS: 500,  // [m]
   ANIMATION_TIME_RESOLUTION: 100, // [msec]
   ANIMATION_SPEED: 1000, // [msec] msec/day
-  SERVER_PORT: is_debug ? 3001 : 80
+  STANDALONE: to_bool( process.env.REACT_APP_STANDALONE ) || false,
+  SERVER_PORT: is_debug ? 3001 : 80,
+  SERVER_URI: '/api/1.0/infectors',
+  SERVER_HOST: 'http://localhost'
 } );
 

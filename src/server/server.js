@@ -6,20 +6,24 @@ import express from 'express';
 import path from 'path';
 import helmet from 'helmet';
 // CSRFは後の課題とする
+import { example_data } from "../example_data.js";
 
 dotenv.config();
 
 const app = express();
 app.use(express.static(path.join(config.ROOT_DIRECTORY, 'dist')));
 app.use( helmet.xssFilter() );
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
+if ( config.DEBUG )
+{
+  app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
+}
 
-app.get('/api/1.0/infectors', (req, res) => {
-  res.send({api: 'test'});
+app.get( config.SERVER_URI, (req, res) => {
+  res.send( example_data );
 })
 
 app.get('*', function (req, res) {

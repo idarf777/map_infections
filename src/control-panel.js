@@ -6,6 +6,7 @@ export default class ControlPanel extends PureComponent {
     return (
       <div className="control-panel">
         <h3>{this.props.apimsg}</h3>
+{/*
         <h3>Marker, Popup, NavigationControl and FullscreenControl </h3>
         <p>
           Map showing top 20 most populated cities of the United States. Click on a marker to learn
@@ -25,6 +26,7 @@ export default class ControlPanel extends PureComponent {
             View Code ↗
           </a>
         </div>
+*/}
       </div>
     );
   }
