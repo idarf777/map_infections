@@ -12,6 +12,10 @@ import { example_data } from '../example_data.js';
 
 dotenv.config();
 
+const pois = new Map();
+for ( const poi of poi_tokyo )
+	pois.set( poi[ 2 ], [ poi[ 1 ], poi[ 0 ] ] );	// 都市名 - [経度,緯度]
+
 const app = express();
 app.use(express.static(path.join(config.ROOT_DIRECTORY, 'dist')));
 app.use( helmet.xssFilter() );
