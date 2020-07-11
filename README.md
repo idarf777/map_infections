@@ -45,11 +45,7 @@ Mapboxにサインアップしてアクセストークンを取得しておく�
 | REACT_APP_DEBUG | 1 |
 | REACT_APP_LOGLEVEL | (必要に応じて) |
 
-APIサーバとreactクライアント開発サーバの両方を走らせておく。
-
-まず  http://localhost:3000/api/1.0/make_data をGETして、データJSONを作っておく。これは最初の1回だけでよい。
-
-http://localhost:3000 から、reactクライアントを起動する。
+APIサーバとreactクライアント開発サーバの両方を走らせておき、http://localhost:3000 からreactクライアントを起動する。
 
 
 ## デバッグ方法
