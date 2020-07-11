@@ -18,9 +18,11 @@ APIサーバとreactクライアント開発サーバの両方が走る。
 | REACT_APP_LOGLEVEL | ログレベル (0～3、0で全ログ出力) |  〇  |  〇 |
 | REACT_APP_DEBUG | デバッグモード |  〇  |  〇 |
 
+[dotenv](https://www.npmjs.com/package/dotenv) が効いているので、「.env」ファイルの記述がシェル変数よりも優先される。
 
 ## 事前準備
-`npm install`してからAPIサーバを走らせて、まず  http://localhost:3000/api/1.0/make_data をGETして、データJSONを作っておく。
+`npm install`してからAPIサーバを走らせて、まず  http://localhost:3000/api/1.0/make_data をGETする。
+5分ほどでデータJSONが作成される(ブラウザがタイムアウトリトライしないように、タブを閉じること)。
 これは最初の1回だけでよい。
 
 この際、環境変数で以下を設定しておくこと。
@@ -30,7 +32,9 @@ APIサーバとreactクライアント開発サーバの両方が走る。
 | REACT_APP_SERVER_ALLOW_FROM_ALL | 1 |
 | REACT_APP_LOGLEVEL | 1 |
 
-また、Mapboxにサインアップしてアクセストークンを取得しておく。
+進捗状況はサーバのログ(コンソール)でのみ確認できる。
+
+Mapboxにサインアップしてアクセストークンを取得しておくこと。
 
 ## 開発用の起動
 環境変数を次のように設定する。
