@@ -21,7 +21,7 @@ APIサーバとreactクライアント開発サーバの両方が走る。
 [dotenv](https://www.npmjs.com/package/dotenv) が効いているので、「.env」ファイルの記述がシェル変数よりも優先される。
 
 ## 事前準備
-`npm install`してからAPIサーバを走らせて、まず  http://localhost:3000/api/1.0/make_data をGETする。
+`npm install`してからAPIサーバを走らせて、まず  http://localhost:3001/api/1.0/make_data をGETする。
 5分ほどでデータJSONが作成される(ブラウザがタイムアウトリトライしないように、タブを閉じること)。
 これは最初の1回だけでよい。
 
