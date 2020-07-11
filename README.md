@@ -31,6 +31,7 @@ APIサーバとreactクライアント開発サーバの両方が走る。
 | --------------------------- | ---------------------- |
 | REACT_APP_SERVER_ALLOW_FROM_ALL | 1 |
 | REACT_APP_LOGLEVEL | 1 |
+| REACT_APP_DEBUG | 1 |
 
 進捗状況はサーバのログ(コンソール)でのみ確認できる。
 
