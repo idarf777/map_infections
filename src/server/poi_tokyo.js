@@ -1,9 +1,8 @@
 import agh from "agh.sprintf";
+import axios from "axios";
 import {config} from "../config.js";
 import Log from "../logger.js";
-import axios from "axios";
-import { parse_csv} from "../util.js";
-import {datetostring} from "../util";
+import { parse_csv, datetostring } from "../util.js";
 
 const poi_tokyo = [
 [35.6907986111111,139.756840277778,'東京都千代田区'],
@@ -182,7 +181,7 @@ export default async function load_tokyo_poi()
     lacks++;
   }
   // 日付が欠けているところをその前日のCSVで補う
-  for ( let date = config.TOKYO_CSV_DATA_BEGIN_AT; lastdate && (date.getTime() <= lastdate.getTime());  date.setDate( date.getDate()+1 ) )
+  for ( let date = new Date( config.TOKYO_CSV_DATA_BEGIN_AT ); lastdate && (date.getTime() <= lastdate.getTime());  date.setDate( date.getDate()+1 ) )
   {
     if ( csvs.has( date.getTime() ) )
       continue;
@@ -198,7 +197,7 @@ export default async function load_tokyo_poi()
   {
     const date = new Date( tm );
     const rows = await parse_csv( csvs.get( tm ) );
-    if ( !( rows && rows.length > 0 && rows[ 0 ][ 0 ].match( /^[^\d]+$/ ) && rows[ 0 ][ 1 ].match( /^\d+$/ ) ) )  // 先頭行が「文字,数字」であるか検証
+    if ( !( rows && rows.length > 0 && rows[ 0 ].length >= 2 && rows[ 0 ][ 0 ].match( /^[^\d]+$/ ) && rows[ 0 ][ 1 ].match( /^\d+$/ ) ) )  // 先頭行が「文字,数字」であるか検証
     {
       Log.debug( `CSV at ${datetostring( date )} is invalid` );
       continue;
