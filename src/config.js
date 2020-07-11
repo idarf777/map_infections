@@ -16,13 +16,14 @@ export const config = Object.freeze( {
   DEBUG: is_debug,
   LOGLEVEL: process.env.REACT_APP_LOGLEVEL || loglevel.INFO,
   ROOT_DIRECTORY: __dirname,
-  MAX_INFECTORS: 100,
+  MAX_INFECTORS: 50,
   MAP_STYLE: 'mapbox://styles/mapbox/light-v10',
-  MAP_ZOOM: 10,
+  MAP_ZOOM: 11,
   MAP_PITCH: 40,  // [degree]
   MAP_BEARING: 0,
-  MAP_CENTER: [138.6728926, 35.1637692], // [degree]
-  MAP_ELEVATION: 5000,  // [m]
+  MAP_CENTER: [139.648263, 35.677912], // [degree]
+  //MAP_CENTER: [138.6728926, 35.1637692], // [degree]
+  MAP_ELEVATION: 10000,  // [m]
   MAP_COLORRANGE: [
     [1, 152, 189],
     [73, 227, 206],
@@ -33,9 +34,9 @@ export const config = Object.freeze( {
   ],
   MAP_COVERAGE: 1.0,
   MAP_UPPERPERCENTILE: 100,
-  MAP_POI_RADIUS: 500,  // [m]
+  MAP_POI_RADIUS: 1300,  // [m]
   ANIMATION_TIME_RESOLUTION: 100, // [msec]
-  ANIMATION_SPEED: 1000, // [msec] msec/day
+  ANIMATION_SPEED: 500, // [msec] msec/day
 
   STANDALONE: to_bool( process.env.REACT_APP_STANDALONE ) || false,
   SERVER_PORT: is_debug ? 3001 : 80,
@@ -45,7 +46,8 @@ export const config = Object.freeze( {
 
   SERVER_MAKE_DATA_URI: '/api/1.0/make_data',
   TOKYO_CSV_DATA_URI: 'https://raw.githubusercontent.com/smatsumt/parse-tokyo-covid-report-pdf/master/csv/',
-  TOKYO_CSV_DATA_BEGIN_AT: new Date(), //new Date( '2020-04-10' ),
+  //TOKYO_CSV_DATA_BEGIN_AT: new Date( Date.now() - 1000*24*60*60 ),
+  TOKYO_CSV_DATA_BEGIN_AT: new Date( '2020-04-10' ),
   TOKYO_CSV_DATA_LACK_COUNT: 3  // これ以上ファイルが欠けていたら終了とみなす
 
 } );

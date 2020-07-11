@@ -12,25 +12,28 @@ import { datetostring } from "./util.js";
 import { example_data } from "./example_data.js";
 import loader from "./loader.js";
 import './App.css';
+import ToolTip from "./tool_tip";
+import {to_bool} from "./util";
 
 dotenv.config();
 
 let srcdata;// = loader( example_data );
 let src_ids;// = Array.from( srcdata.places.keys() );
 const PLAYBUTTON_TEXT = { start: 'START', stop: 'STOP' };
-const INFECTOR_ID = id => `inf_${id}`;
+const STATE_INFECTOR_ANIMATION = id => `inf_a_${id}`;
+const STATE_INFECTOR = id => `inf_${id}`;
 const DATA_API_STATUS = { unloaded: 'UNLOAD', loading: 'LOADING...', loaded: 'LOADED', error: 'ERROR' };
 
 export default class App extends React.Component
 {
-  _getElevationValue = d => {
-    let v = this.state && this.state[ INFECTOR_ID( d[ 0 ][ 0 ] ) ];
+  _getElevationValue = ( d, opt ) => {
+    let v = this.state && this.state[ opt?.is_real ? STATE_INFECTOR( d[ 0 ][ 0 ] ) : STATE_INFECTOR_ANIMATION( d[ 0 ][ 0 ] ) ];
     if ( !v )
     {
       const s = srcdata?.values?.get( d[ 0 ][ 0 ] );
       v = (s && s[ 0 ]) || 0;
     }
-    return v;
+    return opt?.is_real ? v : Math.min( v, config.MAX_INFECTORS );
   };
 
   createLayer = ( count ) => new InfectorsLayer({
@@ -50,11 +53,15 @@ export default class App extends React.Component
     pickable: true,
     radius: config.MAP_POI_RADIUS,
     upperPercentile: config.MAP_UPPERPERCENTILE,
-    onHover: info => this.setState({
-      hoveredObject: info.object && srcdata?.places && { ...(srcdata.places.get( info.object.points[ 0 ][ 0 ] ) || {}), infectors: this._getElevationValue( info.object.points ) },
-      pointerX: info.x,
-      pointerY: info.y
-    })
+    onHover: info => this.setState(
+      (info.object && srcdata?.places?.has( info.object.points[ 0 ][ 0 ] ) && {
+        hoveredId: info.object.points[ 0 ][ 0 ],
+        hoveredName: srcdata.places.get( info.object.points[ 0 ][ 0 ] ).name,
+        hoveredValue: this._getElevationValue( info.object.points, { is_real: true } ),
+        pointerX: info.x,
+        pointerY: info.y
+      }) || { hoveredId: null }
+    )
   });
 
   state = {
@@ -80,6 +87,7 @@ export default class App extends React.Component
   {
     srcdata = loader( data );
     src_ids = Array.from( srcdata.places.keys() );
+Log.debug(srcdata);
     this.redrawLayer( { data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days } );
   }
   componentDidMount()
@@ -100,16 +108,6 @@ export default class App extends React.Component
                 Log.error( ex );
                 this.setState( { data_api_loaded: DATA_API_STATUS.error } );
               } )
-    );
-  }
-
-  renderTooltip()
-  {
-    const {hoveredObject, pointerX, pointerY} = this.state || {};
-    return hoveredObject && (
-      <div className="tooltip" style={{left: pointerX, top: pointerY}}>
-        <div className="tooltip-desc">{ `${hoveredObject.name} : ${hoveredObject.infectors}` }</div>
-      </div>
     );
   }
 
@@ -152,12 +150,15 @@ export default class App extends React.Component
     src_ids.forEach( id => {
       const vals = srcdata.values.get( id );
       let curval = vals[ day ];
+      nextstate[ STATE_INFECTOR( id ) ] = curval;
+      if ( this.state.hoveredId === id )
+        nextstate.hoveredValue = curval;
       if ( day < srcdata.num_days - 1 )
       {
         let nextval = vals[ day + 1 ];
         curval += (nextval - curval) * (ratio || 0);
       }
-      nextstate[ INFECTOR_ID( id ) ] = curval;
+      nextstate[ STATE_INFECTOR_ANIMATION( id ) ] = curval;
     } );
     this.redrawLayer( { ...nextstate, current_day: day } );
   }
@@ -188,7 +189,7 @@ export default class App extends React.Component
   }
   onClickStart = () => this.state.timer_id ? this.stopAnimation() : this.startAnimation();
 
-  onDateChanged = ( ev ) => this.stopAnimation( () => this.doAnimation( parseInt( ev.target.value ) ) );
+  onDateChanged = ( ev ) => this.stopAnimation( () => ev?.target?.value && this.doAnimation( parseInt( ev.target.value ) ) );
 
   render() {
     return (
@@ -252,7 +253,7 @@ export default class App extends React.Component
             </fieldset>
           </div>
         </div>
-        { this.renderTooltip() }
+        <ToolTip containerComponent={this.props.containerComponent} visible={this.state.hoveredId != null} sx={this.state.pointerX} sy={this.state.pointerY} desc={this.state.hoveredName} value={this.state.hoveredValue}/>
       </DeckGL>
     );
   }

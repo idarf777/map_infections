@@ -4,17 +4,14 @@ import { config } from '../config.js';
 import Log from '../logger.js';
 import express from 'express';
 import axios from 'axios';
+import fs from 'fs';
 import path from 'path';
 import helmet from 'helmet';
 // CSRFは後の課題とする
-import { poi_tokyo } from './poi_tokyo.js';
-import { example_data } from '../example_data.js';
+import load_tokyo_poi from './poi_tokyo.js';
+//import { example_data } from '../example_data.js';
 
 dotenv.config();
-
-const pois = new Map();
-for ( const poi of poi_tokyo )
-	pois.set( poi[ 2 ], [ poi[ 1 ], poi[ 0 ] ] );	// 都市名 - [経度,緯度]
 
 const app = express();
 app.use(express.static(path.join(config.ROOT_DIRECTORY, 'dist')));
@@ -28,54 +25,16 @@ if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
   });
 }
 
-async function load_tokyo_csv( date )
-{
-  const uri = agh.sprintf( `${config.TOKYO_CSV_DATA_URI}%04d%02d%02d.csv`, date.getFullYear(), date.getMonth()+1, date.getDate() );
-  Log.debug( `trying GET ${uri} ...` );
-  return axios.get( uri );
-}
-async function load_tokyo_csv_all()
-{
-  // TOKYO_CSV_DATA_BEGIN_AT以降の取得可能なCSVをすべて取得する
-  const csvs = new Map();
-  let lastdate = null;
-  let firstcsv = null;
-  for ( let date = new Date( config.TOKYO_CSV_DATA_BEGIN_AT ), lacks = 0;  lacks < config.TOKYO_CSV_DATA_LACK_COUNT;  date.setDate( date.getDate()+1 ) )
-  {
-    const response = await load_tokyo_csv( date ).catch( () => null );
-    Log.debug( `response : ${response}` );
-    if ( response?.data )
-    {
-      csvs.set( date.getTime(), response.data );
-      lastdate = new Date( date );
-      firstcsv ||= response.data;
-      lacks = 0;
-      continue;
-    }
-    lacks++;
-  }
-  // 日付が欠けているところをその前日のCSVで補う
-  for ( let date = config.TOKYO_CSV_DATA_BEGIN_AT; lastdate && (date.getTime() <= lastdate.getTime());  date.setDate( date.getDate()+1 ) )
-  {
-    if ( csvs.has( date.getTime() ) )
-      continue;
-    const prevdate = new Date( date );
-    prevdate.setDate( prevdate.getDate() - 1 );
-    csvs.set( date.getTime(), csvs.get( prevdate.getTime() ) || firstcsv );
-  }
-  return csvs;
-}
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   Log.debug( "MAKE_DATA" );
   //res.send( {message: 'OK'} );
-  load_tokyo_csv_all().then( csvs => {
-    //Log.debug( Array.from( csvs.keys() ).map( k => new Date( k ) ) );
-
-
-
-
-    res.send( {message: 'OK'} );
+  load_tokyo_poi().then( data => {
+    Log.debug( data );
+    const ws = fs.createWriteStream( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), 'utf8' );
+    ws.write( JSON.stringify( data ) );
+    ws.end();
+    res.send( data );
   } )
   .catch( ex => {
     Log.error( ex );
@@ -84,7 +43,18 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
 })
 
 app.get( config.SERVER_URI, (req, res) => {
-  res.send( example_data );
+  fs.readFile( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), 'utf8', (err, data) => {
+    if ( err )
+    {
+      Log.error( err );
+      res.status( 500 );
+      res.send( {message: `get "${config.SERVER_MAKE_DATA_URI}" first!`} );
+    }
+    else
+    {
+      res.send( data );
+    }
+  } );
 })
 
 app.get('*', function (req, res) {
