@@ -20,7 +20,7 @@ APIサーバとreactクライアント開発サーバの両方が走る。
 
 
 ## 事前準備
-APIサーバを走らせてから、まず  http://localhost:3000/api/1.0/make_data をGETして、データJSONを作っておく。
+`npm install`してからAPIサーバを走らせて、まず  http://localhost:3000/api/1.0/make_data をGETして、データJSONを作っておく。
 これは最初の1回だけでよい。
 
 この際、環境変数で以下を設定しておくこと。
@@ -46,8 +46,6 @@ APIサーバとreactクライアント開発サーバの両方を走らせてお
 まず  http://localhost:3000/api/1.0/make_data をGETして、データJSONを作っておく。これは最初の1回だけでよい。
 
 http://localhost:3000 から、reactクライアントを起動する。
-
-このときクライアントは http://localhost:3000/api/1.0/infectors を初めにGETし、そこからはAPIサーバにアクセスしない。
 
 
 ## デバッグ方法
