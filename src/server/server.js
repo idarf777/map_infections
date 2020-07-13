@@ -9,6 +9,8 @@ import path from 'path';
 import helmet from 'helmet';
 // CSRFは後の課題とする
 import load_tokyo_poi from './poi_tokyo.js';
+import load_kanagawa_poi from './poi_kanagawa.js';
+import { datetostring } from "../util.js";
 //import { example_data } from '../example_data.js';
 
 dotenv.config();
@@ -35,6 +37,14 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
     ws.write( JSON.stringify( data ) );
     ws.end();
     res.send( data );
+    return load_kanagawa_poi();
+  } )
+  .then( data => {
+    Log.debug( data );
+    const ws = fs.createWriteStream( path.join( config.ROOT_DIRECTORY, 'json/kanagawa.json' ), 'utf8' );
+    ws.write( JSON.stringify( data ) );
+    ws.end();
+    res.send( data );
   } )
   .catch( ex => {
     Log.error( ex );
@@ -42,20 +52,48 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   } );
 })
 
+async function readfile( path, opt )
+{
+  new Promise( (resolve, reject) => {
+    fs.readFile( path, opt, (err, data) => {
+      if ( err )
+        reject( err );
+      else
+        resolve( data );
+    } );
+  } );
+}
+
+function merge_jsons( jsons )
+{
+  let spots = [];
+  jsons.forEach( json => {
+    spots = spots.concat( json );
+  } );
+  return {
+    begin_at: datetostring( jsons.map( json => new Date( json.begin_at ).getTime() ).sort()[ 0 ] ),
+    finish_at: datetostring( jsons.map( json => new Date( json.finish_at ).getTime() ).sort().reverse()[ 0 ] ),
+    spots: spots
+  };
+}
+
 app.get( config.SERVER_URI, (req, res) => {
-  fs.readFile( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), 'utf8', (err, data) => {
-    if ( err )
-    {
+  const jsons = [];
+  this.readfile( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), 'utf8' )
+    .then( data => {
+      jsons.push( JSON.parse( data ) );
+      return this.readfile( path.join( config.ROOT_DIRECTORY, 'json/kanagawa.json' ), 'utf8' );
+    } )
+    .then( data => {
+      jsons.push( JSON.parse( data ) );
+      res.send( merge_jsons( jsons ) );
+    } )
+    .catch( err => {
       Log.error( err );
       res.status( 500 );
       res.send( {message: `get "${config.SERVER_MAKE_DATA_URI}" first!`} );
-    }
-    else
-    {
-      res.send( data );
-    }
-  } );
-})
+    } );
+} );
 
 app.get('*', function (req, res) {
   res.sendFile(path.join(config.ROOT_DIRECTORY, 'dist', 'index.html'))

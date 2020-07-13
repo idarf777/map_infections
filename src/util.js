@@ -39,10 +39,10 @@ export function datetostring( ctm, elapsed_day )
   date.setDate( date.getDate() + (elapsed_day || 0) );
   return agh.sprintf( '%04d-%02d-%02d',  date.getFullYear(), date.getMonth()+1, date.getDate() );
 }
-export async function parse_csv( data )
+export async function parse_csv( data, options )
 {
   return new Promise( ( resolve, reject ) => {
-    csv.parse( data, (err, parsed) => {
+    csv.parse( data, options||{}, (err, parsed) => {
       err ? reject( err ) : resolve( parsed );
     } );
   } );

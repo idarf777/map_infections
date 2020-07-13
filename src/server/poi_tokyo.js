@@ -143,7 +143,7 @@ for ( const names of cityname_tokyo )
 
 async function load_csv( date )
 {
-  const prefix = agh.sprintf( `${config.TOKYO_CSV_DATA_URI}%04d%02d%02d`, date.getFullYear(), date.getMonth()+1, date.getDate() );
+  const prefix = agh.sprintf( `${config.TOKYO_CSV.DATA_URI}%04d%02d%02d`, date.getFullYear(), date.getMonth()+1, date.getDate() );
   const suffix = '.csv';
   const mods = [ '-1', '_1', '06', '05', '04', '03', '02', '01', '' ];  // 修正版があるか調べてゆく
   let uri;
@@ -161,12 +161,12 @@ async function load_csv( date )
 }
 export default async function load_tokyo_poi()
 {
-  // TOKYO_CSV_DATA_BEGIN_AT以降の取得可能なCSVをすべて取得する
+  // TOKYO_CSV.DATA_BEGIN_AT以降の取得可能なCSVをすべて取得する
   Log.debug( 'getting tokyo CSV...' );
   const csvs = new Map();
   let lastdate = null;
   let firstcsv = null;
-  for ( let date = new Date( config.TOKYO_CSV_DATA_BEGIN_AT ), lacks = 0;  lacks < config.TOKYO_CSV_DATA_LACK_COUNT;  date.setDate( date.getDate()+1 ) )
+  for ( let date = new Date( config.TOKYO_CSV.DATA_BEGIN_AT ), lacks = 0;  lacks < config.TOKYO_CSV.DATA_LACK_COUNT;  date.setDate( date.getDate()+1 ) )
   {
     const response = await load_csv( date ).catch( () => null );
     Log.debug( `response : ${response}` );
@@ -181,7 +181,7 @@ export default async function load_tokyo_poi()
     lacks++;
   }
   // 日付が欠けているところをその前日のCSVで補う
-  for ( let date = new Date( config.TOKYO_CSV_DATA_BEGIN_AT ); lastdate && (date.getTime() <= lastdate.getTime());  date.setDate( date.getDate()+1 ) )
+  for ( let date = new Date( config.TOKYO_CSV.DATA_BEGIN_AT ); lastdate && (date.getTime() <= lastdate.getTime());  date.setDate( date.getDate()+1 ) )
   {
     if ( csvs.has( date.getTime() ) )
       continue;

@@ -45,10 +45,17 @@ export const config = Object.freeze( {
   SERVER_ALLOW_FROM_ALL: to_bool( process.env.REACT_APP_SERVER_ALLOW_FROM_ALL ) || false,
 
   SERVER_MAKE_DATA_URI: '/api/1.0/make_data',
-  TOKYO_CSV_DATA_URI: 'https://raw.githubusercontent.com/smatsumt/parse-tokyo-covid-report-pdf/master/csv/',
-  //TOKYO_CSV_DATA_BEGIN_AT: new Date( Date.now() - 1000*24*60*60 ),
-  TOKYO_CSV_DATA_BEGIN_AT: new Date( '2020-04-10' ),
-  TOKYO_CSV_DATA_LACK_COUNT: 3  // これ以上ファイルが欠けていたら終了とみなす
 
+  TOKYO_CSV: {
+    DATA_URI: 'https://raw.githubusercontent.com/smatsumt/parse-tokyo-covid-report-pdf/master/csv/',
+    //TOKYO_CSV_DATA_BEGIN_AT: new Date( Date.now() - 1000*24*60*60 ),
+    DATA_BEGIN_AT: new Date( '2020-04-10' ),
+    DATA_LACK_COUNT: 3  // これ以上ファイルが欠けていたら終了とみなす
+  },
+  KANAGAWA_CSV: {
+    DATA_URI: 'https://www.pref.kanagawa.jp/osirase/1369/data/csv/patient.csv',
+    //DATA_BEGIN_AT: new Date( Date.now() - 1000*24*60*60 ),
+    DATA_BEGIN_AT: new Date( '2020-04-10' )
+  }
 } );
 
