@@ -1,4 +1,6 @@
 import agh from "agh.sprintf";
+import path from 'path';
+import { promises as fs } from "fs";
 import axios from "axios";
 import {config} from "../config.js";
 import Log from "../logger.js";
@@ -143,18 +145,36 @@ for ( const names of cityname_tokyo )
 
 async function load_csv( date )
 {
-  const prefix = agh.sprintf( `${config.TOKYO_CSV.DATA_URI}%04d%02d%02d`, date.getFullYear(), date.getMonth()+1, date.getDate() );
+  const prefix = agh.sprintf( '%04d%02d%02d', date.getFullYear(), date.getMonth()+1, date.getDate() );
   const suffix = '.csv';
   const mods = [ '-1', '_1', '06', '05', '04', '03', '02', '01', '' ];  // 修正版があるか調べてゆく
   let uri;
   for ( const m of mods )
   {
-    uri = `${prefix}${m}${suffix}`;
+    const filename = `${prefix}${m}${suffix}`;
+    const cache = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_CACHE_DIR}/${filename}`  );
+    try
+    {
+      if ( (await fs.lstat( cache ))?.isFile() )
+      {
+        Log.debug( `loading ${cache} from cache ...` );
+        return fs.readFile( cache );
+      }
+    }
+    catch
+    {
+    }
+    uri = `${config.TOKYO_CSV.DATA_URI}${filename}`;
     const h = await axios.head( uri, { validateStatus: false } ).catch( () => {} );
     if ( h?.status === 200 )
     {
       Log.debug( `trying GET ${uri} ...` );
-      return axios.get( uri );
+      const response = await axios.get( uri );
+      if ( response )
+        Log.debug( `status = ${response.status}` );
+      if ( response?.data )
+        await fs.writeFile( cache, response.data );
+      return response?.data;
     }
   }
   return null;
@@ -168,13 +188,12 @@ export default async function load_tokyo_poi()
   let firstcsv = null;
   for ( let date = new Date( config.TOKYO_CSV.DATA_BEGIN_AT ), lacks = 0;  lacks < config.TOKYO_CSV.DATA_LACK_COUNT;  date.setDate( date.getDate()+1 ) )
   {
-    const response = await load_csv( date ).catch( () => null );
-    Log.debug( `response : ${response}` );
-    if ( response?.data )
+    const csv = await load_csv( date ).catch( ex => Log.error( ex ) );
+    if ( csv )
     {
-      csvs.set( date.getTime(), response.data );
+      csvs.set( date.getTime(), csv );
       lastdate = new Date( date );
-      firstcsv |= response.data;
+      firstcsv |= csv;
       lacks = 0;
       continue;
     }

@@ -26,21 +26,16 @@ export default class App extends React.Component
 {
   _getElevationValue = ( d, opt ) => {
     const id = d[ 0 ][ 0 ];
-    let v = this.state && (opt?.is_real ? this.state.inf[ id ] : this.state.inf_a[ id ] );
-    if ( !v )
-    {
-      const s = srcdata?.values?.get( id );
-      v = (s && s[ 0 ]) || 0;
-    }
-    return opt?.is_real ? v : Math.min( v, config.MAX_INFECTORS );
+    return (this.state && (opt?.is_real ? this.state.inf[ id ] : Math.min( this.state.inf_a[ id ], config.MAX_INFECTORS ) )) || 0;
   };
   _getColorValue = d => {
     let v = this._getElevationValue( d );
-    if ( !v || v === 0 )
-      return 0;
-    v = Math.min( (v + config.MAX_INFECTORS*0.1) / config.MAX_INFECTORS, 1.0 ); // ちょっとオフセットをつけて放物線でとる
-    v = 1.0 - (1.0 - v)**4;
-    v *= config.MAX_INFECTORS;
+    if ( v !== 0 )
+    {
+      v = Math.min( (v + config.MAX_INFECTORS*0.1) / config.MAX_INFECTORS, 1.0 ); // ちょっとオフセットをつけて放物線でとる
+      v = 1.0 - (1.0 - v)**4;
+      v *= config.MAX_INFECTORS;
+    }
     return Math.min( v, config.MAX_INFECTORS );
   }
   createLayer = ( count ) => new InfectorsLayer({
@@ -52,7 +47,7 @@ export default class App extends React.Component
     elevationScale: 1.0,
     elevationDomain: [0, config.MAX_INFECTORS], // 棒の高さについて、この幅で入力値を正規化する デフォルトでは各マスに入る行の密度(points.length)となる
     elevationRange: [0, config.MAP_ELEVATION],  // 入力値をelevationDomainで正規化したあと、この幅で高さを決める
-    colorDomain: [0, config.MAX_INFECTORS],     // 棒の色について、この幅で入力値を正規化する
+    colorDomain: [0, config.MAX_INFECTORS_COLOR],  // 棒の色について、この幅で入力値を正規化する
     colorRange: config.MAP_COLORRANGE,
     extruded: true,
     getPosition: d => srcdata && srcdata.places.get( d[ 0 ] )?.geopos,

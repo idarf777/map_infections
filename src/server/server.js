@@ -4,7 +4,8 @@ import { config } from '../config.js';
 import Log from '../logger.js';
 import express from 'express';
 import axios from 'axios';
-import fs from 'fs';
+import mkdirp from 'mkdirp';
+import { promises as fs } from "fs";
 import path from 'path';
 import helmet from 'helmet';
 // CSRFは後の課題とする
@@ -30,39 +31,28 @@ if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   Log.debug( "MAKE_DATA" );
-  //res.send( {message: 'OK'} );
-  load_tokyo_poi().then( data => {
+  mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) )
+  .then( made => load_tokyo_poi() )
+  .then( data => {
     Log.debug( data );
     const ws = fs.createWriteStream( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), 'utf8' );
     ws.write( JSON.stringify( data ) );
     ws.end();
     res.send( data );
-    return load_kanagawa_poi();
-  } )
-  .then( data => {
-    Log.debug( data );
-    const ws = fs.createWriteStream( path.join( config.ROOT_DIRECTORY, 'json/kanagawa.json' ), 'utf8' );
-    ws.write( JSON.stringify( data ) );
-    ws.end();
-    res.send( data );
+  //   return load_kanagawa_poi();
+  // } )
+  // .then( data => {
+  //   Log.debug( data );
+  //   const ws = fs.createWriteStream( path.join( config.ROOT_DIRECTORY, 'json/kanagawa.json' ), 'utf8' );
+  //   ws.write( JSON.stringify( data ) );
+  //   ws.end();
+  //   res.send( data );
   } )
   .catch( ex => {
     Log.error( ex );
     res.status( 500 );
   } );
 })
-
-async function readfile( path, opt )
-{
-  new Promise( (resolve, reject) => {
-    fs.readFile( path, opt, (err, data) => {
-      if ( err )
-        reject( err );
-      else
-        resolve( data );
-    } );
-  } );
-}
 
 function merge_jsons( jsons )
 {
@@ -79,10 +69,10 @@ function merge_jsons( jsons )
 
 app.get( config.SERVER_URI, (req, res) => {
   const jsons = [];
-  this.readfile( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), 'utf8' )
+  fs.readFile( path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/tokyo.json` ), 'utf8' )
     .then( data => {
       jsons.push( JSON.parse( data ) );
-      return this.readfile( path.join( config.ROOT_DIRECTORY, 'json/kanagawa.json' ), 'utf8' );
+      return fs.readFile( path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/kanagawa.json` ), 'utf8' );
     } )
     .then( data => {
       jsons.push( JSON.parse( data ) );

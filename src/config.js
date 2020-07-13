@@ -16,14 +16,15 @@ export const config = Object.freeze( {
   DEBUG: is_debug,
   LOGLEVEL: process.env.REACT_APP_LOGLEVEL || loglevel.INFO,
   ROOT_DIRECTORY: __dirname,
-  MAX_INFECTORS: 50,
+  MAX_INFECTORS: 100,
+  MAX_INFECTORS_COLOR: 70,
   MAP_STYLE: 'mapbox://styles/mapbox/light-v10',
   MAP_ZOOM: 11,
   MAP_PITCH: 40,  // [degree]
   MAP_BEARING: 0,
   MAP_CENTER: [139.648263, 35.677912], // [degree]
   //MAP_CENTER: [138.6728926, 35.1637692], // [degree]
-  MAP_ELEVATION: 10000,  // [m]
+  MAP_ELEVATION: 20000,  // [m]
   MAP_COLORRANGE: [
     [1, 152, 189],
     [73, 227, 206],
@@ -45,6 +46,8 @@ export const config = Object.freeze( {
   SERVER_ALLOW_FROM_ALL: to_bool( process.env.REACT_APP_SERVER_ALLOW_FROM_ALL ) || false,
 
   SERVER_MAKE_DATA_URI: '/api/1.0/make_data',
+  SERVER_MAKE_DATA_DIR: 'json',
+  SERVER_MAKE_DATA_CACHE_DIR: 'json/cache',
 
   TOKYO_CSV: {
     DATA_URI: 'https://raw.githubusercontent.com/smatsumt/parse-tokyo-covid-report-pdf/master/csv/',
