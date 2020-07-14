@@ -1,5 +1,7 @@
 import agh from "agh.sprintf";
 import axios from "axios";
+import jschardet from 'jschardet';
+import iconv from 'iconv-lite';
 import {config} from "../config.js";
 import Log from "../logger.js";
 import { parse_csv, datetostring } from "../util.js";
@@ -73,12 +75,13 @@ for ( const poi of poi_kanagawa )
 
 async function load_csv()
 {
-  return axios.get( config.KANAGAWA_CSV.DATA_URI );
+  return axios.create( { 'responseType': 'arraybuffer' } ).get( config.KANAGAWA_CSV.DATA_URI );
 }
 export default async function load_kanagawa_poi()
 {
   Log.debug( 'getting kanagawa CSV...' );
-  const csv = await load_csv();
+  const cr = await load_csv();
+  const csv = iconv.decode( cr.data, 'Shift_JIS' );
 
   Log.debug( 'parsing CSV...' );
   const map_city_infectors = new Map();

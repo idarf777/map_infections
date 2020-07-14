@@ -32,21 +32,17 @@ if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   Log.debug( "MAKE_DATA" );
   mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) )
-  .then( made => load_tokyo_poi() )
-  .then( data => {
-    Log.debug( data );
-    const ws = fs.createWriteStream( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), 'utf8' );
-    ws.write( JSON.stringify( data ) );
-    ws.end();
-    res.send( data );
-  //   return load_kanagawa_poi();
-  // } )
+   .then( made => load_tokyo_poi() )
   // .then( data => {
   //   Log.debug( data );
-  //   const ws = fs.createWriteStream( path.join( config.ROOT_DIRECTORY, 'json/kanagawa.json' ), 'utf8' );
-  //   ws.write( JSON.stringify( data ) );
-  //   ws.end();
   //   res.send( data );
+  //   return fs.writeFile( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), JSON.stringify( data ), 'utf8' );
+  // } )
+  //.then( () => load_kanagawa_poi() )
+  .then( data => {
+    Log.debug( data );
+    res.send( data );
+    return fs.writeFile( path.join( config.ROOT_DIRECTORY, 'json/kanagawa.json' ), JSON.stringify( data ), 'utf8' );
   } )
   .catch( ex => {
     Log.error( ex );
