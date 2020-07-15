@@ -31,19 +31,21 @@ if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   Log.debug( "MAKE_DATA" );
+  const response = [];
   mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) )
-   .then( made => load_tokyo_poi() )
-  // .then( data => {
-  //   Log.debug( data );
-  //   res.send( data );
-  //   return fs.writeFile( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), JSON.stringify( data ), 'utf8' );
-  // } )
-  //.then( () => load_kanagawa_poi() )
+  .then( made => load_tokyo_poi() )
   .then( data => {
     Log.debug( data );
-    res.send( data );
+    response.push( data );
+    return fs.writeFile( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), JSON.stringify( data ), 'utf8' );
+  } )
+  .then( () => load_kanagawa_poi() )
+  .then( data => {
+    Log.debug( data );
+    response.push( data );
     return fs.writeFile( path.join( config.ROOT_DIRECTORY, 'json/kanagawa.json' ), JSON.stringify( data ), 'utf8' );
   } )
+  .then( () => res.send( response ) )
   .catch( ex => {
     Log.error( ex );
     res.status( 500 );
@@ -54,7 +56,7 @@ function merge_jsons( jsons )
 {
   let spots = [];
   jsons.forEach( json => {
-    spots = spots.concat( json );
+    spots = spots.concat( json.spots );
   } );
   return {
     begin_at: datetostring( jsons.map( json => new Date( json.begin_at ).getTime() ).sort()[ 0 ] ),

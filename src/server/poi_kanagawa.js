@@ -85,36 +85,41 @@ export default async function load_kanagawa_poi()
 
   Log.debug( 'parsing CSV...' );
   const map_city_infectors = new Map();
-  const rows = await parse_csv( csv, { columns: true } );
-  const first_at = new Date( rows[ 0 ][ 0 ] );
+  const rows = await parse_csv( csv );//, { columns: true } );
+  const first_at = new Date( rows[ 1 ][ 0 ] );
   let date;
-  for ( const row of rows )
+  for ( let rownum=1; rownum < rows.length; rownum++ )
   {
+    const row = rows[ rownum ];
     if ( row.length < 3 )
       break;
     date = new Date( row[ 0 ] );
-    if ( date.getTime() < config.KANAGAWA_CSV.DATA_BEGIN_AT.getTime() )
-      continue;
     const city = row[ 1 ].replace( /^神奈川県/g, '' ).replace( /保健福祉事務所管内$/g, '市' ).replace( /保健所管内$/g, '' );
+    if ( city === "" )
+      continue;
     if ( !map_city_infectors.has( city ) )
       map_city_infectors.set( city, new Map() );
     const map_inf = map_city_infectors.get( city );
     map_inf.set( date.getTime(), (map_inf.get( date.getTime() ) || 0) + 1 );
   }
-  return {
-    begin_at: datetostring( first_at.getTime() ),
-    finish_at: datetostring( (date || first_at).getTime() ),
-    spots: Array.from( map_city_infectors.entries() ).map( pair => {
-      const geopos = map_poi.get( pair[ 0 ] );
-      if ( !geopos )
-        throw 'bad city name';
-      return {
-        geopos,
-        name: `神奈川県${pair[ 0 ]}`,
-        data: Array.from( pair[ 1 ].keys() ).sort().map( tm => {
-          return { date: datetostring( tm ), infectors: pair[ 1 ].get( tm ) }
-        } )
-      };
-    } )
-  };
+
+  const spots = Array.from( map_city_infectors.entries() ).map( pair => {
+    const geopos = map_poi.get( pair[ 0 ] );
+    if ( !geopos )
+      throw 'bad city name';
+    let subtotal = 0;
+    return {
+      geopos,
+      name: `神奈川県${pair[ 0 ]}`,
+      data: Array.from( pair[ 1 ].keys() ).sort().map( tm => {
+        const infectors = pair[ 1 ].get( tm );
+        subtotal += infectors;
+        return ( tm >= config.KANAGAWA_CSV.DATA_BEGIN_AT.getTime() ) && { date: datetostring( tm ), infectors, subtotal }
+      } )
+    };
+  } ).filter( e => e );
+  if ( spots.length === 0 )
+    return {};
+  const tms = spots.map( spot => new Date( spot.data[ 0 ].date ) ).sort();
+  return { begin_at: datetostring( tms[ 0 ] ), finish_at: datetostring( tms[ tms.length - 1 ] ), spots };
 }

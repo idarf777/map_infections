@@ -151,18 +151,17 @@ async function load_csv( date, cache_dir )
   const mods = [ '-1', '_1', '06', '05', '04', '03', '02', '01', '' ];  // 修正版があるか調べてゆく
   for ( const m of mods )
   {
-    const filename = `${prefix}${m}${suffix}`;
-    const cache = path.join( cache_dir, filename );
     try
     {
+      const cache = path.join( cache_dir, `${prefix}${m}${suffix}` );
       if ( !(await fs.lstat( cache ))?.isFile() )
         continue;
+      Log.debug( `loading ${cache} from cache ...` );
+      return fs.readFile( cache );
     }
     catch
     {
     }
-    Log.debug( `loading ${cache} from cache ...` );
-    return fs.readFile( cache );
   }
   // キャッシュ上のファイルに更新があってもロードされない
   for ( const m of mods )
