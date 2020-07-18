@@ -115,9 +115,9 @@ export default async function load_kanagawa_poi()
         const infectors = pair[ 1 ].get( tm );
         subtotal += infectors;
         return ( tm >= config.KANAGAWA_CSV.DATA_BEGIN_AT.getTime() ) && { date: datetostring( tm ), infectors, subtotal }
-      } )
+      } ).filter( e => e )
     };
-  } ).filter( e => e );
+  } );
   if ( spots.length === 0 )
     return {};
   const tms = spots.map( spot => new Date( spot.data[ 0 ].date ) ).sort();

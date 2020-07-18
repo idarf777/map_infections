@@ -13,7 +13,7 @@ import { example_data } from "./example_data.js";
 import loader from "./loader.js";
 import './App.css';
 import ToolTip from "./tool_tip";
-import {to_bool} from "./util";
+import {to_bool, colorrange} from "./util";
 
 dotenv.config();
 
@@ -48,7 +48,7 @@ export default class App extends React.Component
     elevationDomain: [0, config.MAX_INFECTORS], // 棒の高さについて、この幅で入力値を正規化する デフォルトでは各マスに入る行の密度(points.length)となる
     elevationRange: [0, config.MAP_ELEVATION],  // 入力値をelevationDomainで正規化したあと、この幅で高さを決める
     colorDomain: [0, config.MAX_INFECTORS_COLOR],  // 棒の色について、この幅で入力値を正規化する
-    colorRange: config.MAP_COLORRANGE,
+    colorRange: colorrange( config.MAP_COLORRANGE ),
     extruded: true,
     getPosition: d => srcdata && srcdata.places.get( d[ 0 ] )?.geopos,
     opacity: 1.0,
@@ -89,6 +89,7 @@ export default class App extends React.Component
 
   loadData( data )
   {
+Log.debug( colorrange( config.MAP_COLORRANGE ) );
     srcdata = loader( data );
     src_ids = Array.from( srcdata.places.keys() );
     this.redrawLayer( { data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days } );
