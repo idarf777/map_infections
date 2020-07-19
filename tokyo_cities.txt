@@ -64,6 +64,7 @@
 
 select ex_srches.lat/3600.0/256.0/8.0 as latitude,ex_srches.lon/3600.0/256.0/8.0 as longitude,ex_cities.name from ex_cities inner join ex_area_bases on ex_cities.city_cd = ex_area_bases.city_cd inner join ex_srches on ex_area_bases.point_id+200000000 = ex_srches.point_id where ex_cities.name in ('ç‘ã“c‹æ','’†‰›‹æ','`‹æ','Vh‹æ','•¶‹‹æ','‘ä“Œ‹æ','–n“c‹æ',']“Œ‹æ','•iì‹æ','–Ú•‹æ','‘å“c‹æ','¢“c’J‹æ','a’J‹æ','’†–ì‹æ','™•À‹æ','–L“‡‹æ','–k‹æ','rì‹æ','”Â‹´‹æ','—û”n‹æ','‘«—§‹æ','Š‹ü‹æ',']ŒËì‹æ','”ª‰¤qs','—§ìs','•‘ –ìs','O‘és','Â”~s','•{’†s','º“‡s','’²•zs','’¬“cs','¬‹àˆäs','¬•½s','“ú–ìs','“Œ‘ºRs','‘•ª›s','‘—§s','•Ÿ¶s',']s','“Œ‘å˜as','´£s','“Œ‹v—¯•Äs','•‘ ‘ºRs','‘½–€s','ˆîés','‰H‘ºs','‚ ‚«‚é–ìs','¼“Œ‹s','•ä’¬','“ú‚Ìo’¬','wŒ´‘º','‰œ‘½–€’¬','‘å“‡’¬','—˜“‡‘º','V“‡‘º','_’Ã“‡‘º','O‘î’¬','Œä‘ “‡‘º','”ªä’¬','ÂƒP“‡‘º','¬Š}Œ´‘º') and ex_area_bases.oaza_cd=0
 
+select ex_cities.name,ex_srches.lat/3600.0/256.0/8.0 as latitude,ex_srches.lon/3600.0/256.0/8.0 as longitude from ex_cities inner join ex_area_bases on (ex_cities.city_cd = ex_area_bases.city_cd and ex_cities.ctype = 0 and ex_area_bases.oaza_cd = 0) inner join ex_srches on ex_area_bases.point_id+200000000 = ex_srches.point_id where ex_cities.city_cd/1000 = (select city_cd from ex_cities where name = 'ç—tŒ§');
 
 35.6907986111111	139.756840277778	ç‘ã“c‹æ
 35.6673611111111	139.775243055556	’†‰›‹æ

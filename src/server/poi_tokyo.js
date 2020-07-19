@@ -1,8 +1,11 @@
 import agh from "agh.sprintf";
+import path from 'path';
+import { promises as fs } from "fs";
 import axios from "axios";
 import {config} from "../config.js";
 import Log from "../logger.js";
 import { parse_csv, datetostring } from "../util.js";
+import mkdirp from "mkdirp";
 
 const poi_tokyo = [
 [35.6907986111111,139.756840277778,'東京都千代田区'],
@@ -141,47 +144,69 @@ const map_cityname = new Map();
 for ( const names of cityname_tokyo )
   map_cityname.set( names[ 0 ], names[ 1 ] );
 
-async function load_csv( date )
+async function load_csv( date, cache_dir )
 {
-  const prefix = agh.sprintf( `${config.TOKYO_CSV_DATA_URI}%04d%02d%02d`, date.getFullYear(), date.getMonth()+1, date.getDate() );
+  const prefix = agh.sprintf( '%04d%02d%02d', date.getFullYear(), date.getMonth()+1, date.getDate() );
   const suffix = '.csv';
   const mods = [ '-1', '_1', '06', '05', '04', '03', '02', '01', '' ];  // 修正版があるか調べてゆく
-  let uri;
   for ( const m of mods )
   {
-    uri = `${prefix}${m}${suffix}`;
+    try
+    {
+      const cache = path.join( cache_dir, `${prefix}${m}${suffix}` );
+      if ( !(await fs.lstat( cache ))?.isFile() )
+        continue;
+      Log.debug( `loading ${cache} from cache ...` );
+      return fs.readFile( cache );
+    }
+    catch
+    {
+    }
+  }
+  // キャッシュ上のファイルに更新があってもロードされない
+  for ( const m of mods )
+  {
+    const filename = `${prefix}${m}${suffix}`;
+    const cache = path.join( cache_dir, filename );
+    const uri = `${config.TOKYO_CSV.DATA_URI}${filename}`;
     const h = await axios.head( uri, { validateStatus: false } ).catch( () => {} );
     if ( h?.status === 200 )
     {
       Log.debug( `trying GET ${uri} ...` );
-      return axios.get( uri );
+      const response = await axios.get( uri );
+      if ( response )
+        Log.debug( `status = ${response.status}` );
+      if ( response?.data )
+        await fs.writeFile( cache, response.data );
+      return response?.data;
     }
   }
   return null;
 }
 export default async function load_tokyo_poi()
 {
-  // TOKYO_CSV_DATA_BEGIN_AT以降の取得可能なCSVをすべて取得する
+  const cache_dir = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_CACHE_DIR}/tokyo` );
+  await mkdirp( cache_dir );
+  // TOKYO_CSV.DATA_BEGIN_AT以降の取得可能なCSVをすべて取得する
   Log.debug( 'getting tokyo CSV...' );
   const csvs = new Map();
   let lastdate = null;
   let firstcsv = null;
-  for ( let date = new Date( config.TOKYO_CSV_DATA_BEGIN_AT ), lacks = 0;  lacks < config.TOKYO_CSV_DATA_LACK_COUNT;  date.setDate( date.getDate()+1 ) )
+  for ( let date = new Date( config.TOKYO_CSV.DATA_BEGIN_AT ), lacks = 0;  lacks < config.TOKYO_CSV.DATA_LACK_COUNT;  date.setDate( date.getDate()+1 ) )
   {
-    const response = await load_csv( date ).catch( () => null );
-    Log.debug( `response : ${response}` );
-    if ( response?.data )
+    const csv = await load_csv( date, cache_dir ).catch( ex => Log.error( ex ) );
+    if ( csv )
     {
-      csvs.set( date.getTime(), response.data );
+      csvs.set( date.getTime(), csv );
       lastdate = new Date( date );
-      firstcsv |= response.data;
+      firstcsv |= csv;
       lacks = 0;
       continue;
     }
     lacks++;
   }
   // 日付が欠けているところをその前日のCSVで補う
-  for ( let date = new Date( config.TOKYO_CSV_DATA_BEGIN_AT ); lastdate && (date.getTime() <= lastdate.getTime());  date.setDate( date.getDate()+1 ) )
+  for ( let date = new Date( config.TOKYO_CSV.DATA_BEGIN_AT ); lastdate && (date.getTime() <= lastdate.getTime());  date.setDate( date.getDate()+1 ) )
   {
     if ( csvs.has( date.getTime() ) )
       continue;

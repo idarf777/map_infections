@@ -4,11 +4,15 @@ import { config } from '../config.js';
 import Log from '../logger.js';
 import express from 'express';
 import axios from 'axios';
-import fs from 'fs';
+import mkdirp from 'mkdirp';
+import { promises as fs } from "fs";
 import path from 'path';
 import helmet from 'helmet';
 // CSRFは後の課題とする
 import load_tokyo_poi from './poi_tokyo.js';
+import load_kanagawa_poi from './poi_kanagawa.js';
+import load_chiba_poi from "./poi_chiba.js";
+import { datetostring } from "../util.js";
 //import { example_data } from '../example_data.js';
 
 dotenv.config();
@@ -28,34 +32,63 @@ if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   Log.debug( "MAKE_DATA" );
-  //res.send( {message: 'OK'} );
-  load_tokyo_poi().then( data => {
+  const response = [];
+  mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) )
+  .then( made => load_tokyo_poi() )
+  .then( data => {
     Log.debug( data );
-    const ws = fs.createWriteStream( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), 'utf8' );
-    ws.write( JSON.stringify( data ) );
-    ws.end();
-    res.send( data );
+    response.push( data );
+    return fs.writeFile( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), JSON.stringify( data ), 'utf8' );
   } )
+  .then( () => load_kanagawa_poi() )
+  .then( data => {
+    Log.debug( data );
+    response.push( data );
+    return fs.writeFile( path.join( config.ROOT_DIRECTORY, 'json/kanagawa.json' ), JSON.stringify( data ), 'utf8' );
+  } )
+  .then( () => load_chiba_poi() )
+  .then( data => {
+    Log.debug( data );
+    response.push( data );
+    return fs.writeFile( path.join( config.ROOT_DIRECTORY, 'json/chiba.json' ), JSON.stringify( data ), 'utf8' );
+  } )
+  .then( () => res.send( response ) )
   .catch( ex => {
     Log.error( ex );
     res.status( 500 );
   } );
 })
 
+function merge_jsons( jsons )
+{
+  let spots = [];
+  jsons.forEach( json => {
+    spots = spots.concat( json.spots );
+  } );
+  return {
+    begin_at: datetostring( jsons.map( json => new Date( json.begin_at ).getTime() ).sort()[ 0 ] ),
+    finish_at: datetostring( jsons.map( json => new Date( json.finish_at ).getTime() ).sort().reverse()[ 0 ] ),
+    spots: spots
+  };
+}
+
 app.get( config.SERVER_URI, (req, res) => {
-  fs.readFile( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), 'utf8', (err, data) => {
-    if ( err )
-    {
+  const jsons = [];
+  fs.readFile( path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/tokyo.json` ), 'utf8' )
+    .then( data => {
+      jsons.push( JSON.parse( data ) );
+      return fs.readFile( path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/kanagawa.json` ), 'utf8' );
+    } )
+    .then( data => {
+      jsons.push( JSON.parse( data ) );
+      res.send( merge_jsons( jsons ) );
+    } )
+    .catch( err => {
       Log.error( err );
       res.status( 500 );
       res.send( {message: `get "${config.SERVER_MAKE_DATA_URI}" first!`} );
-    }
-    else
-    {
-      res.send( data );
-    }
-  } );
-})
+    } );
+} );
 
 app.get('*', function (req, res) {
   res.sendFile(path.join(config.ROOT_DIRECTORY, 'dist', 'index.html'))

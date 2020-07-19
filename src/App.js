@@ -13,40 +13,42 @@ import { example_data } from "./example_data.js";
 import loader from "./loader.js";
 import './App.css';
 import ToolTip from "./tool_tip";
-import {to_bool} from "./util";
+import {to_bool, colorrange} from "./util";
 
 dotenv.config();
 
 let srcdata;// = loader( example_data );
 let src_ids;// = Array.from( srcdata.places.keys() );
 const PLAYBUTTON_TEXT = { start: 'START', stop: 'STOP' };
-const STATE_INFECTOR_ANIMATION = id => `inf_a_${id}`;
-const STATE_INFECTOR = id => `inf_${id}`;
 const DATA_API_STATUS = { unloaded: 'UNLOAD', loading: 'LOADING...', loaded: 'LOADED', error: 'ERROR' };
 
 export default class App extends React.Component
 {
   _getElevationValue = ( d, opt ) => {
-    let v = this.state && this.state[ opt?.is_real ? STATE_INFECTOR( d[ 0 ][ 0 ] ) : STATE_INFECTOR_ANIMATION( d[ 0 ][ 0 ] ) ];
-    if ( !v )
-    {
-      const s = srcdata?.values?.get( d[ 0 ][ 0 ] );
-      v = (s && s[ 0 ]) || 0;
-    }
-    return opt?.is_real ? v : Math.min( v, config.MAX_INFECTORS );
+    const id = d[ 0 ][ 0 ];
+    return (this.state && (opt?.is_real ? this.state.inf[ id ] : Math.min( this.state.inf_a[ id ], config.MAX_INFECTORS ) )) || 0;
   };
-
+  _getColorValue = d => {
+    let v = this._getElevationValue( d );
+    if ( v !== 0 )
+    {
+      v = Math.min( (v + config.MAX_INFECTORS*0.1) / config.MAX_INFECTORS, 1.0 ); // ちょっとオフセットをつけて放物線でとる
+      v = 1.0 - (1.0 - v)**4;
+      v *= config.MAX_INFECTORS;
+    }
+    return Math.min( v, config.MAX_INFECTORS );
+  }
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
     data: src_ids?.map( k => [ k ] ) || [],  // 配列の配列を指定する
     coverage: config.MAP_COVERAGE,
-    getColorValue: this._getElevationValue,
+    getColorValue: this._getColorValue,
     getElevationValue: this._getElevationValue,
     elevationScale: 1.0,
     elevationDomain: [0, config.MAX_INFECTORS], // 棒の高さについて、この幅で入力値を正規化する デフォルトでは各マスに入る行の密度(points.length)となる
     elevationRange: [0, config.MAP_ELEVATION],  // 入力値をelevationDomainで正規化したあと、この幅で高さを決める
-    colorDomain: [0, config.MAX_INFECTORS],     // 棒の色について、この幅で入力値を正規化する
-    colorRange: config.MAP_COLORRANGE,
+    colorDomain: [0, config.MAX_INFECTORS_COLOR],  // 棒の色について、この幅で入力値を正規化する
+    colorRange: colorrange( config.MAP_COLORRANGE ),
     extruded: true,
     getPosition: d => srcdata && srcdata.places.get( d[ 0 ] )?.geopos,
     opacity: 1.0,
@@ -80,14 +82,16 @@ export default class App extends React.Component
     current_day: 0,
     timer_id: null,
     start_button_text: PLAYBUTTON_TEXT.start,
-    data_api_loaded: DATA_API_STATUS.unloaded
+    data_api_loaded: DATA_API_STATUS.unloaded,
+    inf_a: [],  // 感染者数 (アニメーション用)
+    inf: []     // 感染者数
   };
 
   loadData( data )
   {
+Log.debug( colorrange( config.MAP_COLORRANGE ) );
     srcdata = loader( data );
     src_ids = Array.from( srcdata.places.keys() );
-Log.debug(srcdata);
     this.redrawLayer( { data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days } );
   }
   componentDidMount()
@@ -146,11 +150,11 @@ Log.debug(srcdata);
   {
     if ( !srcdata )
       return;
-    const nextstate = {};
+    const nextstate = { inf: [].concat( this.state.inf ), inf_a: [].concat( this.state.inf_a ) };
     src_ids.forEach( id => {
       const vals = srcdata.values.get( id );
       let curval = vals[ day ];
-      nextstate[ STATE_INFECTOR( id ) ] = curval;
+      nextstate.inf[ id ] = curval;
       if ( this.state.hoveredId === id )
         nextstate.hoveredValue = curval;
       if ( day < srcdata.num_days - 1 )
@@ -158,7 +162,7 @@ Log.debug(srcdata);
         let nextval = vals[ day + 1 ];
         curval += (nextval - curval) * (ratio || 0);
       }
-      nextstate[ STATE_INFECTOR_ANIMATION( id ) ] = curval;
+      nextstate.inf_a[ id ] = curval;
     } );
     this.redrawLayer( { ...nextstate, current_day: day } );
   }

@@ -39,11 +39,33 @@ export function datetostring( ctm, elapsed_day )
   date.setDate( date.getDate() + (elapsed_day || 0) );
   return agh.sprintf( '%04d-%02d-%02d',  date.getFullYear(), date.getMonth()+1, date.getDate() );
 }
-export async function parse_csv( data )
+export async function parse_csv( data, options )
 {
   return new Promise( ( resolve, reject ) => {
-    csv.parse( data, (err, parsed) => {
+    csv.parse( data, options||{}, (err, parsed) => {
       err ? reject( err ) : resolve( parsed );
     } );
   } );
+}
+
+function intercolor( c1, c2, n )
+{
+  const m = 1.0 - n;
+  return [ c1[ 0 ]*m + c2[ 0 ]*n, c1[ 1 ]*m + c2[ 1 ]*n, c1[ 2 ]*m + c2[ 2 ]*n ];
+}
+
+export function colorrange( colors )
+{
+  const CN = 200;
+  if ( colors.length >= CN )
+    return colors;
+  const n_c = new Array( CN );
+  for ( let c = 0; c < CN; c++ )
+  {
+    const f = c * colors.length / CN;
+    const i = Math.floor( f );
+    n_c[ c ] = intercolor( colors[ Math.min( i, colors.length-1 ) ], colors[ Math.min( i+1, colors.length-1 ) ], f - i );
+  }
+  n_c[ CN - 1 ] = colors[ colors.length - 1 ];
+  return n_c;
 }

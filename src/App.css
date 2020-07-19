@@ -33,7 +33,8 @@ body {
 .map-overlay .legend .bar {
   height: 10px;
   width: 100%;
-  background: linear-gradient(to right, #0198bd, #49E3CE, #D8FEB5, #FEEDB1, #FEAD54, #D1374E );
+  background: linear-gradient(to right, #49E3CE, #D8FEB5, #FEEDB1, #FEAD54, #D1374E );
+  /*  background: linear-gradient(to right, #0198bd, #49E3CE, #D8FEB5, #FEEDB1, #FEAD54, #D1374E ); */
 }
 .map-overlay input {
   background-color: transparent;
