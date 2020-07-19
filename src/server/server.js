@@ -12,6 +12,7 @@ import helmet from 'helmet';
 import load_tokyo_poi from './poi_tokyo.js';
 import load_kanagawa_poi from './poi_kanagawa.js';
 import load_chiba_poi from "./poi_chiba.js";
+import load_saitama_poi from "./poi_saitama.js";
 import { datetostring } from "../util.js";
 //import { example_data } from '../example_data.js';
 
@@ -29,70 +30,62 @@ if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
   });
 }
 
+function merge_jsons( jsons )
+{
+  let spots = [];
+  jsons.forEach( json => {
+    if ( json.begin_at && json.finish_at )
+      spots = spots.concat( json.spots );
+  } );
+  return {
+    begin_at: datetostring( jsons.map( json => json.begin_at && new Date( json.begin_at ).getTime() ).filter( e => e ).sort()[ 0 ] ),
+    finish_at: datetostring( jsons.map( json => json.finish_at && new Date( json.finish_at ).getTime() ).filter( e => e ).sort().reverse()[ 0 ] ),
+    spots: spots
+  };
+}
+
+async function write_city_json( city, json )
+{
+  await fs.writeFile( path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/${city}.json` ), JSON.stringify( json ), 'utf8' );
+  return json;
+}
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
-  Log.debug( "MAKE_DATA" );
-  const response = [];
   mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) )
-  .then( made => load_tokyo_poi() )
-  .then( data => {
-    Log.debug( data );
-    response.push( data );
-    return fs.writeFile( path.join( config.ROOT_DIRECTORY, 'json/tokyo.json' ), JSON.stringify( data ), 'utf8' );
-  } )
-  .then( () => load_kanagawa_poi() )
-  .then( data => {
-    Log.debug( data );
-    response.push( data );
-    return fs.writeFile( path.join( config.ROOT_DIRECTORY, 'json/kanagawa.json' ), JSON.stringify( data ), 'utf8' );
-  } )
-  .then( () => load_chiba_poi() )
-  .then( data => {
-    Log.debug( data );
-    response.push( data );
-    return fs.writeFile( path.join( config.ROOT_DIRECTORY, 'json/chiba.json' ), JSON.stringify( data ), 'utf8' );
-  } )
-  .then( () => res.send( response ) )
+  .then( () => {
+    const pois = [
+      ['tokyo', load_tokyo_poi()],
+      ['chiba', load_chiba_poi()],
+      ['saitama', load_saitama_poi()],
+      ['kanagawa', load_kanagawa_poi()]
+    ];
+    const jsons = [];
+    pois.forEach( city => {
+      city[ 1 ]
+        .then( json => write_city_json( city[ 0 ], json ) )
+        .then( json => jsons.push( json ) )
+        .then( length => ( length === pois.length ) && write_city_json( config.SERVER_MAKE_DATA_FILENAME, merge_jsons( jsons ) ) )
+        .then( merged => merged && res.send( merged ) )
+        .catch( ex => Log.error( ex ) );
+    } );
+  })
   .catch( ex => {
     Log.error( ex );
     res.status( 500 );
   } );
 })
 
-function merge_jsons( jsons )
-{
-  let spots = [];
-  jsons.forEach( json => {
-    spots = spots.concat( json.spots );
-  } );
-  return {
-    begin_at: datetostring( jsons.map( json => new Date( json.begin_at ).getTime() ).sort()[ 0 ] ),
-    finish_at: datetostring( jsons.map( json => new Date( json.finish_at ).getTime() ).sort().reverse()[ 0 ] ),
-    spots: spots
-  };
-}
-
-app.get( config.SERVER_URI, (req, res) => {
-  const jsons = [];
-  fs.readFile( path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/tokyo.json` ), 'utf8' )
-    .then( data => {
-      jsons.push( JSON.parse( data ) );
-      return fs.readFile( path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/kanagawa.json` ), 'utf8' );
-    } )
-    .then( data => {
-      jsons.push( JSON.parse( data ) );
-      res.send( merge_jsons( jsons ) );
-    } )
+app.get( config.SERVER_URI, (req, res) =>
+  fs.readFile( path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/${config.SERVER_MAKE_DATA_FILENAME}.json` ), 'utf8' )
+    .then( data => res.send( JSON.parse( data ) ) )
     .catch( err => {
       Log.error( err );
       res.status( 500 );
       res.send( {message: `get "${config.SERVER_MAKE_DATA_URI}" first!`} );
-    } );
-} );
+    } )
+);
 
-app.get('*', function (req, res) {
-  res.sendFile(path.join(config.ROOT_DIRECTORY, 'dist', 'index.html'))
-})
+app.get( '*', (req, res) => res.sendFile(path.join(config.ROOT_DIRECTORY, 'dist', 'index.html') ) );
 
 app.listen( config.SERVER_PORT, () => {
   Log.info( `server is running at port ${config.SERVER_PORT}` );

@@ -83,7 +83,7 @@ export default async function load_kanagawa_poi()
   const cr = await load_csv();
   const csv = iconv.decode( cr.data, 'Shift_JIS' );
 
-  Log.debug( 'parsing CSV...' );
+  Log.debug( 'parsing kanagawa CSV...' );
   const map_city_infectors = new Map();
   const rows = await parse_csv( csv );//, { columns: true } );
   let date;
@@ -117,8 +117,9 @@ export default async function load_kanagawa_poi()
       } ).filter( e => e )
     };
   } );
+  Log.debug( 'parsed kanagawa CSV' );
   if ( spots.length === 0 )
     return {};
-  const tms = spots.map( spot => new Date( spot.data[ 0 ].date ) ).sort();
+  const tms = spots.map( spot => ((spot.data?.length || 0) > 0) && new Date( spot.data[ 0 ].date ) ).filter( e => e ).sort();
   return { begin_at: datetostring( tms[ 0 ] ), finish_at: datetostring( tms[ tms.length - 1 ] ), spots };
 }

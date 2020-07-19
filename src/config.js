@@ -48,22 +48,26 @@ export const config = Object.freeze( {
   SERVER_MAKE_DATA_URI: '/api/1.0/make_data',
   SERVER_MAKE_DATA_DIR: 'json',
   SERVER_MAKE_DATA_CACHE_DIR: 'json/cache',
+  SERVER_MAKE_DATA_FILENAME: 'infectors',
 
   TOKYO_CSV: {
     DATA_URI: 'https://raw.githubusercontent.com/smatsumt/parse-tokyo-covid-report-pdf/master/csv/',
-    //TOKYO_CSV_DATA_BEGIN_AT: new Date( Date.now() - 1000*24*60*60 ),
     DATA_BEGIN_AT: new Date( '2020-04-10' ),
     DATA_LACK_COUNT: 3  // これ以上ファイルが欠けていたら終了とみなす
   },
   KANAGAWA_CSV: {
     DATA_URI: 'https://www.pref.kanagawa.jp/osirase/1369/data/csv/patient.csv',
-    //DATA_BEGIN_AT: new Date( Date.now() - 1000*24*60*60 ),
     DATA_BEGIN_AT: new Date( '2020-04-10' )
   },
   CHIBA_XLS: {
     DATA_URI: 'https://www.city.chiba.jp/hokenfukushi/iryoeisei/seisaku/covid-19/documents/01patient.xlsx',
-    //DATA_BEGIN_AT: new Date( Date.now() - 1000*24*60*60 ),
     DATA_BEGIN_AT: new Date( '2020-04-10' )
-  }
+  },
+  SAITAMA_CSV: {
+    DATA_URI: 'https://opendata.pref.saitama.lg.jp/data/dataset/c3a8db28-b943-4fcc-82ec-b7febd460bec/resource/',
+    INDEX_URI: 'https://opendata.pref.saitama.lg.jp/data/dataset/covid19-jokyo',
+    SEARCH_KEY: '<a href="https://opendata.pref.saitama.lg.jp/data/dataset/c3a8db28-b943-4fcc-82ec-b7febd460bec/resource/',
+    DATA_BEGIN_AT: new Date( '2020-04-10' )
+  },
 } );
 

@@ -215,7 +215,7 @@ export default async function load_tokyo_poi()
     csvs.set( date.getTime(), csvs.get( prevdate.getTime() ) || firstcsv );
   }
 
-  Log.debug( 'parsing CSV...' );
+  Log.debug( 'parsing tokyo CSV...' );
   const map_city_infectors = new Map();
   const timestamps = Array.from( csvs.keys() ).sort();
   for ( const tm of timestamps )
@@ -240,6 +240,7 @@ export default async function load_tokyo_poi()
       vals.push( { date: datetostring( date ), infectors: Math.max( 0, subtotal - prev_subtotal ), subtotal: subtotal } );
     }
   }
+  Log.debug( 'parsed tokyo CSV' );
   return {
     begin_at: datetostring( timestamps[ 0 ] ),
     finish_at: datetostring( timestamps[ timestamps.length - 1 ] ),

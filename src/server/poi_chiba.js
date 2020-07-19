@@ -115,8 +115,9 @@ export default async function load_chiba_poi()
       } ).filter( e => e )
     };
   } );
+  Log.debug( 'parsed chiba XLSX' );
   if ( spots.length === 0 )
     return {};
-  const tms = spots.map( spot => new Date( spot.data[ 0 ].date ) ).sort();
+  const tms = spots.map( spot => ((spot.data?.length || 0) > 0) && new Date( spot.data[ 0 ].date ) ).filter( e => e ).sort();
   return { begin_at: datetostring( tms[ 0 ] ), finish_at: datetostring( tms[ tms.length - 1 ] ), spots };
 }
