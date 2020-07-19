@@ -51,12 +51,12 @@ export async function parse_csv( data, options )
 function intercolor( c1, c2, n )
 {
   const m = 1.0 - n;
-  return [ c1[ 0 ]*m + c2[ 0 ]*n, c1[ 1 ]*m + c2[ 1 ]*n, c1[ 2 ]*m + c2[ 2 ]*n ];
+  return [ Math.floor(c1[ 0 ]*m + c2[ 0 ]*n), Math.floor(c1[ 1 ]*m + c2[ 1 ]*n), Math.floor(c1[ 2 ]*m + c2[ 2 ]*n) ];
 }
 
 export function colorrange( colors )
 {
-  const CN = 200;
+  const CN = 1000;
   if ( colors.length >= CN )
     return colors;
   const n_c = new Array( CN );
