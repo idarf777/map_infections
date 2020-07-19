@@ -11,6 +11,7 @@ import helmet from 'helmet';
 // CSRFは後の課題とする
 import load_tokyo_poi from './poi_tokyo.js';
 import load_kanagawa_poi from './poi_kanagawa.js';
+import load_chiba_poi from "./poi_chiba.js";
 import { datetostring } from "../util.js";
 //import { example_data } from '../example_data.js';
 
@@ -44,6 +45,12 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
     Log.debug( data );
     response.push( data );
     return fs.writeFile( path.join( config.ROOT_DIRECTORY, 'json/kanagawa.json' ), JSON.stringify( data ), 'utf8' );
+  } )
+  .then( () => load_chiba_poi() )
+  .then( data => {
+    Log.debug( data );
+    response.push( data );
+    return fs.writeFile( path.join( config.ROOT_DIRECTORY, 'json/chiba.json' ), JSON.stringify( data ), 'utf8' );
   } )
   .then( () => res.send( response ) )
   .catch( ex => {

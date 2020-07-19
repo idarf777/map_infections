@@ -86,7 +86,6 @@ export default async function load_kanagawa_poi()
   Log.debug( 'parsing CSV...' );
   const map_city_infectors = new Map();
   const rows = await parse_csv( csv );//, { columns: true } );
-  const first_at = new Date( rows[ 1 ][ 0 ] );
   let date;
   for ( let rownum=1; rownum < rows.length; rownum++ )
   {
@@ -95,7 +94,7 @@ export default async function load_kanagawa_poi()
       break;
     date = new Date( row[ 0 ] );
     const city = row[ 1 ].replace( /^神奈川県/g, '' ).replace( /保健福祉事務所管内$/g, '市' ).replace( /保健所管内$/g, '' );
-    if ( city === "" )
+    if ( city === "" || !map_poi.has( city ) )
       continue;
     if ( !map_city_infectors.has( city ) )
       map_city_infectors.set( city, new Map() );

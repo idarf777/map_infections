@@ -59,6 +59,11 @@ export const config = Object.freeze( {
     DATA_URI: 'https://www.pref.kanagawa.jp/osirase/1369/data/csv/patient.csv',
     //DATA_BEGIN_AT: new Date( Date.now() - 1000*24*60*60 ),
     DATA_BEGIN_AT: new Date( '2020-04-10' )
+  },
+  CHIBA_XLS: {
+    DATA_URI: 'https://www.city.chiba.jp/hokenfukushi/iryoeisei/seisaku/covid-19/documents/01patient.xlsx',
+    //DATA_BEGIN_AT: new Date( Date.now() - 1000*24*60*60 ),
+    DATA_BEGIN_AT: new Date( '2020-04-10' )
   }
 } );
 
