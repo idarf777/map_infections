@@ -69,3 +69,8 @@ export function colorrange( colors )
   n_c[ CN - 1 ] = colors[ colors.length - 1 ];
   return n_c;
 }
+
+export function sanitize_poi_name( name )
+{
+  return name && name.replace( /ヶ/g, 'ケ' ).replace( /[!-~]/g, c => String.fromCharCode( c.charCodeAt( 0 )+0xFEE0 ) );
+}

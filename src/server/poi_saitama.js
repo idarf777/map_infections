@@ -4,135 +4,66 @@ import jschardet from 'jschardet';
 import iconv from 'iconv-lite';
 import {config} from "../config.js";
 import Log from "../logger.js";
-import { parse_csv, datetostring } from "../util.js";
+import DbPoi from './db_poi.js';
+import { parse_csv, datetostring, sanitize_poi_name } from "../util.js";
 
-const poi_saitama = {
-  'さいたま市': [139.648715277778,35.8584027777778],
-  'さいたま市西区': [139.582777777778,35.9219791666667],
-  'さいたま市北区': [139.623368055556,35.9277777777778],
-  'さいたま市大宮区': [139.633784722222,35.8986111111111],
-  'さいたま市見沼区': [139.657638888889,35.9320138888889],
-  'さいたま市中央区': [139.629444444444,35.8806597222222],
-  'さいたま市桜区': [139.613402777778,35.8527083333333],
-  'さいたま市浦和区': [139.648715277778,35.8584027777778],
-  'さいたま市南区': [139.648611111111,35.8420138888889],
-  'さいたま市緑区': [139.687395833333,35.8679166666667],
-  'さいたま市岩槻区': [139.697534722222,35.9468402777778],
-  '川越市': [139.488993055556,35.9219097222222],
-  '熊谷市': [139.392152777778,36.1440277777778],
-  '川口市': [139.727361111111,35.8044791666667],
-  '行田市': [139.459027777778,36.1356597222222],
-  '秩父市': [139.088645833333,35.9885416666667],
-  '所沢市': [139.471909722222,35.7964236111111],
-  '飯能市': [139.330972222222,35.8524652777778],
-  '加須市': [139.605,36.1282638888889],
-  '本庄市': [139.1934375,36.2404513888889],
-  '東松山市': [139.403194444444,36.0389583333333],
-  '春日部市': [139.755590277778,35.9720138888889],
-  '狭山市': [139.415416666667,35.8497222222222],
-  '羽生市': [139.551701388889,36.1694791666667],
-  '鴻巣市': [139.525451388889,36.0627083333333],
-  '深谷市': [139.2846875,36.1943055555556],
-  '上尾市': [139.596423611111,35.9742013888889],
-  '草加市': [139.808645833333,35.8221875],
-  '越谷市': [139.794166666667,35.8878819444444],
-  '蕨市': [139.682986111111,35.8223611111111],
-  '戸田市': [139.681076388889,35.8143402777778],
-  '入間市': [139.394340277778,35.8326736111111],
-  '朝霞市': [139.596909722222,35.7940277777778],
-  '志木市': [139.583541666667,35.8335069444444],
-  '和光市': [139.608993055556,35.7780555555556],
-  '新座市': [139.568923611111,35.7898611111111],
-  '桶川市': [139.561458333333,35.9997916666667],
-  '久喜市': [139.670104166667,36.0590277777778],
-  '北本市': [139.533159722222,36.0234722222222],
-  '八潮市': [139.842361111111,35.819375],
-  '富士見市': [139.552430555556,35.8534722222222],
-  '三郷市': [139.875486111111,35.8269097222222],
-  '蓮田市': [139.6653125,35.9909722222222],
-  '坂戸市': [139.406145833333,35.9540277777778],
-  '幸手市': [139.729097222222,36.0749305555556],
-  '鶴ケ島市': [139.396319444444,35.9313194444444],
-  '日高市': [139.342222222222,35.9045833333333],
-  '吉川市': [139.8590625,35.8927083333333],
-  'ふじみ野市': [139.522986111111,35.8763194444444],
-  '白岡市': [139.680173611111,36.0158680555556],
-  '伊奈町': [139.627118055556,35.9967013888889],
-  '三芳町': [139.529652777778,35.8251388888889],
-  '毛呂山町': [139.319201388889,35.9383333333333],
-  '越生町': [139.297361111111,35.9613194444444],
-  '滑川町': [139.364131944444,36.0628125],
-  '嵐山町': [139.32375,36.0534722222222],
-  '小川町': [139.265069444444,36.0534722222222],
-  '川島町': [139.4875,35.9893055555556],
-  '吉見町': [139.456909722222,36.0366666666667],
-  '鳩山町': [139.337291666667,35.9782638888889],
-  'ときがわ町': [139.299965277778,36.0053819444444],
-  '横瀬町': [139.103263888889,35.9841319444444],
-  '皆野町': [139.101944444444,36.0676736111111],
-  '長瀞町': [139.112916666667,36.1116319444444],
-  '小鹿野町': [139.011770833333,36.0139583333333],
-  '東秩父村': [139.197777777778,36.055],
-  '美里町': [139.184548611111,36.1739583333333],
-  '神川町': [139.105034722222,36.2107291666667],
-  '上里町': [139.148159722222,36.2484375],
-  '寄居町': [139.196284722222,36.1153125],
-  '宮代町': [139.726111111111,36.0194791666667],
-  '杉戸町': [139.739965277778,36.0226388888889],
-  '松伏町': [139.818506944444,35.9224652777778]
-};
 async function load_csv()
 {
   const resIndex = await axios.get( config.SAITAMA_CSV.INDEX_URI );
   const lastLinkIndex = resIndex.data.lastIndexOf( config.SAITAMA_CSV.SEARCH_KEY );
   if ( lastLinkIndex < 0 )
-    throw "bad html";
+    throw new Error( "bad html" );
   const uri = resIndex.data.substr( lastLinkIndex, config.SAITAMA_CSV.SEARCH_KEY.length + 100 ).match( /<a href="([^"]+)"/ )[ 1 ];
   if ( !uri )
-    throw "bad link";
+    throw new Error( "bad link" );
   return axios.create( { 'responseType': 'arraybuffer' } ).get( uri );
 }
-export default async function load_saitama_poi()
+export default class PoiSaitama
 {
-  Log.debug( 'getting saitama CSV...' );
-  const cr = await load_csv();
-  const csv = iconv.decode( cr.data, 'Shift_JIS' );
-
-  Log.debug( 'parsing saitama CSV...' );
-  const map_city_infectors = new Map();
-  const rows = await parse_csv( csv );//, { columns: true } );
-  let date;
-  for ( let rownum=1; rownum < rows.length; rownum++ )
+  static async load()
   {
-    const row = rows[ rownum ];
-    if ( row.length < 5 )
-      break;
-    date = new Date( '20' + row[ 1 ] );
-    const city = row[ 4 ];
-    if ( city === "" || !poi_saitama[ city ] )
-      continue;
-    if ( !map_city_infectors.has( city ) )
-      map_city_infectors.set( city, new Map() );
-    const map_inf = map_city_infectors.get( city );
-    map_inf.set( date.getTime(), (map_inf.get( date.getTime() ) || 0) + 1 );
-  }
+    Log.debug( 'getting saitama CSV...' );
+    const prefname = '埼玉県';
+    const map_poi = await DbPoi.getMap( prefname );
+    const cr = await load_csv();
+    const csv = iconv.decode( cr.data, 'Shift_JIS' );
 
-  const spots = Array.from( map_city_infectors.entries() ).map( pair => {
-    const geopos = poi_saitama[ pair[ 0 ] ];
-    let subtotal = 0;
-    return {
-      geopos,
-      name: `埼玉県${pair[ 0 ]}`,
-      data: Array.from( pair[ 1 ].keys() ).sort().map( tm => {
-        const infectors = pair[ 1 ].get( tm );
-        subtotal += infectors;
-        return ( tm >= config.SAITAMA_CSV.DATA_BEGIN_AT.getTime() ) && { date: datetostring( tm ), infectors, subtotal }
-      } ).filter( e => e )
-    };
-  } );
-  Log.debug( 'parsed saitama CSV' );
-  if ( spots.length === 0 )
-    return {};
-  const tms = spots.map( spot => ((spot.data?.length || 0) > 0) && new Date( spot.data[ 0 ].date ) ).filter( e => e ).sort();
-  return { begin_at: datetostring( tms[ 0 ] ), finish_at: datetostring( tms[ tms.length - 1 ] ), spots };
+    Log.debug( 'parsing saitama CSV...' );
+    const map_city_infectors = new Map();
+    const rows = await parse_csv( csv );//, { columns: true } );
+    let date;
+    for ( let rownum=1; rownum < rows.length; rownum++ )
+    {
+      const row = rows[ rownum ];
+      if ( row.length < 5 )
+        break;
+      date = new Date( '20' + row[ 1 ] );
+      const city = sanitize_poi_name( (row[ 4 ] === prefname) ? '' : row[ 4 ] );
+      if ( !map_poi.get( city ) )
+        continue;
+      if ( !map_city_infectors.has( city ) )
+        map_city_infectors.set( city, new Map() );
+      const map_inf = map_city_infectors.get( city );
+      map_inf.set( date.getTime(), (map_inf.get( date.getTime() ) || 0) + 1 );
+    }
+
+    const spots = Array.from( map_city_infectors.entries() ).map( pair => {
+      const geopos = map_poi.get( pair[ 0 ] ).geopos();
+      let subtotal = 0;
+      return {
+        geopos,
+        name: `${prefname}${pair[ 0 ]}`,
+        data: Array.from( pair[ 1 ].keys() ).sort().map( tm => {
+          const infectors = pair[ 1 ].get( tm );
+          subtotal += infectors;
+          return ( tm >= config.SAITAMA_CSV.DATA_BEGIN_AT.getTime() ) && { date: datetostring( tm ), infectors, subtotal }
+        } ).filter( e => e )
+      };
+    } );
+    Log.debug( 'parsed saitama CSV' );
+    if ( spots.length === 0 )
+      return {};
+    const tms = spots.map( spot => ((spot.data?.length || 0) > 0) && new Date( spot.data[ 0 ].date ) ).filter( e => e ).sort( (a,b) => a.getTime() - b.getTime() );
+    return { begin_at: datetostring( tms[ 0 ] ), finish_at: datetostring( tms[ tms.length - 1 ] ), spots };
+  }
 }

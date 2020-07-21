@@ -9,10 +9,11 @@ import { promises as fs } from "fs";
 import path from 'path';
 import helmet from 'helmet';
 // CSRFは後の課題とする
-import load_tokyo_poi from './poi_tokyo.js';
-import load_kanagawa_poi from './poi_kanagawa.js';
-import load_chiba_poi from "./poi_chiba.js";
-import load_saitama_poi from "./poi_saitama.js";
+import PoiTokyo from './poi_tokyo.js';
+import PoiKanagawa from './poi_kanagawa.js';
+import PoiChiba from "./poi_chiba.js";
+import PoiSaitama from "./poi_saitama.js";
+import PoiYamanashi from "./poi_yamanashi.js";
 import { datetostring } from "../util.js";
 //import { example_data } from '../example_data.js';
 
@@ -46,29 +47,33 @@ function merge_jsons( jsons )
 
 async function write_city_json( city, json )
 {
-  await fs.writeFile( path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/${city}.json` ), JSON.stringify( json ), 'utf8' );
-  return json;
+  return fs.writeFile( path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/${city}.json` ), JSON.stringify( json ), 'utf8' );
 }
+
+async function make_data( city )
+{
+  const pois = await city[ 1 ].load();
+  await write_city_json( city[ 0 ], pois );
+  return pois;
+}
+
+const CITIES = [
+  [ 'tokyo', PoiTokyo ],
+  [ 'chiba', PoiChiba ],
+  [ 'saitama', PoiSaitama ],
+  [ 'kanagawa', PoiKanagawa ],
+  [ 'yamanashi', PoiYamanashi ]
+];
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) )
-  .then( () => {
-    const pois = [
-      ['tokyo', load_tokyo_poi()],
-      ['chiba', load_chiba_poi()],
-      ['saitama', load_saitama_poi()],
-      ['kanagawa', load_kanagawa_poi()]
-    ];
-    const jsons = [];
-    pois.forEach( city => {
-      city[ 1 ]
-        .then( json => write_city_json( city[ 0 ], json ) )
-        .then( json => jsons.push( json ) )
-        .then( length => ( length === pois.length ) && write_city_json( config.SERVER_MAKE_DATA_FILENAME, merge_jsons( jsons ) ) )
-        .then( merged => merged && res.send( merged ) )
-        .catch( ex => Log.error( ex ) );
-    } );
-  })
+  .then( () => Promise.all( CITIES.map( city => make_data( city ) ) ) )
+  .then( jsons => {
+    const merged = merge_jsons( jsons );
+    res.send( merged );
+    return write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged );
+  } )
+  .then( () => Log.debug( 'MAKE DATA complete.' ) )
   .catch( ex => {
     Log.error( ex );
     res.status( 500 );
