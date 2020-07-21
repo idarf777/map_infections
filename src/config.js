@@ -75,6 +75,10 @@ export const config = Object.freeze( {
   YAMANASHI_XLS: {
     DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/youseisha.xlsx',
     DATA_BEGIN_AT: new Date( '2020-04-10' )
-  }
+  },
+  SHIZUOKA_CSV: {
+    DATA_URI: 'https://opendata.pref.shizuoka.jp/dataset/8167/resource/46279/220001_shizuoka_covid19_patients.csv',
+    DATA_BEGIN_AT: new Date( '2020-04-10' )
+  },
 } );
 

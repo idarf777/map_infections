@@ -42,7 +42,7 @@ export function datetostring( ctm, elapsed_day )
 export async function parse_csv( data, options )
 {
   return new Promise( ( resolve, reject ) => {
-    csv.parse( data, options||{}, (err, parsed) => {
+    csv.parse( data, { ...(options||{}), relax_column_count: true }, (err, parsed) => {
       err ? reject( err ) : resolve( parsed );
     } );
   } );

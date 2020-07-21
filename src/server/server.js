@@ -14,6 +14,7 @@ import PoiKanagawa from './poi_kanagawa.js';
 import PoiChiba from "./poi_chiba.js";
 import PoiSaitama from "./poi_saitama.js";
 import PoiYamanashi from "./poi_yamanashi.js";
+import PoiShizuoka from "./poi_shizuoka.js";
 import { datetostring } from "../util.js";
 //import { example_data } from '../example_data.js';
 
@@ -58,11 +59,12 @@ async function make_data( city )
 }
 
 const CITIES = [
-  [ 'tokyo', PoiTokyo ],
+  /*[ 'tokyo', PoiTokyo ],
   [ 'chiba', PoiChiba ],
   [ 'saitama', PoiSaitama ],
   [ 'kanagawa', PoiKanagawa ],
-  [ 'yamanashi', PoiYamanashi ]
+  [ 'yamanashi', PoiYamanashi ],*/
+  [ 'shizuoka', PoiShizuoka ]
 ];
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {

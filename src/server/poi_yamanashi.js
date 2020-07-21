@@ -34,7 +34,7 @@ export default class PoiYamanashi
 {
   static async load()
   {
-    Log.debug( 'getting chiba XLSX...' );
+    Log.debug( 'getting yamanashi XLSX...' );
     const map_poi = await DbPoi.getMap( '山梨県' );
     const rows = await load_xlsx();
     const map_city_infectors = new Map();
