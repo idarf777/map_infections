@@ -13,7 +13,7 @@ import { example_data } from "./example_data.js";
 import loader from "./loader.js";
 import './App.css';
 import ToolTip from "./tool_tip";
-import {to_bool, colorrange} from "./util";
+import {to_bool, colorrange, merge_object} from "./util";
 
 dotenv.config();
 
@@ -25,18 +25,41 @@ const DATA_API_STATUS = { unloaded: 'UNLOAD', loading: 'LOADING...', loaded: 'LO
 export default class App extends React.Component
 {
   _getElevationValue = ( d, opt ) => {
-    const id = d[ 0 ][ 0 ];
-    return (this.state && (opt?.is_real ? this.state.inf[ id ] : Math.min( this.state.inf_a[ id ], config.MAX_INFECTORS ) )) || 0;
+    const id = (typeof d === 'number') ? d : (d[ 0 ][ 0 ]);
+    const zoom = this.state.viewState?.zoom || config.MAP_ZOOM;
+    // zoom=7で1.0 11で0.1
+    let c = Math.max( Math.min( zoom, 11 ), 7 );// 11->-1 7->1
+    const coef = Math.pow( 10, (4 - (c - 7))/4.0 );
+    return (this.state && (opt?.is_real ? this.state.inf[ id ] : coef*Math.min( this.state.inf_a[ id ], config.MAX_INFECTORS ) )) || 0;
   };
   _getColorValue = d => {
-    let v = this._getElevationValue( d );
+    let v = this._getElevationValue( d, { is_real: true }  );
     if ( v !== 0 )
     {
       v = Math.min( (v + config.MAX_INFECTORS*0.1) / config.MAX_INFECTORS, 1.0 ); // ちょっとオフセットをつけて放物線でとる
       v = 1.0 - (1.0 - v)**4;
-      v *= config.MAX_INFECTORS;
+      v *= config.MAX_INFECTORS_COLOR;
     }
-    return Math.min( v, config.MAX_INFECTORS );
+    return Math.min( v, config.MAX_INFECTORS_COLOR );
+  }
+  _setHoveredDescription = ids => ids.map( id => `${srcdata.places.get( id ).name} : ${this._getElevationValue( id, { is_real: true } )}`  )
+  _setHoveredObject = info => {
+    const newstate = {};
+    if ( !info.object || !srcdata?.places?.has( info.object.points[ 0 ][ 0 ] ) )
+    {
+      newstate.hoveredIds = null;
+    }
+    else
+    {
+      const ids = info.object.points.map( p => p[ 0 ] );
+      merge_object( newstate, {
+        hoveredIds: ids,
+        hoveredValue: this._setHoveredDescription( ids ),
+        pointerX: info.x + config.TOOLTIPS_CURSOR_OFFSET,
+        pointerY: info.y
+      } );
+    }
+    this.setState( newstate );
   }
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
@@ -55,15 +78,7 @@ export default class App extends React.Component
     pickable: true,
     radius: config.MAP_POI_RADIUS,
     upperPercentile: config.MAP_UPPERPERCENTILE,
-    onHover: info => this.setState(
-      (info.object && srcdata?.places?.has( info.object.points[ 0 ][ 0 ] ) && {
-        hoveredId: info.object.points[ 0 ][ 0 ],
-        hoveredName: srcdata.places.get( info.object.points[ 0 ][ 0 ] ).name,
-        hoveredValue: this._getElevationValue( info.object.points, { is_real: true } ),
-        pointerX: info.x,
-        pointerY: info.y
-      }) || { hoveredId: null }
-    )
+    onHover: this._setHoveredObject
   });
 
   state = {
@@ -89,7 +104,6 @@ export default class App extends React.Component
 
   loadData( data )
   {
-Log.debug( colorrange( config.MAP_COLORRANGE ) );
     srcdata = loader( data );
     src_ids = Array.from( srcdata.places.keys() );
     this.redrawLayer( { data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days } );
@@ -125,6 +139,7 @@ Log.debug( colorrange( config.MAP_COLORRANGE ) );
   }
 
   _onViewStateChange = ({viewState}) => {
+    Log.debug( `zoom = ${viewState.zoom}` );
     this.setState( {viewState} );
   };
 
@@ -144,6 +159,7 @@ Log.debug( colorrange( config.MAP_COLORRANGE ) );
   };
   onDebug02 = () =>
   {
+    Log.debug( 'onDebug02' );
   };
 
   doAnimation( day, ratio )
@@ -151,12 +167,12 @@ Log.debug( colorrange( config.MAP_COLORRANGE ) );
     if ( !srcdata )
       return;
     const nextstate = { inf: [].concat( this.state.inf ), inf_a: [].concat( this.state.inf_a ) };
+    let isUpdateHovered = false;
     src_ids.forEach( id => {
       const vals = srcdata.values.get( id );
       let curval = vals[ day ];
       nextstate.inf[ id ] = curval;
-      if ( this.state.hoveredId === id )
-        nextstate.hoveredValue = curval;
+      isUpdateHovered |= this.state.hoveredIds?.includes( id );
       if ( day < srcdata.num_days - 1 )
       {
         let nextval = vals[ day + 1 ];
@@ -164,6 +180,8 @@ Log.debug( colorrange( config.MAP_COLORRANGE ) );
       }
       nextstate.inf_a[ id ] = curval;
     } );
+    if ( isUpdateHovered )
+      nextstate.hoveredValue = this._setHoveredDescription( this.state.hoveredIds );
     this.redrawLayer( { ...nextstate, current_day: day } );
   }
   startAnimation( cb )
@@ -257,7 +275,7 @@ Log.debug( colorrange( config.MAP_COLORRANGE ) );
             </fieldset>
           </div>
         </div>
-        <ToolTip containerComponent={this.props.containerComponent} visible={this.state.hoveredId != null} sx={this.state.pointerX} sy={this.state.pointerY} desc={this.state.hoveredName} value={this.state.hoveredValue}/>
+        <ToolTip containerComponent={this.props.containerComponent} visible={this.state.hoveredIds != null} sx={this.state.pointerX} sy={this.state.pointerY} descriptions={this.state.hoveredValue}/>
       </DeckGL>
     );
   }

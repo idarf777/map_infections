@@ -19,12 +19,12 @@ export const config = Object.freeze( {
   MAX_INFECTORS: 100,
   MAX_INFECTORS_COLOR: 70,
   MAP_STYLE: 'mapbox://styles/mapbox/light-v10',
-  MAP_ZOOM: 11,
+  MAP_ZOOM: 7.2,
   MAP_PITCH: 40,  // [degree]
   MAP_BEARING: 0,
-  MAP_CENTER: [139.648263, 35.677912], // [degree]
+  MAP_CENTER: [138.848263, 35.677912], // [degree]
   //MAP_CENTER: [138.6728926, 35.1637692], // [degree]
-  MAP_ELEVATION: 20000,  // [m]
+  MAP_ELEVATION: 150000,  // [m]
   MAP_COLORRANGE: [
     [1, 152, 189],    // 0のとき
     [73, 227, 206],   // 1以上
@@ -35,9 +35,10 @@ export const config = Object.freeze( {
   ],
   MAP_COVERAGE: 1.0,
   MAP_UPPERPERCENTILE: 100,
-  MAP_POI_RADIUS: 1300,  // [m]
+  MAP_POI_RADIUS: 3000,  // [m]
   ANIMATION_TIME_RESOLUTION: 100, // [msec]
   ANIMATION_SPEED: 500, // [msec] msec/day
+  TOOLTIPS_CURSOR_OFFSET: 20,
 
   STANDALONE: to_bool( process.env.REACT_APP_STANDALONE ) || false,
   SERVER_PORT: is_debug ? 3001 : 80,
