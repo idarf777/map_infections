@@ -50,6 +50,8 @@ export const config = Object.freeze( {
   SERVER_MAKE_DATA_CACHE_DIR: 'json/cache',
   SERVER_MAKE_DATA_FILENAME: 'infectors',
 
+  CITY_NAME_DATABASE: 'map_infectors_server.sqlite3',
+
   TOKYO_CSV: {
     DATA_URI: 'https://raw.githubusercontent.com/smatsumt/parse-tokyo-covid-report-pdf/master/csv/',
     DATA_BEGIN_AT: new Date( '2020-04-10' ),
@@ -69,5 +71,9 @@ export const config = Object.freeze( {
     SEARCH_KEY: '<a href="https://opendata.pref.saitama.lg.jp/data/dataset/c3a8db28-b943-4fcc-82ec-b7febd460bec/resource/',
     DATA_BEGIN_AT: new Date( '2020-04-10' )
   },
+  YAMANASHI_XLS: {
+    DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/youseisha.xlsx',
+    DATA_BEGIN_AT: new Date( '2020-04-10' )
+  }
 } );
 
