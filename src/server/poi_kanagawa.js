@@ -7,6 +7,7 @@ import Log from "../logger.js";
 import DbPoi from './db_poi.js';
 import { parse_csv, datetostring, sanitize_poi_name } from "../util.js";
 
+
 async function load_csv()
 {
   return axios.create( { 'responseType': 'arraybuffer' } ).get( config.KANAGAWA_CSV.DATA_URI );
@@ -17,6 +18,10 @@ export default class PoiKanagawa
   {
     Log.debug( 'getting kanagawa CSV...' );
     const map_poi = await DbPoi.getMap( '神奈川県' );
+    Array.from( map_poi.keys() ).forEach( name => {
+      map_poi.set( name.replace( /市$/, '保健福祉事務所管内' ) );
+      map_poi.set( name + '保健所管内' );
+    } );
     const cr = await load_csv();
     const csv = iconv.decode( cr.data, 'Shift_JIS' );
 
@@ -30,9 +35,12 @@ export default class PoiKanagawa
       if ( row.length < 3 )
         break;
       date = new Date( row[ 0 ] );
-      const city = sanitize_poi_name( row[ 1 ].replace( /^神奈川県/g, '' ).replace( /保健福祉事務所管内$/g, '市' ).replace( /保健所管内$/g, '' ) );
-      if ( !map_poi.has( city ) )
+      let city = sanitize_poi_name( row[ 1 ].replace( /^神奈川県/g, '' ) );
+      if ( !map_poi.get( city ) )
+      {
+        Log.info( `神奈川県${city} not found` );
         continue;
+      }
       if ( !map_city_infectors.has( city ) )
         map_city_infectors.set( city, new Map() );
       const map_inf = map_city_infectors.get( city );

@@ -7,6 +7,7 @@ import Log from "../logger.js";
 import DbPoi from './db_poi.js';
 import { parse_csv, datetostring, sanitize_poi_name } from "../util.js";
 
+const ALTER_CITY_NAMES = [['駿東郡', '清水町'], ['周智郡', '森町'], ['田方郡', '函南町'], ['榛原郡', '吉田町'], ['東部保健所管内', '沼津市'], ['中部保健所管内', '静岡市'], ['西部保健所管内', '浜松市']];
 async function load_csv()
 {
   return axios.create( { 'responseType': 'arraybuffer' } ).get( config.SHIZUOKA_CSV.DATA_URI );
@@ -17,6 +18,7 @@ export default class PoiShizuoka
   {
     Log.debug( 'getting shizuoka CSV...' );
     const map_poi = await DbPoi.getMap( '静岡県' );
+    ALTER_CITY_NAMES.forEach( names => map_poi.set( names[ 0 ], map_poi.get( names[ 1 ] ) ) );
     const cr = await load_csv();
     const csv = iconv.decode( cr.data, 'Shift_JIS' );
 
@@ -32,9 +34,12 @@ export default class PoiShizuoka
       date = new Date( row[ 4 ] );
       if ( row[ 2 ] !== '静岡県' )
         continue;
-      const city = sanitize_poi_name( row[ 6 ].replace( /^駿東郡$/g, '清水町' ).replace( /^周智郡$/g, '森町' ).replace( /^田方郡$/g, '函南町' ).replace( /^榛原郡$/g, '吉田町' ).replace( /^東部保健所管内$/g, '沼津市' ).replace( /^中部保健所管内$/g, '静岡市' ).replace( /^西部保健所管内$/g, '浜松市' ) );
-      if ( !map_poi.has( city ) )
+      let city = sanitize_poi_name( row[ 6 ] );
+      if ( !map_poi.get( city ) )
+      {
+        Log.info( `静岡県${city} not found` );
         continue;
+      }
       if ( !map_city_infectors.has( city ) )
         map_city_infectors.set( city, new Map() );
       const map_inf = map_city_infectors.get( city );

@@ -8,6 +8,7 @@ import mkdirp from 'mkdirp';
 import { promises as fs } from "fs";
 import path from 'path';
 import helmet from 'helmet';
+import { datetostring } from "../util.js";
 // CSRFは後の課題とする
 import PoiTokyo from './poi_tokyo.js';
 import PoiKanagawa from './poi_kanagawa.js';
@@ -15,7 +16,7 @@ import PoiChiba from "./poi_chiba.js";
 import PoiSaitama from "./poi_saitama.js";
 import PoiYamanashi from "./poi_yamanashi.js";
 import PoiShizuoka from "./poi_shizuoka.js";
-import { datetostring } from "../util.js";
+import PoiAichi from "./poi_aichi.js";
 //import { example_data } from '../example_data.js';
 
 dotenv.config();
@@ -37,8 +38,10 @@ function merge_jsons( jsons )
   let spots = [];
   jsons.forEach( json => {
     if ( json.begin_at && json.finish_at )
-      spots = spots.concat( json.spots );
+      spots = spots.concat( json.spots.filter( spot => ((spot.data?.length || 0) > 0) ) );
   } );
+  if ( spots.length === 0 )
+    throw new Error( 'no data to fit' );
   return {
     begin_at: datetostring( jsons.map( json => json.begin_at && new Date( json.begin_at ).getTime() ).filter( e => e ).sort()[ 0 ] ),
     finish_at: datetostring( jsons.map( json => json.finish_at && new Date( json.finish_at ).getTime() ).filter( e => e ).sort().reverse()[ 0 ] ),
@@ -59,12 +62,13 @@ async function make_data( city )
 }
 
 const CITIES = [
-  /*[ 'tokyo', PoiTokyo ],
+  [ 'tokyo', PoiTokyo ],
   [ 'chiba', PoiChiba ],
   [ 'saitama', PoiSaitama ],
   [ 'kanagawa', PoiKanagawa ],
-  [ 'yamanashi', PoiYamanashi ],*/
-  [ 'shizuoka', PoiShizuoka ]
+  [ 'yamanashi', PoiYamanashi ],
+  [ 'shizuoka', PoiShizuoka ],
+  [ 'aichi', PoiAichi ],
 ];
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {

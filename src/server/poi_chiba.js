@@ -30,14 +30,18 @@ export default class PoiChiba
   {
     Log.debug( 'getting chiba XLSX...' );
     const map_poi = await DbPoi.getMap( '千葉県' );
+    map_poi.set( '非公表', map_poi.get( '' ) );
     const rows = await load_xlsx();
     const map_city_infectors = new Map();
     for ( let rownum=0; rownum < rows.length; rownum++ )
     {
       const date = rows[ rownum ][ 0 ];
-      const city = sanitize_poi_name( ['千葉県', '非公表'].includes( rows[ rownum ][ 1 ] ) ? '' : rows[ rownum ][ 1 ] );
+      let city = sanitize_poi_name( ['千葉県', '非公表'].includes( rows[ rownum ][ 1 ] ) ? '' : rows[ rownum ][ 1 ] );
       if ( !map_poi.get( city ) )
+      {
+        Log.info( `千葉県${city} not found` );
         continue;
+      }
       if ( !map_city_infectors.get( city ) )
         map_city_infectors.set( city, new Map() );
       const map_inf = map_city_infectors.get( city );

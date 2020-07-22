@@ -41,9 +41,12 @@ export default class PoiYamanashi
     for ( let rownum=0; rownum < rows.length; rownum++ )
     {
       const date = rows[ rownum ][ 0 ];
-      const city = sanitize_poi_name( (rows[ rownum ][ 1 ] === '山梨県') ? '' : rows[ rownum ][ 1 ] );
+      let city = sanitize_poi_name( (rows[ rownum ][ 1 ] === '山梨県') ? '' : rows[ rownum ][ 1 ] );
       if ( !map_poi.get( city ) )
+      {
+        Log.info( `山梨県${city} not found` );
         continue;
+      }
       if ( !map_city_infectors.get( city ) )
         map_city_infectors.set( city, new Map() );
       const map_inf = map_city_infectors.get( city );
