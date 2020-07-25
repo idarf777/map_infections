@@ -75,41 +75,38 @@ export const config = Object.freeze( {
   },
   KANAGAWA_CSV: {
     DATA_URI: 'https://www.pref.kanagawa.jp/osirase/1369/data/csv/patient.csv',
-    DATA_BEGIN_AT: new Date( '2020-04-10' ),
     LICENSE: license.FREE
   },
   CHIBA_XLS: {
     DATA_URI: 'https://www.city.chiba.jp/hokenfukushi/iryoeisei/seisaku/covid-19/documents/01patient.xlsx',
-    DATA_BEGIN_AT: new Date( '2020-04-10' ),
     LICENSE: license.FREE
   },
   SAITAMA_CSV: {
     DATA_URI: 'https://opendata.pref.saitama.lg.jp/data/dataset/c3a8db28-b943-4fcc-82ec-b7febd460bec/resource/',
     INDEX_URI: 'https://opendata.pref.saitama.lg.jp/data/dataset/covid19-jokyo',
     SEARCH_KEY: '<a href="https://opendata.pref.saitama.lg.jp/data/dataset/c3a8db28-b943-4fcc-82ec-b7febd460bec/resource/',
-    DATA_BEGIN_AT: new Date( '2020-04-10' ),
     LICENSE: license.FREE
   },
   YAMANASHI_XLS: {
     DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/youseisha.xlsx',
-    DATA_BEGIN_AT: new Date( '2020-04-10' ),
     LICENSE: license.FREE
   },
   SHIZUOKA_CSV: {
     DATA_URI: 'https://opendata.pref.shizuoka.jp/dataset/8167/resource/46279/220001_shizuoka_covid19_patients.csv',
-    DATA_BEGIN_AT: new Date( '2020-04-10' ),
     LICENSE: license.CC,
     SHIZUOKA_CITY_CSV: {
       // 静岡市
       DATA_URI: 'https://www.city.shizuoka.lg.jp/388_000109.html',
-      DATA_BEGIN_AT: new Date( '2020-04-10' ),
       LICENSE: license.CC
       // 保留
     },
   },
   AICHI_CSV: {
     DATA_URI: 'https://raw.githubusercontent.com/code4nagoya/covid19/master/data/patients.csv',
-    DATA_BEGIN_AT: new Date( '2020-04-10' ),
+    LICENSE: license.MIT
+  },
+  NAGANO_CSV: {
+    DATA_URI: 'https://www.pref.nagano.lg.jp/hoken-shippei/kenko/kenko/kansensho/joho/documents/200000_nagano_covid19_patients.csv',
     LICENSE: license.MIT
   },
 } );

@@ -58,7 +58,7 @@ export default class PoiKanagawa
         data: Array.from( pair[ 1 ].keys() ).sort().map( tm => {
           const infectors = pair[ 1 ].get( tm );
           subtotal += infectors;
-          return ( tm >= config.KANAGAWA_CSV.DATA_BEGIN_AT.getTime() ) && { date: datetostring( tm ), infectors, subtotal }
+          return { date: datetostring( tm ), infectors, subtotal }
         } ).filter( e => e )
       };
     } );

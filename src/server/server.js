@@ -17,6 +17,7 @@ import PoiSaitama from "./poi_saitama.js";
 import PoiYamanashi from "./poi_yamanashi.js";
 import PoiShizuoka from "./poi_shizuoka.js";
 import PoiAichi from "./poi_aichi.js";
+import PoiNagano from "./poi_nagano.js";
 //import { example_data } from '../example_data.js';
 
 dotenv.config();
@@ -69,6 +70,7 @@ const CITIES = [
   [ 'yamanashi', PoiYamanashi ],
   [ 'shizuoka', PoiShizuoka ],
   [ 'aichi', PoiAichi ],
+  [ 'nagano', PoiNagano ],
 ];
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {

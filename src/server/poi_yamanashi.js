@@ -61,7 +61,7 @@ export default class PoiYamanashi
         data: Array.from( pair[ 1 ].keys() ).sort().map( tm => {
           const infectors = pair[ 1 ].get( tm );
           subtotal += infectors;
-          return ( tm >= config.YAMANASHI_XLS.DATA_BEGIN_AT.getTime() ) && { date: datetostring( tm ), infectors, subtotal }
+          return { date: datetostring( tm ), infectors, subtotal }
         } ).filter( e => e )
       };
     } );
