@@ -26,8 +26,7 @@ export default class PoiSaitama extends BasePoi
       min_columns: 5,
       col_date: 0,
       cb_date: row => new Date( '20' + row[ 1 ] ),
-      col_city: 4,
-      cb_city: row => row[ 4 ].replace( /^埼玉県/g, '' )
+      col_city: 4
     } );
   }
 }

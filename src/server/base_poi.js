@@ -10,10 +10,10 @@ export default class BasePoi
   static async process_csv( arg )
   {
     const { pref_name, alter_citys, cb_alter_citys, csv_uri, cb_load_csv, cb_parse_csv, csv_encoding, row_begin, min_columns, col_date, cb_date, col_city, cb_city, cb_name } = arg;
+    const set_irregular = new Set();
 
     Log.debug( `getting ${pref_name} CSV...` );
     const map_poi = await DbPoi.getMap( pref_name );
-    map_poi.set( '非公表', map_poi.get( '' ) );
     alter_citys && alter_citys.forEach( names => map_poi.set( names[ 0 ], map_poi.get( names[ 1 ] ) ) );
     cb_alter_citys && cb_alter_citys( map_poi );
     const cr = await (cb_load_csv ? cb_load_csv() : axios.create( { 'responseType': 'arraybuffer' } ).get( csv_uri ));
@@ -29,7 +29,9 @@ export default class BasePoi
       const city = sanitize_poi_name( (cb_city && cb_city( row )) || row[ col_city ] );
       if ( !map_poi.get( city ) )
       {
-        Log.info( `${pref_name}${city} not found` );
+        Log.info( `${pref_name}${city} not found, put into ${pref_name}` );
+        map_poi.set( city, map_poi.get( '' ) );
+        set_irregular.add( city );
         continue;
       }
       if ( !map_city_infectors.has( city ) )
@@ -38,11 +40,23 @@ export default class BasePoi
       map_inf.set( date.getTime(), (map_inf.get( date.getTime() ) || 0) + 1 );
     }
 
+    const unpublished = map_city_infectors.get( '' ) || new Map();
+    for ( const k of [pref_name, '非公表', '非公開'] )
+    {
+      for ( const pair of (map_city_infectors.get( k )?.entries() || []) )
+        unpublished.set( pair[ 0 ], (unpublished.get( pair[ 0 ] ) || 0) + pair[ 1 ] );
+      map_city_infectors.delete( k );
+    }
+    if ( unpublished.size > 0 )
+      map_city_infectors.set( '', unpublished );
+
     const spots = Array.from( map_city_infectors.entries() ).map( pair => {
       let subtotal = 0;
+      const key = pair[ 0 ];
+      let name = (cb_name && cb_name( key )) || (pref_name +  ((key === '') ? '(生活地:非公表)' : (set_irregular.has( key ) && `(生活地:${key})` ) || key) );
       return {
         geopos: map_poi.get( pair[ 0 ] ).geopos(),
-        name: (cb_name && cb_name( pair[ 0 ] )) || `${pref_name}${pair[ 0 ].replace( new RegExp( '^' + pref_name + '$' ), '' ).replace( /非公表$/, '(非公表)' ) }`,
+        name,
         data: Array.from( pair[ 1 ].keys() ).sort().map( tm => {
           const infectors = pair[ 1 ].get( tm );
           subtotal += infectors;

@@ -190,7 +190,7 @@ export default class PoiTokyo
         if ( !name )
           continue;
         if ( !map_city_infectors.has( name ) )
-          map_city_infectors.set( name, { geopos: map_poi.get( name ).geopos(), name, data: [] } );
+          map_city_infectors.set( name, { geopos: map_poi.get( name ).geopos(), name: `東京都${name}`, data: [] } );
         const vals = map_city_infectors.get( name ).data;
         const subtotal = parseInt( d[ 1 ] );
         const prev_subtotal = (vals.length > 0) ? vals[ vals.length - 1 ].subtotal : subtotal;  // 初日の新規感染者はデータがない=0人

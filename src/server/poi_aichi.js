@@ -15,8 +15,7 @@ export default class PoiAichi extends BasePoi
       row_begin: 1,
       min_columns: 10,
       col_date: 7,
-      col_city: 4,
-      cb_name: name => `愛知県${name.replace( /不定$/, '(不定)' )}`
+      col_city: 4
     } );
   }
 }

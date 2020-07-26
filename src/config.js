@@ -107,7 +107,11 @@ export const config = Object.freeze( {
   },
   NAGANO_CSV: {
     DATA_URI: 'https://www.pref.nagano.lg.jp/hoken-shippei/kenko/kenko/kansensho/joho/documents/200000_nagano_covid19_patients.csv',
-    LICENSE: license.MIT
+    LICENSE: license.CC
+  },
+  MIE_CSV: {
+    DATA_URI: 'https://www.pref.mie.lg.jp/common/content/000896797.csv',
+    LICENSE: license.CC
   },
 } );
 
