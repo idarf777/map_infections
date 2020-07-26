@@ -201,7 +201,7 @@ export default class PoiTokyo
     return {
       begin_at: datetostring( timestamps[ 0 ] ),
       finish_at: datetostring( timestamps[ timestamps.length - 1 ] ),
-      spots: Array.from( map_city_infectors.values() )
+      spots: Array.from( map_city_infectors.values() ).filter( spot => spot.data.reduce( (sum, v) => (sum + v.infectors ) > 0), 0 )
     };
   }
 }
