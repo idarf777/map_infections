@@ -19,6 +19,9 @@ import PoiShizuoka from "./poi_shizuoka.js";
 import PoiAichi from "./poi_aichi.js";
 import PoiNagano from "./poi_nagano.js";
 import PoiMie from "./poi_mie.js";
+import PoiWakayama from "./poi_wakayama.js";
+import PoiGifu from "./poi_gifu.js";
+import PoiKyoto from "./poi_kyoto.js";
 //import { example_data } from '../example_data.js';
 
 dotenv.config();
@@ -64,15 +67,18 @@ async function make_data( city )
 }
 
 const CITIES = [
-   [ 'tokyo', PoiTokyo ],
-   [ 'chiba', PoiChiba ],
-   [ 'saitama', PoiSaitama ],
-   [ 'kanagawa', PoiKanagawa ],
-   [ 'yamanashi', PoiYamanashi ],
-   [ 'shizuoka', PoiShizuoka ],
-   [ 'aichi', PoiAichi ],
-   [ 'nagano', PoiNagano ],
+/*  [ 'tokyo', PoiTokyo ],
+  [ 'chiba', PoiChiba ],
+  [ 'saitama', PoiSaitama ],
+  [ 'kanagawa', PoiKanagawa ],
+  [ 'yamanashi', PoiYamanashi ],
+  [ 'shizuoka', PoiShizuoka ],
+  [ 'aichi', PoiAichi ],
+  [ 'nagano', PoiNagano ],
   [ 'mie', PoiMie ],
+  [ 'wakayama', PoiWakayama ],
+  [ 'gifu', PoiGifu ],*/
+  [ 'kyoto', PoiKyoto ],
 ];
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {

@@ -113,5 +113,18 @@ export const config = Object.freeze( {
     DATA_URI: 'https://www.pref.mie.lg.jp/common/content/000896797.csv',
     LICENSE: license.CC
   },
+  WAKAYAMA_CSV: {
+    DATA_URI: 'https://raw.githubusercontent.com/wakayama-pref-org/covid19/master/csv/kansensuii.csv',
+    LICENSE: license.CC
+  },
+  GIFU_CSV: {
+    DATA_URI: 'https://data.gifu-opendata.pref.gifu.lg.jp/dataset/4661bf9d-6f75-43fb-9d59-f02eb84bb6e3/resource/9c35ee55-a140-4cd8-a266-a74edf60aa80/download/210005gifucovid19patients.csv',
+    LICENSE: license.CC
+  },
+  // 滋賀県はかなり面倒なので後まわし
+  KYOTO_HTML: {
+    DATA_URI: 'https://www.pref.kyoto.jp/kentai/corona/hassei1-50.html',
+    LICENSE: license.FREE
+  }
 } );
 

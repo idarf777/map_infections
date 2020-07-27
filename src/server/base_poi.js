@@ -65,9 +65,10 @@ export default class BasePoi
       };
     } );
     Log.debug( `parsed ${pref_name} CSV` );
-    if ( spots.length === 0 )
+    if ( spots.length === 0  ||  spots.reduce( (sum, spot) => (sum + spot.data?.length || 0), 0 ) === 0 )
       return {};
-    const tms = spots.map( spot => ((spot.data?.length || 0) > 0) && new Date( spot.data[ 0 ].date ) ).filter( e => e ).sort( (a,b) => a.getTime() - b.getTime() );
-    return { begin_at: datetostring( tms[ 0 ] ), finish_at: datetostring( tms[ tms.length - 1 ] ), spots: spots.filter( spot => spot.data.reduce( (sum, v) => (sum + v.infectors ) > 0), 0 ) };
+    const tms_begin = spots.map( spot => ((spot.data?.length || 0) > 0) && new Date( spot.data[ 0 ].date ) ).filter( e => e ).sort( (a,b) => a.getTime() - b.getTime() );
+    const tms_finish = spots.map( spot => ((spot.data?.length || 0) > 0) && new Date( spot.data[ spot.data.length - 1 ].date ) ).filter( e => e ).sort( (a,b) => b.getTime() - a.getTime() );
+    return { begin_at: datetostring( tms_begin[ 0 ] ), finish_at: datetostring( tms_finish[ 0 ] ), spots: spots.filter( spot => spot.data.reduce( (sum, v) => (sum + v.infectors ) > 0), 0 ) };
   }
 }
