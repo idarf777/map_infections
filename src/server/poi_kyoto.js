@@ -8,7 +8,7 @@ const ALTER_CITY_NAMES = [['府内', ''], ['京都府内', ''], ['京都市内',
 async function parse_html( html )
 {
   const csv = [];
-  const re = /<tr>\s*<td>\d+例目<\/td>\s*<td>(.*?)<\/td>\s*<td>.*?<\/td>\s*<td>.*?<\/td>\s*<td>(.*?)<\/td>/g;
+  const re = /<tr>\s*<td>\s*\d+例目\s*<\/td>\s*<td>(.*?)<\/td>\s*<td>.*?<\/td>\s*<td>.*?<\/td>\s*<td>(.*?)<\/td>/g;
   while ( true )
   {
     const m = re.exec( html );
@@ -16,7 +16,7 @@ async function parse_html( html )
       break;
     const date = m[ 1 ];
     const city = m[ 2 ];
-    const dm = date.match( /(.+?)(\d+)年(\d+)月(\d+)日/ );
+    const dm = date.trim().match( /(.+?)(\d+)年(\d+)月(\d+)日/ );
     if ( !dm || dm[ 1 ] !== '令和' )
       continue;
     csv.push( [ new Date( parseInt( dm[ 2 ] ) + 2018, parseInt( dm[ 3 ] ), parseInt( dm[ 4 ] ) ), city ] );

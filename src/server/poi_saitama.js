@@ -24,8 +24,7 @@ export default class PoiSaitama extends BasePoi
       csv_encoding: 'CP932',
       row_begin: 1,
       min_columns: 5,
-      col_date: 0,
-      cb_date: row => new Date( row[ 1 ] ),
+      col_date: 1,
       col_city: 4
     } );
   }

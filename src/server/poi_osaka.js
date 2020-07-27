@@ -6,10 +6,9 @@ import { sanitize_poi_name } from "../util.js";
 import BasePoi from "./base_poi.js";
 
 const ALTER_CITY_NAMES = [];
-async function load_json()
+async function parse_json( cr )
 {
-  const response = await axios.create( { 'responseType': 'arraybuffer' } ).get( config.OSAKA_JSON.DATA_URI );
-  const json = JSON.parse( iconv.decode( response.data, 'UTF8' ) );
+  const json = JSON.parse( iconv.decode( cr.data, 'UTF8' ) );
   return json[ 'patients' ][ 'data' ].map( p => [ new Date( p[ 'date' ] ), p[ '居住地' ] ] );
 }
 export default class PoiOsaka extends BasePoi
@@ -19,8 +18,8 @@ export default class PoiOsaka extends BasePoi
     return BasePoi.process_csv( {
       pref_name: '大阪府',
       alter_citys: ALTER_CITY_NAMES,
-      cb_load_csv: () => load_json(),
-      cb_parse_csv: cr => cr,
+      csv_uri: config.OSAKA_JSON.DATA_URI,
+      cb_parse_csv: cr => parse_json( cr ),
       row_begin: 0,
       min_columns: 2,
       col_date: 0,

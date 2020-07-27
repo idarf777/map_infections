@@ -7,10 +7,9 @@ import {config} from "../config";
 import xlsx from "xlsx";
 import BasePoi from "./base_poi";
 
-async function load_csv()
+async function parse_localcsv( cr )
 {
-  const response = await axios.create( { 'responseType': 'arraybuffer' } ).get( config.WAKAYAMA_CSV.DATA_URI );
-  const html = iconv.decode( response.data, 'UTF8' );
+  const html = iconv.decode( cr.data, 'UTF8' );
   const rows = await parse_csv( html );
   const csv = [];
   for ( let colnum=1; ; colnum++ )  // なぜか列方向に並んでいる
@@ -31,8 +30,8 @@ export default class PoiWakayama extends BasePoi
   {
     return BasePoi.process_csv( {
       pref_name: '和歌山県',
-      cb_load_csv: () => load_csv(),
-      cb_parse_csv: cr => cr,
+      csv_uri: config.WAKAYAMA_CSV.DATA_URI,
+      cb_parse_csv: cr => parse_localcsv( cr ),
       row_begin: 0,
       min_columns: 2,
       col_date: 0,

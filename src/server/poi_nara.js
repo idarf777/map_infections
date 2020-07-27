@@ -6,10 +6,9 @@ import { sanitize_poi_name } from "../util.js";
 import BasePoi from "./base_poi.js";
 
 const ALTER_CITY_NAMES = [['奈良県内', ''], ['郡山保健所管内', '大和郡山市'], ['中和保健所管内', '大和高田市']];
-async function load_xlsx()
+async function parse_xlsx( cr )
 {
-  const response = await axios.create( { 'responseType': 'arraybuffer' } ).get( config.NARA_XLS.DATA_URI );
-  const book = xlsx.read( response.data, { cellDates: true } );
+  const book = xlsx.read( cr.data, { cellDates: true } );
   const worksheet = book.Sheets[ book.SheetNames[ 0 ] ];
   const range = worksheet['!ref'];
   const rows = parseInt( range.match( /^.+:[A-z]+(\d+)$/ )[ 1 ] );
@@ -31,8 +30,8 @@ export default class PoiNara extends BasePoi
     return BasePoi.process_csv( {
       pref_name: '奈良県',
       alter_citys: ALTER_CITY_NAMES,
-      cb_load_csv: () => load_xlsx(),
-      cb_parse_csv: cr => cr,
+      csv_uri: config.NARA_XLS.DATA_URI,
+      cb_parse_csv: cr => parse_xlsx( cr ),
       row_begin: 0,
       min_columns: 2,
       col_date: 0,

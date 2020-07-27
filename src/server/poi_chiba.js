@@ -4,10 +4,9 @@ import {config} from "../config.js";
 import Log from "../logger.js";
 import BasePoi from "./base_poi.js";
 
-async function load_xlsx()
+async function parse_xlsx( cr )
 {
-  const response = await axios.create( { 'responseType': 'arraybuffer' } ).get( config.CHIBA_XLS.DATA_URI );
-  const book = xlsx.read( response.data, { cellDates: true } );
+  const book = xlsx.read( cr.data, { cellDates: true } );
   const worksheet = book.Sheets[ book.SheetNames[ 0 ] ];
   const range = worksheet['!ref'];
   const rows = parseInt( range.match( /^.+:[A-z]+(\d+)$/ )[ 1 ] );
@@ -28,8 +27,8 @@ export default class PoiChiba extends BasePoi
   {
     return BasePoi.process_csv( {
       pref_name: '千葉県',
-      cb_load_csv: () => load_xlsx(),
-      cb_parse_csv: cr => cr,
+      csv_uri: config.CHIBA_XLS.DATA_URI,
+      cb_parse_csv: cr => parse_xlsx( cr ),
       row_begin: 0,
       min_columns: 2,
       col_date: 0,
