@@ -21,7 +21,7 @@ async function load_csv()
     const date = new Date( d );
     const infectors = Math.floor( parseFloat( rows[ 4 ][ colnum ] ) );
     for ( let i=0; i<infectors; i++ )
-      csv.push( [ datetostring( date ), '' ] ); // 市区町村名は提供されていない
+      csv.push( [ date, '' ] ); // 市区町村名は提供されていない
   }
   return csv;
 }

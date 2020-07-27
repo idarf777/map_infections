@@ -41,7 +41,7 @@ export default class BasePoi
     }
 
     const unpublished = map_city_infectors.get( '' ) || new Map();
-    for ( const k of [pref_name, '非公表', '非公開'] )
+    for ( const k of [pref_name, `${pref_name}内`, '非公表', '非公開'] )
     {
       for ( const pair of (map_city_infectors.get( k )?.entries() || []) )
         unpublished.set( pair[ 0 ], (unpublished.get( pair[ 0 ] ) || 0) + pair[ 1 ] );
