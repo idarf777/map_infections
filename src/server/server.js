@@ -97,7 +97,7 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   .then( () => Log.debug( 'MAKE DATA complete.' ) )
   .catch( ex => {
     Log.error( ex );
-    res.status( 500 );
+    res.status( 500 ).send( ex.message );
   } );
 })
 
@@ -106,8 +106,7 @@ app.get( config.SERVER_URI, (req, res) =>
     .then( data => res.send( JSON.parse( data ) ) )
     .catch( err => {
       Log.error( err );
-      res.status( 500 );
-      res.send( {message: `get "${config.SERVER_MAKE_DATA_URI}" first!`} );
+      res.status( 500 ).send( {message: `get "${config.SERVER_MAKE_DATA_URI}" first!`} );
     } )
 );
 

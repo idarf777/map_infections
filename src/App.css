@@ -119,7 +119,7 @@ body {
   position: absolute;
   top: 0;
   right: 0;
-  max-width: 320px;
+  max-width: 400pt;
   background: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   padding: 12px 24px;
@@ -127,8 +127,7 @@ body {
   font-size: 13px;
   line-height: 2;
   color: #6b6b76;
-  text-transform: uppercase;
-  outline: none;
+  overflow: auto;
 }
 
 .navigation-control {
@@ -157,6 +156,7 @@ body {
 .btn-square {
   display: inline-block;
   padding: 0.5em 1em;
+  margin-right: 4pt;
   text-decoration: none;
   background: #668ad8;/*ボタン色*/
   color: #FFF;
@@ -168,4 +168,21 @@ body {
   -webkit-transform: translateY(4px);
   transform: translateY(4px);/*下に動く*/
   border-bottom: none;/*線を消す*/
+}
+
+.hidden {
+  display: none;
+}
+.shown {
+  display: block;
+}
+.pre {
+  white-space: pre-wrap;
+  font-size: small;
+}
+.scrollabletextbox {
+  height: 300pt;
+  font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
+  font-size: 82%;
+  overflow:scroll;
 }

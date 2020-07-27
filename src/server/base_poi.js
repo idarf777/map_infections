@@ -4,6 +4,9 @@ import DbPoi from "./db_poi";
 import iconv from "iconv-lite";
 import axios from "axios";
 import {config} from "../config";
+import mkdirp from "mkdirp";
+import path from "path";
+import { promises as fs } from "fs";
 
 export default class BasePoi
 {
@@ -17,6 +20,9 @@ export default class BasePoi
     alter_citys && alter_citys.forEach( names => map_poi.set( names[ 0 ], map_poi.get( names[ 1 ] ) ) );
     cb_alter_citys && cb_alter_citys( map_poi );
     const cr = await (cb_load_csv ? cb_load_csv() : axios.create( { 'responseType': 'arraybuffer' } ).get( csv_uri ));
+    const cache_dir = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_CACHE_DIR}/${pref_name}` );
+    await mkdirp( cache_dir );
+    await fs.writeFile( path.join( cache_dir, 'src' ), cr.data );
     Log.debug( `parsing ${pref_name} CSV...` );
     const rows = await ( cb_parse_csv ? cb_parse_csv( cr ) : parse_csv( iconv.decode( cr.data, csv_encoding ) ) );
     const map_city_infectors = new Map();

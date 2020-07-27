@@ -19,7 +19,7 @@ async function parse_html( html )
     const dm = date.trim().match( /(.+?)(\d+)年(\d+)月(\d+)日/ );
     if ( !dm || dm[ 1 ] !== '令和' )
       continue;
-    csv.push( [ new Date( parseInt( dm[ 2 ] ) + 2018, parseInt( dm[ 3 ] ), parseInt( dm[ 4 ] ) ), city ] );
+    csv.push( [ new Date( parseInt( dm[ 2 ] ) + 2018, parseInt( dm[ 3 ] ) - 1, parseInt( dm[ 4 ] ) ), city ] );
   }
   return csv;
 }

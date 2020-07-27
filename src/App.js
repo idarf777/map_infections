@@ -24,6 +24,12 @@ const DATA_API_STATUS = { unloaded: 'UNLOAD', loading: 'LOADING...', loaded: 'LO
 
 export default class App extends React.Component
 {
+  constructor(props) {
+    super(props);
+    // I'm using this ref to access methods on the DeckGL class
+    this.mapRef = React.createRef();
+  }
+
   _getElevationValue = ( d, opt ) => {
     const id = (typeof d === 'number') ? d : (d[ 0 ][ 0 ]);
     const zoom = this.state.viewState?.zoom || config.MAP_ZOOM;
@@ -102,11 +108,15 @@ export default class App extends React.Component
     inf: []     // 感染者数
   };
 
+  animationStartDay()
+  {
+    return Math.floor( (config.ANIMATION_BEGIN_AT.getTime() - srcdata.begin_at.getTime())/(24*60*60*1000) );
+  }
   loadData( data )
   {
     srcdata = loader( data );
     src_ids = Array.from( srcdata.places.keys() );
-    this.redrawLayer( { data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days } );
+    this.redrawLayer( { data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days, current_day: this.animationStartDay() } );
   }
   componentDidMount()
   {
@@ -137,6 +147,12 @@ export default class App extends React.Component
       () => this.setState( { layer_histogram: this.createLayer( this.state.layer_count ) } )
     );
   }
+
+  _onLoadMap = ev => {
+    Log.debug(ev.target);
+    const map = ev.target;
+    map.setLayoutProperty('country-label', 'text-field', ['get','name_ja']);
+  };
 
   _onViewStateChange = ({viewState}) => {
     Log.debug( `zoom = ${viewState.zoom}` );
@@ -190,11 +206,11 @@ export default class App extends React.Component
       return cb && cb();
     let tid = setInterval( this._onInterval, config.ANIMATION_TIME_RESOLUTION );
     Log.debug( `timer ${tid} set` );
-    const beginday = 0; // 表示開始日
+    const beginday = this.state.current_day; // 表示開始日
     const dnow = new Date( Date.now() );
-    dnow.setDate( dnow.getDate() - beginday );
+    dnow.setMilliseconds( dnow.getMilliseconds() - beginday*config.ANIMATION_SPEED );
     this.setState(
-      (state, props) => { return { timer_id: tid, timer_start_time: dnow.getTime(), start_button_text: PLAYBUTTON_TEXT.stop, current_day: 0 } },
+      (state, props) => { return { timer_id: tid, timer_start_time: dnow.getTime(), start_button_text: PLAYBUTTON_TEXT.stop, current_day: beginday } },
       () => cb && cb()
     );
   }
@@ -210,7 +226,10 @@ export default class App extends React.Component
     );
   }
   onClickStart = () => this.state.timer_id ? this.stopAnimation() : this.startAnimation();
-
+  onClickReset = () => {
+    this.stopAnimation();
+    this.doAnimation( this.animationStartDay() );
+  }
   onDateChanged = ( ev ) => this.stopAnimation( () => ev?.target?.value && this.doAnimation( parseInt( ev.target.value ) ) );
 
   render() {
@@ -225,6 +244,7 @@ export default class App extends React.Component
         <MapGL
           mapStyle={config.MAP_STYLE}
           mapboxApiAccessToken={process.env.REACT_APP_MapboxAccessToken}
+          ref={map => {this.mapRef = map}}
         />
         <div className="navigation-control">
           <NavigationControl />
@@ -260,17 +280,17 @@ export default class App extends React.Component
             </fieldset>
 */}
             <fieldset>
-{/*
-              <label></label>
-*/}
               <div id="swatches">
+{/*
                 <div className="blue">
                   <button id="blue_button" onClick={this.onDebug01} />
                 </div>
                 <div className="green">
                   <button id="green_button" onClick={this.onDebug02} />
                 </div>
+*/}
                 <a href="/#" className="btn-square" onClick={this.onClickStart}>{this.state.start_button_text}</a>
+                <a href="/#" className="btn-square" onClick={this.onClickReset}>RESET</a>
               </div>
             </fieldset>
           </div>

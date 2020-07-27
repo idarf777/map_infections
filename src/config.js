@@ -53,6 +53,7 @@ export const config = Object.freeze( {
   ANIMATION_TIME_RESOLUTION: 100, // [msec]
   ANIMATION_SPEED: 500, // [msec] msec/day
   TOOLTIPS_CURSOR_OFFSET: 20,
+  ANIMATION_BEGIN_AT: new Date( '2020-04-10' ),
 
   STANDALONE: to_bool( process.env.REACT_APP_STANDALONE ) || false,
   SERVER_PORT: is_debug ? 3001 : 80,
@@ -78,7 +79,7 @@ export const config = Object.freeze( {
     LICENSE: license.FREE
   },
   CHIBA_XLS: {
-    DATA_URI: 'https://www.city.chiba.jp/hokenfukushi/iryoeisei/seisaku/covid-19/documents/01patient.xlsx',
+    DATA_URI: 'https://www.city.chiba.jp/hokenfukushi/iryoeisei/seisaku/covid-19/documents/01patient.xlsx', // 千葉県のデータは居住地なし
     LICENSE: license.FREE
   },
   SAITAMA_CSV: {
