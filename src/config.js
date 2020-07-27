@@ -105,8 +105,8 @@ export const config = Object.freeze( {
     DATA_URI: 'https://raw.githubusercontent.com/code4nagoya/covid19/master/data/patients.csv',
     LICENSE: license.MIT
   },
-  NAGANO_CSV: {
-    DATA_URI: 'https://www.pref.nagano.lg.jp/hoken-shippei/kenko/kenko/kansensho/joho/documents/200000_nagano_covid19_patients.csv',
+  NAGANO_HTML: {
+    DATA_URI: 'https://www.pref.nagano.lg.jp/hoken-shippei/kenko/kenko/kansensho/joho/corona-doko.html',
     LICENSE: license.CC
   },
   MIE_CSV: {

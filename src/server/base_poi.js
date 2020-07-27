@@ -26,6 +26,8 @@ export default class BasePoi
       if ( row.length < min_columns )
         break;
       const date = cb_date ? cb_date( row ) : new Date( row[ col_date ] );
+      if ( !date )
+        continue;
       const city = sanitize_poi_name( (cb_city && cb_city( row )) || row[ col_city ] );
       if ( !map_poi.get( city ) )
       {

@@ -197,11 +197,14 @@ export default class PoiTokyo
         vals.push( { date: datetostring( date ), infectors: Math.max( 0, subtotal - prev_subtotal ), subtotal: subtotal } );
       }
     }
+    for ( const spot of map_city_infectors.values() )
+      spot.data = spot.data.filter( d => d.infectors > 0 );
+
     Log.debug( 'parsed tokyo CSV' );
     return {
       begin_at: datetostring( timestamps[ 0 ] ),
       finish_at: datetostring( timestamps[ timestamps.length - 1 ] ),
-      spots: Array.from( map_city_infectors.values() ).filter( spot => spot.data.reduce( (sum, v) => (sum + v.infectors ) > 0), 0 )
+      spots: Array.from( map_city_infectors.values() ).filter( spot => spot.data.reduce( (sum, v) => sum + v.infectors, 0 ) > 0 )
     };
   }
 }

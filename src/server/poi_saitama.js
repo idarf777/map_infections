@@ -25,7 +25,7 @@ export default class PoiSaitama extends BasePoi
       row_begin: 1,
       min_columns: 5,
       col_date: 0,
-      cb_date: row => new Date( '20' + row[ 1 ] ),
+      cb_date: row => new Date( row[ 1 ] ),
       col_city: 4
     } );
   }

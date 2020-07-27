@@ -65,6 +65,7 @@ async function make_data( city )
 {
   const pois = await city[ 1 ].load();
   await write_city_json( city[ 0 ], pois );
+  Log.info( `Data of ${city[ 0 ]} ... ${datetostring( pois.begin_at )} - ${datetostring( pois.finish_at )}`  );
   return pois;
 }
 
