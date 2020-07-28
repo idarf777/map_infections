@@ -191,8 +191,9 @@ export default class App extends React.Component
       isUpdateHovered |= this.state.hoveredIds?.includes( id );
       if ( day < srcdata.num_days - 1 )
       {
-        let nextval = vals[ day + 1 ];
-        curval += (nextval - curval) * (ratio || 0);
+        const d = vals[ day + 1 ] - curval;
+        const r = ratio && (( d >= 0 ) ? (1.0 - (1.0 - ratio)**3) : (ratio**3));
+        curval += d * (r || 0);
       }
       nextstate.inf_a[ id ] = curval;
     } );

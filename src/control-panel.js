@@ -46,6 +46,7 @@ export default class ControlPanel extends PureComponent
 
             <p><a href="https://creativecommons.org/licenses/by/2.1/jp/">岐阜県のデータセットはCC BY 2.1 JPで提供されています。©岐阜県健康福祉部</a></p>
             <p><a href="https://creativecommons.org/licenses/by/2.1/jp/">三重県のデータセットはCC BY 2.1 JPで提供されています。©三重県医療保健部</a></p>
+            <p><a href="https://creativecommons.org/licenses/by/2.1/jp/">千葉市のデータセットはCC BY 2.1 JPで提供されています。©千葉市保健福祉局</a></p>
             <p>長野県のデータセットは、以下の著作物を改変して利用しています。新型コロナウイルス感染症発生状況、長野県、<a href="https://creativecommons.org/licenses/by/4.0/deed.ja">クリエイティブ・コモンズ・ライセンス表示4.0国際</a></p>
             <p>奈良県のデータセットは、以下の著作物を改変して利用しています。奈良県_01新型コロナウイルス陽性感染者_患者リスト、奈良県、<a href="https://creativecommons.org/licenses/by/4.0/deed.ja">クリエイティブ・コモンズ・ライセンス表示4.0国際</a></p>
             <p>埼玉県のデータセットは、<a href="https://opendata.pref.saitama.lg.jp/data/dataset/covid19-jokyo">新型コロナウイルス感染症の発生状況</a>を利用しています。<a href="https://creativecommons.org/licenses/by/4.0/deed.ja">クリエイティブ・コモンズ・ライセンス表示4.0国際</a>©埼玉県保健医療部</p>
