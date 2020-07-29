@@ -1,0 +1,29 @@
+#!/bin/sh
+
+case $1 in
+  add)
+    mkdir -p /var/log/covid19map_server
+    chown appuser:appuser /var/log/covid19map_server
+    chmod -R 775 /var/log/covid19map_server
+		cp `pwd`/install/covid19map_server /etc/init.d/
+		chmod 755 /etc/init.d/covid19map_server
+		/sbin/chkconfig --add covid19map_server
+    echo "d /var/run/covid19map_server 0755 appuser appuser -" > /etc/tmpfiles.d/covid19map_server.conf
+    systemd-tmpfiles --create /etc/tmpfiles.d/covid19map_server.conf
+    systemctl daemon-reload
+		;;
+  remove)
+		/sbin/chkconfig --del covid19map_server
+		rm -f /etc/init.d/covid19map_server
+    systemd-tmpfiles --remove /etc/tmpfiles.d/covid19map_server.conf
+		rm -f /etc/tmpfiles.d/covid19map_server.conf
+    systemctl daemon-reload
+    ;;
+  *)
+    echo ""
+    echo "install add    --- put daemon install to /etc/init.d"
+    echo "install remove --- remove daemon install from /etc/init.d"
+    echo ""
+    ;;
+esac
+

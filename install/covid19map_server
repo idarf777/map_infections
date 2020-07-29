@@ -1,0 +1,40 @@
+#!/bin/sh
+# chkconfig: 345 99 1
+# description: COVID19 MAP API SERVER
+# processname: covid19map_server
+
+APP_DIR="/usr/share/nginx/nodeapp/map_infections"
+#EXE_DIR="/usr/share/nginx/nodeapp/map_infections/bin"
+EXE_USER="appuser"
+LOG_LEVEL=1
+
+export HOME=/home/$EXE_USER
+#export PATH=$PATH:$EXE_DIR
+
+if [ -f /etc/init.d/functions ] ; then
+  . /etc/init.d/functions
+elif [ -f /etc/rc.d/init.d/functions ] ; then
+  . /etc/rc.d/init.d/functions
+else
+  exit 1
+fi
+
+cd $APP_DIR
+case $1 in
+  start)
+    su -c "forever start install/forever_server.json" $EXE_USER
+  ;;
+  stop)
+    su -c "forever stop `cat /run/covid19map_server.pid`" $EXE_USER
+  ;;
+  restart)
+    su -c "forever restart `cat /run/covid19map_server.pid`" $EXE_USER
+  ;;
+  status)
+    su -c "forever list|grep -E 'covid19map_server' --color=never" $EXE_USER
+  ;;
+  *)
+    exit
+  ;;
+esac
+
