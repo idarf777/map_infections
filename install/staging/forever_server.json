@@ -1,0 +1,13 @@
+{
+  "append": true,
+  "watch": false,
+  "command": "npm run daemon",
+  "path": "/usr/share/nginx/nodeapp/staging/map_infections/install/staging",
+  "script": "../../src/server/server.js",
+  "sourceDir": "./",
+  "workingDir": "./",
+  "logFile": "/var/log/covid19map_server_staging/node_server.log",
+  "outFile": "/var/log/covid19map_server_staging/node_server_out.log",
+  "errFile": "/var/log/covid19map_server_staging/node_server_err.log",
+  "pidFile": "/run/covid19map_server_staging/server.pid"
+}

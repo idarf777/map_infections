@@ -1,5 +1,5 @@
-import {config} from "../config.js";
-import BasePoi from "./base_poi.js";
+import {config} from "./config.mjs";
+import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
 import axios from "axios";
 

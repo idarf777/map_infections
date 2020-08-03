@@ -1,7 +1,7 @@
 import axios from "axios";
-import {config} from "../config.js";
-import Log from "../logger.js";
-import BasePoi from "./base_poi.js";
+import {config} from "./config.mjs";
+import Log from "./logger.mjs";
+import BasePoi from "./base_poi.mjs";
 
 async function load_csv()
 {

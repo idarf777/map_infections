@@ -4,16 +4,16 @@ import * as React from 'react';
 import axios from 'axios';
 import MapGL, {_MapContext as MapContext, NavigationControl} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
-import { config } from './config.js';
-import Log from './logger.js';
+import { config } from './server/config.mjs';
+import Log from './server/logger.mjs';
 import InfectorsLayer from "./infectors_layer.js";
 import ControlPanel from './control-panel.js';
-import { datetostring } from "./util.js";
+import { datetostring } from "./server/util.mjs";
 import { example_data } from "./example_data.js";
 import loader from "./loader.js";
 import './App.css';
-import ToolTip from "./tool_tip";
-import {to_bool, colorrange, merge_object} from "./util";
+import ToolTip from "./tool_tip.js";
+import {to_bool, colorrange, merge_object} from "./server/util.mjs";
 
 dotenv.config();
 
@@ -125,9 +125,12 @@ export default class App extends React.Component
       this.loadData( example_data );
       return;
     }
+    let host = config.SERVER_HOST || '';
+    if ( host === '' )
+      host = `${Location.protocol}://${Location.host}`;
     this.setState(
       (state, prop) => { return { data_api_loaded: DATA_API_STATUS.loading } },
-      () => axios.get( `${config.SERVER_HOST}:${config.SERVER_PORT}${config.SERVER_URI}` )
+      () => axios.get( `${host}${config.SERVER_URI}` )
               .then( ( response ) => {
                 //Log.debug( response );
                 this.loadData( response.data );

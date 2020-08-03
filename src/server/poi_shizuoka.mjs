@@ -1,6 +1,6 @@
-import {config} from "../config.js";
-import Log from "../logger.js";
-import BasePoi from "./base_poi.js";
+import {config} from "./config.mjs";
+import Log from "./logger.mjs";
+import BasePoi from "./base_poi.mjs";
 
 const ALTER_CITY_NAMES = [['浜松市内', '浜松市'], ['駿東郡', '清水町'], ['周智郡', '森町'], ['田方郡', '函南町'], ['榛原郡', '吉田町'], ['賀茂郡', '西伊豆町'], ['東部保健所管内', '沼津市'], ['中部保健所管内', '静岡市'], ['西部保健所管内', '浜松市']];
 export default class PoiShizuoka extends BasePoi

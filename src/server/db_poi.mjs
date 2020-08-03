@@ -1,7 +1,7 @@
 import sqlite3 from 'sqlite3';
 import path from 'path';
-import {config} from "../config.js";
-import {sanitize_poi_name} from "../util.js";
+import {config} from "./config.mjs";
+import {sanitize_poi_name} from "./util.mjs";
 
 const TABLE_NAME = 'cities';
 let database = null;

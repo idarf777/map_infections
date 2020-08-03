@@ -1,9 +1,11 @@
-import { to_bool } from "./util.js";
+import { to_bool } from "./util.mjs";
 import dotenv from 'dotenv';
+import process from 'process';
 dotenv.config();
 const __dirname = process.cwd();
 
 const is_debug = to_bool( process.env.REACT_APP_DEBUG );
+const DEFAULT_SERVER_PORT = 3001;
 
 export const license = Object.freeze( {
   MIT: 'MIT',
@@ -56,9 +58,9 @@ export const config = Object.freeze( {
   ANIMATION_BEGIN_AT: new Date( '2020-04-10' ),
 
   STANDALONE: to_bool( process.env.REACT_APP_STANDALONE ) || false,
-  SERVER_PORT: process.env.REACT_APP_SERVER_PORT || 3001,
-  SERVER_URI: '/api/1.0/infectors',
-  SERVER_HOST: 'http://localhost',
+  SERVER_PORT: process.env.REACT_APP_SERVER_PORT || DEFAULT_SERVER_PORT,
+  SERVER_URI: process.env.REACT_APP_SERVER_URI || '/api/1.0/infectors',
+  SERVER_HOST: process.env.REACT_APP_SERVER_HOST || `http://localhost:${process.env.REACT_APP_SERVER_PORT || DEFAULT_SERVER_PORT}`,
   SERVER_ALLOW_FROM_ALL: to_bool( process.env.REACT_APP_SERVER_ALLOW_FROM_ALL ) || false,
 
   SERVER_MAKE_DATA_URI: '/api/1.0/make_data',

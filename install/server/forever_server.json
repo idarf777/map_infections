@@ -1,8 +1,9 @@
 {
   "append": true,
   "watch": false,
-  "command": "npm run server",
+  "command": "npm run daemon",
   "path": "/usr/share/nginx/nodeapp/map_infections",
+  "script": "../src/server/server.js",
   "sourceDir": "./",
   "workingDir": "./",
   "logFile": "/var/log/covid19map_server/node_server.log",

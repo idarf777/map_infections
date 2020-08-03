@@ -2,13 +2,17 @@
 
 case $1 in
   add)
+    chmod +x run_npm
+    mkdir -p /run/covid19map_server
+    chown appuser:appuser /run/covid19map_server
+    chmod -R 775 /run/covid19map_server
     mkdir -p /var/log/covid19map_server
     chown appuser:appuser /var/log/covid19map_server
     chmod -R 775 /var/log/covid19map_server
 		cp `pwd`/install/covid19map_server /etc/init.d/
 		chmod 755 /etc/init.d/covid19map_server
 		/sbin/chkconfig --add covid19map_server
-    echo "d /var/run/covid19map_server 0755 appuser appuser -" > /etc/tmpfiles.d/covid19map_server.conf
+    echo "d /var/run/covid19map_server 0755 appuser appuser -" > /etc/tmpfiles.d/covid19map_server_staging.conf
     systemd-tmpfiles --create /etc/tmpfiles.d/covid19map_server.conf
     systemctl daemon-reload
 		;;

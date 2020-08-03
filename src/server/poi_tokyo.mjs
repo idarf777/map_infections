@@ -2,11 +2,11 @@ import agh from "agh.sprintf";
 import path from 'path';
 import { promises as fs } from "fs";
 import axios from "axios";
-import {config} from "../config.js";
-import Log from "../logger.js";
-import { parse_csv, datetostring, sanitize_poi_name } from "../util.js";
+import {config} from "./config.mjs";
+import Log from "./logger.mjs";
+import { parse_csv, datetostring, sanitize_poi_name } from "./util.mjs";
 import mkdirp from "mkdirp";
-import DbPoi from "./db_poi";
+import DbPoi from "./db_poi.mjs";
 
 const cityname_tokyo = [
   ['千代田', '千代田区'],

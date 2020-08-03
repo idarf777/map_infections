@@ -1,4 +1,4 @@
-import {config, loglevel} from './config.js'
+import {config, loglevel} from './config.mjs'
 import agh from 'agh.sprintf';
 
 // console.logとconsole.errorをオーバーライドする

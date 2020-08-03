@@ -1,9 +1,9 @@
 import axios from "axios";
 import iconv from "iconv-lite";
-import {config} from "../config.js";
-import Log from "../logger.js";
-import { sanitize_poi_name } from "../util.js";
-import BasePoi from "./base_poi.js";
+import {config} from "./config.mjs";
+import Log from "./logger.mjs";
+import { sanitize_poi_name } from "./util.mjs";
+import BasePoi from "./base_poi.mjs";
 
 const ALTER_CITY_NAMES = [];
 async function parse_json( cr )
