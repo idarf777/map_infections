@@ -1,6 +1,8 @@
 {
-  "name": "map_r_infections",
+  "name": "map_infections",
   "version": "0.1.0",
+  "engines" : { "node" : ">=14.7" },
+  "engineStrict" : true,
   "private": true,
   "dependencies": {
     "@babel/core": "7.9.0",
@@ -165,16 +167,7 @@
   "babel": {
     "presets": [
       "react-app",
-      [
-        "@babel/preset-env",
-        {
-          "targets": [
-            {
-              "node": "14.7"
-            }
-          ]
-        }
-      ]
+      "@babel/preset-env"
     ],
     "plugins": [
       [
