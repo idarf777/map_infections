@@ -1,8 +1,10 @@
 {
-  "name": "map_infections",
+  "name": "map_r_infections",
   "version": "0.1.0",
-  "engines" : { "node" : ">=14.7" },
-  "engineStrict" : true,
+  "engines": {
+    "node": ">=14.7"
+  },
+  "engineStrict": true,
   "private": true,
   "dependencies": {
     "@babel/core": "7.9.0",
@@ -85,7 +87,7 @@
     "test": "node scripts/test.js",
     "dev": "cross-env NODE_ENV=development concurrently \"npm run start\" \"npm run server\"",
     "server": "cross-env NODE_ENV=development nodemon src/server/server.mjs --ignore json/* --ignore src/*.js --ignore src/*.css",
-    "production_server": "cross-env NODE_ENV=production node src/server/server.mjs"
+    "daemon": "cross-env NODE_ENV=production node"
   },
   "eslintConfig": {
     "extends": "react-app"

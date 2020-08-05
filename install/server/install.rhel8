@@ -1,26 +1,27 @@
 #!/bin/sh
 
+DIRNAME="covid19map_server"
+INST_DIR="install"
 case $1 in
   add)
-    chmod +x run_npm
-    mkdir -p /run/covid19map_server
-    chown appuser:appuser /run/covid19map_server
-    chmod -R 775 /run/covid19map_server
-    mkdir -p /var/log/covid19map_server
-    chown appuser:appuser /var/log/covid19map_server
-    chmod -R 775 /var/log/covid19map_server
-		cp `pwd`/install/covid19map_server /etc/init.d/
-		chmod 755 /etc/init.d/covid19map_server
-		/sbin/chkconfig --add covid19map_server
-    echo "d /var/run/covid19map_server 0755 appuser appuser -" > /etc/tmpfiles.d/covid19map_server_staging.conf
-    systemd-tmpfiles --create /etc/tmpfiles.d/covid19map_server.conf
+    mkdir -p /run/$DIRNAME
+    chown appuser:appuser /run/$DIRNAME
+    chmod -R 775 /run/$DIRNAME
+    mkdir -p /var/log/$DIRNAME
+    chown appuser:appuser /var/log/$DIRNAME
+    chmod -R 775 /var/log/$DIRNAME
+		cp `pwd`/$INST_DIR/covid19map_server /etc/init.d/$DIRNAME
+		chmod 755 /etc/init.d/$DIRNAME
+		/sbin/chkconfig --add $DIRNAME
+    echo "d /var/run/$DIRNAME 0755 appuser appuser -" > /etc/tmpfiles.d/$DIRNAME.conf
+    systemd-tmpfiles --create /etc/tmpfiles.d/$DIRNAME.conf
     systemctl daemon-reload
 		;;
   remove)
-		/sbin/chkconfig --del covid19map_server
-		rm -f /etc/init.d/covid19map_server
-    systemd-tmpfiles --remove /etc/tmpfiles.d/covid19map_server.conf
-		rm -f /etc/tmpfiles.d/covid19map_server.conf
+		/sbin/chkconfig --del $DIRNAME
+		rm -f /etc/init.d/$DIRNAME
+    systemd-tmpfiles --remove /etc/tmpfiles.d/$DIRNAME.conf
+		rm -f /etc/tmpfiles.d/$DIRNAME.conf
     systemctl daemon-reload
     ;;
   *)

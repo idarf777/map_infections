@@ -1,10 +1,11 @@
 #!/bin/sh
 # chkconfig: 345 99 1
-# description: COVID19 MAP API SERVER
+# description: COVID19 MAP API SERVER (STAGING)
 # processname: covid19map_server_staging
 
-APP_DIR="/usr/share/nginx/nodeapp/map_infections/install/staging"
-DIRNAME = covid19map_server_staging
+APP_DIR="/usr/share/nginx/nodeapp/staging/map_infections"
+INST_DIR="install/staging"
+DIRNAME="covid19map_server_staging"
 EXE_USER="appuser"
 LOG_LEVEL=1
 
@@ -21,7 +22,7 @@ fi
 cd $APP_DIR
 case $1 in
   start)
-    su -c "forever start forever_server.json" $EXE_USER
+    su -c "forever start $INST_DIR/forever_server.json" $EXE_USER
   ;;
   stop)
     su -c "forever stop `cat /run/$DIRNAME/server.pid`" $EXE_USER

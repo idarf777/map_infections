@@ -1,6 +1,7 @@
 #!/bin/sh
 
-DIRNAME = covid19map_server_staging
+DIRNAME="covid19map_server_staging"
+INST_DIR="install/staging"
 case $1 in
   add)
     mkdir -p /run/$DIRNAME
@@ -9,7 +10,7 @@ case $1 in
     mkdir -p /var/log/$DIRNAME
     chown appuser:appuser /var/log/$DIRNAME
     chmod -R 775 /var/log/$DIRNAME
-		cp `pwd`/install/covid19map_server /etc/init.d/$DIRNAME
+		cp `pwd`/$INST_DIR/covid19map_server /etc/init.d/$DIRNAME
 		chmod 755 /etc/init.d/$DIRNAME
 		/sbin/chkconfig --add $DIRNAME
     echo "d /var/run/$DIRNAME 0755 appuser appuser -" > /etc/tmpfiles.d/$DIRNAME.conf
