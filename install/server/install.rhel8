@@ -1,15 +1,9 @@
 #!/bin/sh
 
 DIRNAME="covid19map_server"
-INST_DIR="install"
+INST_DIR="install/serve"
 case $1 in
   add)
-    mkdir -p /run/$DIRNAME
-    chown appuser:appuser /run/$DIRNAME
-    chmod -R 775 /run/$DIRNAME
-    mkdir -p /var/log/$DIRNAME
-    chown appuser:appuser /var/log/$DIRNAME
-    chmod -R 775 /var/log/$DIRNAME
 		cp `pwd`/$INST_DIR/covid19map_server /etc/init.d/$DIRNAME
 		chmod 755 /etc/init.d/$DIRNAME
 		/sbin/chkconfig --add $DIRNAME

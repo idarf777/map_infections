@@ -1,7 +1,6 @@
 {
   "append": true,
   "watch": false,
-  "command": "npm run daemon",
   "script": "src/server/server.mjs",
   "sourceDir": "./",
   "workingDir": "./",

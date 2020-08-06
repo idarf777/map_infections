@@ -86,8 +86,7 @@
     "build": "node scripts/build.js",
     "test": "node scripts/test.js",
     "dev": "cross-env NODE_ENV=development concurrently \"npm run start\" \"npm run server\"",
-    "server": "cross-env NODE_ENV=development nodemon src/server/server.mjs --ignore json/* --ignore src/*.js --ignore src/*.css",
-    "daemon": "cross-env NODE_ENV=production node"
+    "server": "cross-env NODE_ENV=development nodemon src/server/server.mjs --ignore json/* --ignore src/*.js --ignore src/*.css"
   },
   "eslintConfig": {
     "extends": "react-app"

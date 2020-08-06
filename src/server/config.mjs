@@ -59,7 +59,7 @@ export const config = Object.freeze( {
 
   STANDALONE: to_bool( process.env.REACT_APP_STANDALONE ) || false,
   SERVER_PORT: process.env.REACT_APP_SERVER_PORT || DEFAULT_SERVER_PORT,
-  SERVER_URI: process.env.REACT_APP_SERVER_URI || '/api/1.0/infectors',
+  SERVER_URI: process.env.REACT_APP_SERVER_URI || '/1.0/infectors',
   SERVER_HOST: process.env.REACT_APP_SERVER_HOST || `http://localhost:${process.env.REACT_APP_SERVER_PORT || DEFAULT_SERVER_PORT}`,
   SERVER_ALLOW_FROM_ALL: to_bool( process.env.REACT_APP_SERVER_ALLOW_FROM_ALL ) || false,
 
