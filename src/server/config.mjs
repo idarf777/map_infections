@@ -6,6 +6,8 @@ const __dirname = process.cwd();
 
 const is_debug = to_bool( process.env.REACT_APP_DEBUG );
 const DEFAULT_SERVER_PORT = 3001;
+const REDIS_ROOT = 'covid19map_';
+const SERVER_URI_PREFIX = process.env.REACT_APP_SERVER_URI_PREFIX || '';
 
 export const license = Object.freeze( {
   MIT: 'MIT',
@@ -59,11 +61,16 @@ export const config = Object.freeze( {
 
   STANDALONE: to_bool( process.env.REACT_APP_STANDALONE ) || false,
   SERVER_PORT: process.env.REACT_APP_SERVER_PORT || DEFAULT_SERVER_PORT,
-  SERVER_URI: process.env.REACT_APP_SERVER_URI || '/1.0/infectors',
   SERVER_HOST: process.env.REACT_APP_SERVER_HOST || `http://localhost:${process.env.REACT_APP_SERVER_PORT || DEFAULT_SERVER_PORT}`,
   SERVER_ALLOW_FROM_ALL: to_bool( process.env.REACT_APP_SERVER_ALLOW_FROM_ALL ) || false,
 
-  SERVER_MAKE_DATA_URI: '/api/1.0/make_data',
+  SERVER_URI_PREFIX: SERVER_URI_PREFIX,
+  SERVER_URI: `${SERVER_URI_PREFIX}/api/1.0/infectors`,
+  SERVER_RESTRICT_URI: `${SERVER_URI_PREFIX}/api/1.0/restriction`,
+  SERVER_REDIS_RESTRICT_KEY: `${REDIS_ROOT}restriction`,
+  SERVER_RESTRICT_MAX: 30000,
+
+  SERVER_MAKE_DATA_URI: `${SERVER_URI_PREFIX}/api/1.0/make_data`,
   SERVER_MAKE_DATA_DIR: 'json',
   SERVER_MAKE_DATA_CACHE_DIR: 'json/cache',
   SERVER_MAKE_DATA_FILENAME: 'infectors',

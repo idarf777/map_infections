@@ -8,6 +8,7 @@ import mkdirp from 'mkdirp';
 import { promises as fs } from "fs";
 import path from 'path';
 import helmet from 'helmet';
+import Redis from 'ioredis';
 import { datetostring } from "./util.mjs";
 // CSRFは後の課題とする
 import PoiTokyo from './poi_tokyo.mjs';
@@ -27,9 +28,8 @@ import PoiOsaka from "./poi_osaka.mjs";
 //import { example_data } from '../example_data.js';
 
 dotenv.config();
-
+const redis = new Redis();
 const app = express();
-app.use(express.static(path.join(config.ROOT_DIRECTORY, 'dist')));
 app.use( helmet.xssFilter() );
 if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
 {
@@ -110,7 +110,53 @@ app.get( config.SERVER_URI, (req, res) =>
     } )
 );
 
-app.get( '*', (req, res) => res.sendFile(path.join(config.ROOT_DIRECTORY, 'dist', 'index.html') ) );
+app.get( config.SERVER_RESTRICT_URI, (req, res) =>
+  redis.get( config.SERVER_REDIS_RESTRICT_KEY )
+    .then( counter => {
+      if ( counter > config.SERVER_RESTRICT_MAX )
+        throw new Error( "reached restriction" );
+      res.send( {counter} );
+    } )
+    .catch( err => {
+      res.status( 403 ).send( {message: 'restricted'} );
+    } )
+);
+
+function restrictKey()
+{
+  const date = new Date();
+  return `${config.SERVER_REDIS_RESTRICT_KEY}_${date.getFullYear()}_${date.getMonth()+1}`;
+}
+
+async function readRestrict( isRead, inc )
+{
+  return isRead ? redis.incrby( restrictKey(), inc ) : 0;
+}
+
+app.get( `${config.SERVER_URI_PREFIX}/static/js/*`, (req, res) => {
+  const p = req.url.match( new RegExp( `^${config.SERVER_URI_PREFIX}/(.*)$` ) )[ 1 ];
+  const m = p.match( /^(?!main|runtime).*\.js$/ );
+  readRestrict( m, 1 )
+    .then( counter => {
+      if ( counter > config.SERVER_RESTRICT_MAX )
+        throw new Error( "reached restriction" );
+      res.sendFile( path.join( path.join( config.ROOT_DIRECTORY, 'dist' ), p ) );
+    } )
+    .catch( err => {
+      res.status( 403 );
+    } )
+} );
+
+app.get( `${config.SERVER_URI_PREFIX}/*`, (req, res) => {
+  const p = req.url.match( new RegExp( `^${config.SERVER_URI_PREFIX}/(.*)$` ) )[ 1 ];
+  const isindex = p === '' || p === 'index.html';
+  readRestrict( isindex, 0 )
+    .then( counter => res.sendFile(
+      ( counter > config.SERVER_RESTRICT_MAX) ?
+        path.join( path.join( config.ROOT_DIRECTORY, 'public' ), 'exceeded.html' )
+      : path.join( path.join( config.ROOT_DIRECTORY, 'dist' ), isindex ? 'index.html' : p ) )
+    );
+} );
 
 app.listen( config.SERVER_PORT, () => {
   Log.info( `server is running at port ${config.SERVER_PORT}` );
