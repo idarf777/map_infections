@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 //import process from 'process';
 import appRoot from 'app-root-path';
 import fs from 'fs';
+import path from 'path';
 
 export const LOGLEVEL = Object.freeze( {
   EVERY: 0,
@@ -74,12 +75,14 @@ export default function makeConfig()
 
     STANDALONE: to_bool( env.REACT_APP_STANDALONE ) || false,
     SERVER_PORT: env.REACT_APP_SERVER_PORT || DEFAULT_SERVER_PORT,
-    SERVER_HOST: `${env.REACT_APP_SERVER_HOST}:${env.REACT_APP_SERVER_PORT || DEFAULT_SERVER_PORT}` || `http://localhost:${env.REACT_APP_SERVER_PORT || DEFAULT_SERVER_PORT}`,
+    SERVER_HOST: env.REACT_APP_SERVER_HOST || `http://localhost:${env.REACT_APP_SERVER_PORT || DEFAULT_SERVER_PORT}`,
     SERVER_ALLOW_FROM_ALL: to_bool( env.REACT_APP_SERVER_ALLOW_FROM_ALL ) || false,
 
     SERVER_URI_PREFIX: SERVER_URI_PREFIX,
     SERVER_URI: `${SERVER_URI_PREFIX}/api/1.0/infectors`,
-    SERVER_RESTRICT_URI: `${SERVER_URI_PREFIX}/api/1.0/restriction`,
+    SERVER_AUTHORIZE_URI: `${SERVER_URI_PREFIX}/api/1.0/auth`,
+    SERVER_AUTHORIZE_EXPIRE: 1800,  // [second]
+
     SERVER_REDIS_RESTRICT_KEY: `${REDIS_ROOT}restriction`,
     SERVER_RESTRICT_MAX: 30000,
 
@@ -87,6 +90,8 @@ export default function makeConfig()
     SERVER_MAKE_DATA_DIR: 'json',
     SERVER_MAKE_DATA_CACHE_DIR: 'json/cache',
     SERVER_MAKE_DATA_FILENAME: 'infectors',
+
+    DEPLOY_DIRECTORY: path.join( appRoot.path, 'dist' ),
 
     CITY_NAME_DATABASE: 'map_infectors_server.sqlite3',
 

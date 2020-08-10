@@ -6,6 +6,7 @@ import { promises as fs } from "fs";
 import path from 'path';
 import helmet from 'helmet';
 import Redis from 'ioredis';
+import axios from 'axios';
 import { datetostring } from "./util.mjs";
 // CSRFは後の課題とする
 import PoiTokyo from './poi_tokyo.mjs';
@@ -106,17 +107,23 @@ app.get( config.SERVER_URI, (req, res) =>
     } )
 );
 
-app.get( config.SERVER_RESTRICT_URI, (req, res) =>
-  redis.get( config.SERVER_REDIS_RESTRICT_KEY )
-    .then( counter => {
-      if ( counter > config.SERVER_RESTRICT_MAX )
-        throw new Error( "reached restriction" );
-      res.send( {counter} );
+app.get( config.SERVER_AUTHORIZE_URI, (req, res) => {
+  const url = process.env.MAPBOX_AT;
+  if ( !url || url === '' )
+    return process.env.REACT_APP_MapboxAccessToken;
+  const date = new Date();
+  date.setSeconds( date.getSeconds() + config.SERVER_AUTHORIZE_EXPIRE );
+  axios.post( url, { expires: date.toISOString(), scopes: ["styles:read", "fonts:read"] } )
+    .then( response => {
+      res.send( response.data );
     } )
     .catch( err => {
-      res.status( 403 ).send( {message: 'restricted'} );
+      Log.error( err );
+      res.status( 500 ).send( err.message );
     } )
-);
+} );
+
+
 
 function restrictKey()
 {
@@ -136,7 +143,7 @@ app.get( `${config.SERVER_URI_PREFIX}/static/js/*`, (req, res) => {
     .then( counter => {
       if ( counter > config.SERVER_RESTRICT_MAX )
         throw new Error( "reached restriction" );
-      res.sendFile( path.join( path.join( config.ROOT_DIRECTORY, 'dist' ), p ) );
+      res.sendFile( path.join( config.DEPLOY_DIRECTORY, p ) );
     } )
     .catch( err => {
       res.status( 403 );
@@ -150,7 +157,7 @@ app.get( `${config.SERVER_URI_PREFIX}/*`, (req, res) => {
     .then( counter => res.sendFile(
       ( counter > config.SERVER_RESTRICT_MAX) ?
         path.join( path.join( config.ROOT_DIRECTORY, 'public' ), 'exceeded.html' )
-      : path.join( path.join( config.ROOT_DIRECTORY, 'dist' ), isindex ? 'index.html' : p ) )
+      : path.join( config.DEPLOY_DIRECTORY, isindex ? 'index.html' : p ) )
     );
 } );
 
