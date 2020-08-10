@@ -3,10 +3,10 @@ import {datetostring, parse_csv, sanitize_poi_name} from "./util.mjs";
 import DbPoi from "./db_poi.mjs";
 import iconv from "iconv-lite";
 import axios from "axios";
-import {config} from "./config.mjs";
 import mkdirp from "mkdirp";
 import path from "path";
 import { promises as fs } from "fs";
+const config = global.covid19map.config;
 
 export default class BasePoi
 {

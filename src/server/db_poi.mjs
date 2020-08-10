@@ -1,7 +1,7 @@
 import sqlite3 from 'sqlite3';
 import path from 'path';
-import {config} from "./config.mjs";
 import {sanitize_poi_name} from "./util.mjs";
+const config = global.covid19map.config;
 
 const TABLE_NAME = 'cities';
 let database = null;

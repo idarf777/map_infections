@@ -1,9 +1,7 @@
-import axios from "axios";
 import xlsx from 'xlsx';
-import {config} from "./config.mjs";
-import Log from "./logger.mjs";
 import { sanitize_poi_name } from "./util.mjs";
 import BasePoi from "./base_poi.mjs";
+const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [['峡南地域', '身延町'], ['中北地域', '甲府市']];
 async function parse_xlsx( cr )

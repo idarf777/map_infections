@@ -1,7 +1,7 @@
-import {config} from "./config.mjs";
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
 import axios from "axios";
+const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [['北信保健所管内', '長野市'], ['長野市保健所管内', '長野市']];
 async function load_csv()

@@ -1,11 +1,6 @@
-import Log from "./logger.mjs";
-import {datetostring, parse_csv, sanitize_poi_name} from "./util.mjs";
-import DbPoi from "./db_poi.mjs";
 import iconv from "iconv-lite";
-import axios from "axios";
-import {config} from "./config.mjs";
-import xlsx from "xlsx";
 import BasePoi from "./base_poi.mjs";
+const config = global.covid19map.config;
 
 async function parse_localcsv( cr )
 {

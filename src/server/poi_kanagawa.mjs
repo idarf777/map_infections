@@ -1,6 +1,5 @@
-import {config} from "./config.mjs";
-import Log from "./logger.mjs";
 import BasePoi from "./base_poi.mjs";
+const config = global.covid19map.config;
 
 export default class PoiKanagawa extends BasePoi
 {

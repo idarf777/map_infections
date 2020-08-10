@@ -1,5 +1,6 @@
-import {config, loglevel} from './config.mjs'
 import agh from 'agh.sprintf';
+import { LOGLEVEL } from './config.mjs';
+const config = global.covid19map.config;
 
 // console.logとconsole.errorをオーバーライドする
 function datetostring( date )
@@ -18,10 +19,10 @@ console.log = (...args) => consolelog(`[${datetostring()}]`, ...args);
 console.error = (...args) => consoleerror(`[${datetostring()}]`, ...args);
 
 const PREFIXES = Object.freeze( new Map ( [
-  [loglevel.EVERY, 'V'],  // EVERY == VERBOSE
-  [loglevel.DEBUG, 'D'],
-  [loglevel.INFO, 'I'],
-  [loglevel.ERROR, 'E']
+  [LOGLEVEL.EVERY, 'V'],  // EVERY == VERBOSE
+  [LOGLEVEL.DEBUG, 'D'],
+  [LOGLEVEL.INFO, 'I'],
+  [LOGLEVEL.ERROR, 'E']
 ] ) );
 
 export default class Log
@@ -32,19 +33,19 @@ export default class Log
   }
   static every( ...value )
   {
-    this.put( loglevel.EVERY, ...value );
+    this.put( LOGLEVEL.EVERY, ...value );
   }
   static debug( ...value )
   {
-    this.put( loglevel.DEBUG, ...value );
+    this.put( LOGLEVEL.DEBUG, ...value );
   }
   static info( ...value )
   {
-    this.put( loglevel.INFO, ...value );
+    this.put( LOGLEVEL.INFO, ...value );
   }
   static error( ...value )
   {
-    this.put( loglevel.ERROR, ...value );
+    this.put( LOGLEVEL.ERROR, ...value );
   }
 
   static put( level, ...value )
@@ -60,8 +61,8 @@ export default class Log
       else if ( v instanceof Promise )
       {
         v.then( x => this.put( level, x ) ).catch( e => {
-          this.outputstring( PREFIXES.get(loglevel.ERROR), e );
-          consoleerror( `${PREFIXES.get(loglevel.ERROR)}[${datetostring()}]`, e )
+          this.outputstring( PREFIXES.get(LOGLEVEL.ERROR), e );
+          consoleerror( `${PREFIXES.get(LOGLEVEL.ERROR)}[${datetostring()}]`, e )
         } );
       }
       else

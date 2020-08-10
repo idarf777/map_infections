@@ -1,8 +1,6 @@
-import {config} from "./config.mjs";
 import BasePoi from "./base_poi.mjs";
-import axios from "axios";
 import iconv from "iconv-lite";
-import {datetostring, parse_csv} from "./util.mjs";
+const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [['府内', ''], ['京都府内', ''], ['京都市内', '京都市'], ['乙訓管内', '長岡京市'], ['山城管内', '宇治市'], ['丹後管内', '京丹後市'], ['南丹管内', '亀岡市'], ['中丹管内', '福知山市']];
 async function parse_html( html )

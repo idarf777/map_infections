@@ -1,11 +1,9 @@
-import dotenv from 'dotenv';
 //import agh from 'agh.sprintf';
 import * as React from 'react';
 import axios from 'axios';
 import MapGL, {_MapContext as MapContext, NavigationControl} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
-import { config } from './server/config.mjs';
-import Log from './server/logger.mjs';
+import Log from './logger.js';
 import InfectorsLayer from "./infectors_layer.js";
 import ControlPanel from './control-panel.js';
 import { datetostring } from "./server/util.mjs";
@@ -13,9 +11,11 @@ import { example_data } from "./example_data.js";
 import loader from "./loader.js";
 import './App.css';
 import ToolTip from "./tool_tip.js";
-import {to_bool, colorrange, merge_object} from "./server/util.mjs";
+import {colorrange, merge_object} from "./server/util.mjs";
+import makeConfig from "./server/config.mjs";
 
-dotenv.config();
+const config = makeConfig();
+window.covid19map = { config: config };
 
 let srcdata;// = loader( example_data );
 let src_ids;// = Array.from( srcdata.places.keys() );

@@ -1,7 +1,6 @@
 import axios from "axios";
-import {config} from "./config.mjs";
-import Log from "./logger.mjs";
 import BasePoi from "./base_poi.mjs";
+const config = global.covid19map.config;
 
 async function load_csv()
 {

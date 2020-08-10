@@ -1,9 +1,6 @@
-import dotenv from 'dotenv';
-import agh from 'agh.sprintf';
-import { config } from './config.mjs';
+import { config } from './make_config.mjs';
 import Log from './logger.mjs';
 import express from 'express';
-import axios from 'axios';
 import mkdirp from 'mkdirp';
 import { promises as fs } from "fs";
 import path from 'path';
@@ -27,7 +24,6 @@ import PoiNara from "./poi_nara.mjs";
 import PoiOsaka from "./poi_osaka.mjs";
 //import { example_data } from '../example_data.js';
 
-dotenv.config();
 const redis = new Redis();
 const app = express();
 app.use( helmet.xssFilter() );
