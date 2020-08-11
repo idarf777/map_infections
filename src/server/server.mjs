@@ -36,6 +36,7 @@ if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
     next();
   });
 }
+app.use( config.SERVER_URI_PREFIX, express.static( config.DEPLOY_DIRECTORY ) );
 
 function merge_jsons( jsons )
 {
@@ -107,58 +108,37 @@ app.get( config.SERVER_URI, (req, res) =>
     } )
 );
 
-app.get( config.SERVER_AUTHORIZE_URI, (req, res) => {
-  const url = process.env.MAPBOX_AT;
-  if ( !url || url === '' )
-    return process.env.REACT_APP_MapboxAccessToken;
-  const date = new Date();
-  date.setSeconds( date.getSeconds() + config.SERVER_AUTHORIZE_EXPIRE );
-  axios.post( url, { expires: date.toISOString(), scopes: ["styles:read", "fonts:read"] } )
-    .then( response => {
-      res.send( response.data );
-    } )
-    .catch( err => {
-      Log.error( err );
-      res.status( 500 ).send( err.message );
-    } )
-} );
-
-
-
 function restrictKey()
 {
   const date = new Date();
   return `${config.SERVER_REDIS_RESTRICT_KEY}_${date.getFullYear()}_${date.getMonth()+1}`;
 }
 
-async function readRestrict( isRead, inc )
-{
-  return isRead ? redis.incrby( restrictKey(), inc ) : 0;
-}
-
-app.get( `${config.SERVER_URI_PREFIX}/static/js/*`, (req, res) => {
-  const p = req.url.match( new RegExp( `^${config.SERVER_URI_PREFIX}/(.*)$` ) )[ 1 ];
-  const m = p.match( /^(?!main|runtime).*\.js$/ );
-  readRestrict( m, 1 )
+app.get( config.SERVER_AUTHORIZE_URI, (req, res) => {
+  const url = process.env.MAPBOX_AT;
+  if ( (url || '') === '' )
+  {
+    res.send( { token: process.env.REACT_APP_MapboxAccessToken } );
+    return;
+  }
+  redis.incr( restrictKey() )
     .then( counter => {
       if ( counter > config.SERVER_RESTRICT_MAX )
-        throw new Error( "reached restriction" );
-      res.sendFile( path.join( config.DEPLOY_DIRECTORY, p ) );
-    } )
-    .catch( err => {
-      res.status( 403 );
-    } )
-} );
-
-app.get( `${config.SERVER_URI_PREFIX}/*`, (req, res) => {
-  const p = req.url.match( new RegExp( `^${config.SERVER_URI_PREFIX}/(.*)$` ) )[ 1 ];
-  const isindex = p === '' || p === 'index.html';
-  readRestrict( isindex, 0 )
-    .then( counter => res.sendFile(
-      ( counter > config.SERVER_RESTRICT_MAX) ?
-        path.join( path.join( config.ROOT_DIRECTORY, 'public' ), 'exceeded.html' )
-      : path.join( config.DEPLOY_DIRECTORY, isindex ? 'index.html' : p ) )
-    );
+      {
+        res.status( config.SERVER_AUTHORIZE_ERRORCODE );
+        return;
+      }
+      const date = new Date();
+      date.setSeconds( date.getSeconds() + config.SERVER_AUTHORIZE_EXPIRE );
+      axios.post( url, { expires: date.toISOString(), scopes: ["styles:read", "fonts:read"] } )
+        .then( response => {
+          res.send( { token: response.data.token } );
+        } )
+        .catch( err => {
+          Log.error( err );
+          res.status( 500 ).send( "MAPBOX NOT AUTHORIZED" );
+        } )
+    } );
 } );
 
 app.listen( config.SERVER_PORT, () => {
