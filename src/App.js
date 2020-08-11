@@ -125,7 +125,7 @@ export default class App extends React.Component
       this.loadData( example_data );
       return;
     }
-    const host = config.SERVER_HOST || `${Location.protocol}://${Location.host}`;
+    const host = config.SERVER_HOST || `${window.location.protocol}://${window.location.host}`;
     this.setState(
       (state, prop) => { return { data_api_loaded: DATA_API_STATUS.loading } },
       () => axios.get( `${host}${config.SERVER_URI}` )

@@ -26,7 +26,7 @@ else
 {
   let mbtoken = null;
   let mberror = null;
-  const host = config.SERVER_HOST || `${Location.protocol}://${Location.host}`;
+  const host = config.SERVER_HOST || `${window.location.protocol}://${window.location.host}`;
   axios.post( `${host}${config.SERVER_AUTHORIZE_URI}` )
     .then( ( response ) => {
       Log.debug( response );
