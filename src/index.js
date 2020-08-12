@@ -9,7 +9,7 @@ const config = window.covid19map.config;
 
 function renderReact( token, err )
 {
-  const app = token ? <App /> : <p>{ (err === config.SERVER_AUTHORIZE_ERRORCODE) ? 'ACCESSES EXCEEDED IN THIS MONTH' : 'SERVER ERROR' }</p>;
+  const app = token ? <App accessToken={token} /> : <p>{ (err === config.SERVER_AUTHORIZE_ERRORCODE) ? 'ACCESSES EXCEEDED IN THIS MONTH' : 'SERVER ERROR' }</p>;
   ReactDOM.render(
     <React.StrictMode>
       <div id="map">{ app }</div>
@@ -26,7 +26,7 @@ else
 {
   let mbtoken = null;
   let mberror = null;
-  const host = config.SERVER_HOST || `${window.location.protocol}://${window.location.host}`;
+  const host = config.SERVER_HOST || `${window.location.protocol}//${window.location.host}`;
   axios.post( `${host}${config.SERVER_AUTHORIZE_URI}` )
     .then( ( response ) => {
       Log.debug( response );
@@ -36,7 +36,7 @@ else
     } )
     .catch( ( ex ) => {
       Log.error( ex );
-      mberror = ex.response.status;
+      mberror = ex.response?.status;
     } ).finally( () => {
       renderReact( mbtoken, mberror );
     } );

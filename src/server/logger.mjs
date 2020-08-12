@@ -22,7 +22,7 @@ const PREFIXES = Object.freeze( new Map ( [
   [LOGLEVEL.EVERY, 'V'],  // EVERY == VERBOSE
   [LOGLEVEL.DEBUG, 'D'],
   [LOGLEVEL.INFO, 'I'],
-  [LOGLEVEL.ERROR, 'E']
+  [LOGLEVEL.ERROR, 'E'],
 ] ) );
 
 export default class Log

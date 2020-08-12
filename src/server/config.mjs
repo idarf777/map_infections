@@ -10,7 +10,8 @@ export const LOGLEVEL = Object.freeze( {
   VERBOSE: 0,
   DEBUG: 1,
   INFO: 2,
-  ERROR: 3
+  ERROR: 3,
+  NONE: 100
 } );
 export default function makeConfig()
 {
@@ -46,7 +47,7 @@ export default function makeConfig()
 
   return Object.freeze( {
     DEBUG: is_debug,
-    LOGLEVEL: env.REACT_APP_LOGLEVEL || LOGLEVEL.INFO,
+    LOGLEVEL: Number(env.REACT_APP_LOGLEVEL) || LOGLEVEL.INFO,
     ROOT_DIRECTORY: appRoot.path,  // Reactでは使えない
     MAX_INFECTORS: 100,
     MAX_INFECTORS_COLOR: 70,

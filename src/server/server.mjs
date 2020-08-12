@@ -99,13 +99,19 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   } );
 })
 
-app.get( config.SERVER_URI, (req, res) =>
-  fs.readFile( path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/${config.SERVER_MAKE_DATA_FILENAME}.json` ), 'utf8' )
-    .then( data => res.send( JSON.parse( data ) ) )
+app.get( config.SERVER_URI, (req, res) => {
+  const p = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/${config.SERVER_MAKE_DATA_FILENAME}.json` );
+  fs.stat( p )
+    .then( stat => {
+      if ( !stat?.isFile() )
+        throw new Error( 'no json' );
+      res.set( 'Content-Type: application/json' ).sendFile( p );
+    } )
     .catch( err => {
       Log.error( err );
       res.status( 500 ).send( {message: `get "${config.SERVER_MAKE_DATA_URI}" first!`} );
-    } )
+    } );
+  }
 );
 
 function restrictKey()
@@ -114,7 +120,7 @@ function restrictKey()
   return `${config.SERVER_REDIS_RESTRICT_KEY}_${date.getFullYear()}_${date.getMonth()+1}`;
 }
 
-app.get( config.SERVER_AUTHORIZE_URI, (req, res) => {
+app.post( config.SERVER_AUTHORIZE_URI, (req, res) => {
   const url = process.env.MAPBOX_AT;
   if ( (url || '') === '' )
   {

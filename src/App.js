@@ -125,7 +125,7 @@ export default class App extends React.Component
       this.loadData( example_data );
       return;
     }
-    const host = config.SERVER_HOST || `${window.location.protocol}://${window.location.host}`;
+    const host = config.SERVER_HOST || `${window.location.protocol}//${window.location.host}`;
     this.setState(
       (state, prop) => { return { data_api_loaded: DATA_API_STATUS.loading } },
       () => axios.get( `${host}${config.SERVER_URI}` )
@@ -245,7 +245,7 @@ export default class App extends React.Component
       >
         <MapGL
           mapStyle={config.MAP_STYLE}
-          mapboxApiAccessToken={process.env.REACT_APP_MapboxAccessToken}
+          mapboxApiAccessToken={this.props.accessToken}
           ref={map => {this.mapRef = map}}
         />
         <div className="navigation-control">
