@@ -7,6 +7,7 @@ import path from 'path';
 import helmet from 'helmet';
 import Redis from 'ioredis';
 import axios from 'axios';
+import crypto from 'crypto';
 import { datetostring } from "./util.mjs";
 // CSRFは後の課題とする
 import PoiTokyo from './poi_tokyo.mjs';
@@ -36,7 +37,16 @@ if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
     next();
   });
 }
-app.use( config.SERVER_URI_PREFIX, express.static( config.DEPLOY_DIRECTORY ) );
+//app.use( config.SERVER_URI_PREFIX, express.static( config.DEPLOY_DIRECTORY ) );
+app.get( `${config.SERVER_URI_PREFIX}/`, (req, res) => {
+  const token = crypto.randomBytes( 16 ).toString( 'hex' );
+  redis.setex( `session_${token}`, SERVER_AUTHORIZE_EXPIRE, 1 );
+    .then( () => res.set( 'Content-Type: text/html' ).set( `X-Session-Id: ${token}` ).sendFile( path.join( config.DEPLOY_DIRECTORY, 'index.html' ) ) );
+    .catch( err => {
+      Log.error( err );
+      res.status( 500 );
+    } );
+} );
 
 function merge_jsons( jsons )
 {
@@ -127,6 +137,7 @@ app.post( config.SERVER_AUTHORIZE_URI, (req, res) => {
     res.send( { token: process.env.REACT_APP_MapboxAccessToken } );
     return;
   }
+  // TODO: authorization
   redis.incr( restrictKey() )
     .then( counter => {
       if ( counter > config.SERVER_RESTRICT_MAX )
