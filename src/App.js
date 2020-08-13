@@ -291,8 +291,8 @@ export default class App extends React.Component
                   <button id="green_button" onClick={this.onDebug02} />
                 </div>
 */}
-                <a href="/#" className="btn-square" onClick={this.onClickStart}>{this.state.start_button_text}</a>
-                <a href="/#" className="btn-square" onClick={this.onClickReset}>RESET</a>
+                <button className="btn-square" onClick={this.onClickStart}>{this.state.start_button_text}</button>
+                <button className="btn-square" onClick={this.onClickReset}>RESET</button>
               </div>
             </fieldset>
           </div>

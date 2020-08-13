@@ -14,7 +14,7 @@ export default class ControlPanel extends PureComponent
       <div className="control-panel">
         <h3>{this.props.apimsg}</h3>
 
-        <h3>ライセンス表示 <a href="#" onClick={this._onClickShowLicense}>↗</a></h3>
+        <button className="btn-license" onClick={this._onClickShowLicense}>LICENSE...</button>
         <div className={ this.SHOW_HIDE_STYLES[ this.state.license_view ] }>
           <div className="scrollabletextbox">
             <div className="pre">
