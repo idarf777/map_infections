@@ -9,7 +9,8 @@ export default function Loader( json )
   let curspot = 1;
   for ( let spot of data.spots )
   {
-    src_places.set( curspot, { geopos: spot.geopos, name: spot.name } );
+    if ( (spot.data?.length || 0) === 0 )
+      continue;
     const vs = [];
     const ts = [];
     let curdata = 0;
@@ -30,6 +31,7 @@ export default function Loader( json )
       vs.push( infectors );
       ts.push( subtotal );
     }
+    src_places.set( curspot, { geopos: spot.geopos, name: spot.name, begin_at: new Date( spot.data[ 0 ].date ), finish_at: new Date( spot.data[ spot.data.length-1 ].date ) } );
     src_values.set( curspot, vs );
     src_subtotals.set( curspot, ts );
     curspot++;

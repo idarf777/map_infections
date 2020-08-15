@@ -55,8 +55,7 @@ export default function makeConfig()
     MAP_ZOOM: 7.2,
     MAP_PITCH: 40,  // [degree]
     MAP_BEARING: 0,
-    MAP_CENTER: [138.848263, 35.677912], // [degree]
-    //MAP_CENTER: [138.6728926, 35.1637692], // [degree]
+    MAP_CENTER: [138.0, 35.4], // [degree]
     MAP_ELEVATION: 150000,  // [m]
     MAP_COLORRANGE: [
       [1, 152, 189],    // 0のとき

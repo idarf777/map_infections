@@ -17,10 +17,8 @@ import makeConfig from "./server/config.mjs";
 const config = makeConfig();
 window.covid19map = { config: config };
 
-let srcdata;// = loader( example_data );
-let src_ids;// = Array.from( srcdata.places.keys() );
 const PLAYBUTTON_TEXT = { start: 'START', stop: 'STOP' };
-const DATA_API_STATUS = { unloaded: 'UNLOAD', loading: 'LOADING...', loaded: 'LOADED', error: 'ERROR' };
+const DATA_API_STATUS = { unloaded: 'DATA UNLOAD', loading: 'LOADING DATA...', loaded: 'DATA LOADED', error: 'ERROR' };
 
 export default class App extends React.Component
 {
@@ -48,10 +46,10 @@ export default class App extends React.Component
     }
     return Math.min( v, config.MAX_INFECTORS_COLOR );
   }
-  _setHoveredDescription = ids => ids.map( id => `${srcdata.places.get( id ).name} : ${this._getElevationValue( id, { is_real: true } )}`  )
+  _setHoveredDescription = ids => ids.map( id => `${this.state.srcdata.places.get( id ).name} : ${this._getElevationValue( id, { is_real: true } )}`  )
   _setHoveredObject = info => {
     const newstate = {};
-    if ( !info.object || !srcdata?.places?.has( info.object.points[ 0 ][ 0 ] ) )
+    if ( !info.object || !this.state.srcdata?.places?.has( info.object.points[ 0 ][ 0 ] ) )
     {
       newstate.hoveredIds = null;
     }
@@ -69,7 +67,7 @@ export default class App extends React.Component
   }
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
-    data: src_ids?.map( k => [ k ] ) || [],  // 配列の配列を指定する
+    data: this.state?.data || [],
     coverage: config.MAP_COVERAGE,
     getColorValue: this._getColorValue,
     getElevationValue: this._getElevationValue,
@@ -79,7 +77,7 @@ export default class App extends React.Component
     colorDomain: [0, config.MAX_INFECTORS_COLOR],  // 棒の色について、この幅で入力値を正規化する
     colorRange: colorrange( config.MAP_COLORRANGE ),
     extruded: true,
-    getPosition: d => srcdata && srcdata.places.get( d[ 0 ] )?.geopos,
+    getPosition: d => this.state.srcdata && this.state.srcdata.places.get( d[ 0 ] )?.geopos,
     opacity: 1.0,
     pickable: true,
     radius: config.MAP_POI_RADIUS,
@@ -97,9 +95,9 @@ export default class App extends React.Component
     },
     layer_count: 0,
     layer_histogram: this.createLayer( 0 ),
-    begin_date: new Date(),//srcdata.begin_at,
-    finish_date: new Date(),//srcdata.finish_at,
-    max_day: 1,//srcdata.num_days,
+    begin_date: new Date(),
+    finish_date: new Date(),
+    max_day: 1,
     current_day: 0,
     timer_id: null,
     start_button_text: PLAYBUTTON_TEXT.start,
@@ -110,13 +108,16 @@ export default class App extends React.Component
 
   animationStartDay()
   {
-    return Math.floor( (config.ANIMATION_BEGIN_AT.getTime() - srcdata.begin_at.getTime())/(24*60*60*1000) );
+    return Math.floor( (config.ANIMATION_BEGIN_AT.getTime() - this.state.srcdata.begin_at.getTime())/(24*60*60*1000) );
   }
   loadData( data )
   {
-    srcdata = loader( data );
-    src_ids = Array.from( srcdata.places.keys() );
-    this.redrawLayer( { data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days, current_day: this.animationStartDay() } );
+    const srcdata = loader( data );
+    const src_ids = Array.from( srcdata.places.keys() );
+    this.setState(
+      (state, prop) => { return { srcdata: srcdata, src_ids: src_ids, data: src_ids.map( k => [ k ] ) || [], data_api_loaded: DATA_API_STATUS.loading } },
+      () => this.redrawLayer( { data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days, current_day: this.animationStartDay() } )
+    );
   }
   componentDidMount()
   {
@@ -162,11 +163,11 @@ export default class App extends React.Component
 
   _onInterval = () => {
     //Log.debug( `timer awaken` );
-    if ( !this.state.timer_id || !srcdata || this.state.current_day >= srcdata.num_days - 1 )
+    if ( !this.state.timer_id || !this.state.srcdata || this.state.current_day >= this.state.srcdata.num_days - 1 )
       return;
     const etm = Date.now() - this.state.timer_start_time; // [msec]
-    const eday = Math.min( Math.floor( etm / config.ANIMATION_SPEED ), srcdata.num_days - 1 );  // [day]
-    const emod = (eday >= srcdata.num_days - 1) ? 0 : ((etm - eday * config.ANIMATION_SPEED) / config.ANIMATION_SPEED);
+    const eday = Math.min( Math.floor( etm / config.ANIMATION_SPEED ), this.state.srcdata.num_days - 1 );  // [day]
+    const emod = (eday >= this.state.srcdata.num_days - 1) ? 0 : ((etm - eday * config.ANIMATION_SPEED) / config.ANIMATION_SPEED);
     this.doAnimation( eday, emod );
   };
 
@@ -181,16 +182,16 @@ export default class App extends React.Component
 
   doAnimation( day, ratio )
   {
-    if ( !srcdata )
+    if ( !this.state.srcdata )
       return;
     const nextstate = { inf: [].concat( this.state.inf ), inf_a: [].concat( this.state.inf_a ) };
     let isUpdateHovered = false;
-    src_ids.forEach( id => {
-      const vals = srcdata.values.get( id );
+    this.state.src_ids.forEach( id => {
+      const vals = this.state.srcdata.values.get( id );
       let curval = vals[ day ];
       nextstate.inf[ id ] = curval;
       isUpdateHovered |= this.state.hoveredIds?.includes( id );
-      if ( day < srcdata.num_days - 1 )
+      if ( day < this.state.srcdata.num_days - 1 )
       {
         const d = vals[ day + 1 ] - curval;
         const r = ratio && (( d >= 0 ) ? (1.0 - (1.0 - ratio)**3) : (ratio**3));
@@ -251,7 +252,7 @@ export default class App extends React.Component
         <div className="navigation-control">
           <NavigationControl />
         </div>
-        <ControlPanel containerComponent={this.props.containerComponent} apimsg={this.state.data_api_loaded}/>
+        <ControlPanel containerComponent={this.props.containerComponent} apimsg={this.state.data_api_loaded} srcdata={this.state.srcdata} />
         <div className="map-overlay top">
           <div className="map-overlay-inner">
             <div className="date">

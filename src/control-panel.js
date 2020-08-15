@@ -1,12 +1,15 @@
 import * as React from 'react';
 import {PureComponent} from 'react';
+import { datetostring } from "./server/util.mjs";
 
 export default class ControlPanel extends PureComponent
 {
   state = {
-    license_view: 0
+    license_view: 0,
+    description_view: 0
   };
   SHOW_HIDE_STYLES = [ "hidden", "show" ];
+  _onClickShowDescription = () => this.setState( { description_view: this.state.description_view ^ 1 } );
   _onClickShowLicense = () => this.setState( { license_view: this.state.license_view ^ 1 } );
 
   render() {
@@ -14,7 +17,25 @@ export default class ControlPanel extends PureComponent
       <div className="control-panel">
         <h3>{this.props.apimsg}</h3>
 
-        <button className="btn-license" onClick={this._onClickShowLicense}>LICENSE...</button>
+        <div className="blue"><button className="btn-square-small" onClick={this._onClickShowDescription}>ABOUT DATA...</button></div>
+        <div className={ this.SHOW_HIDE_STYLES[ this.state.description_view ] }>
+          <div className="scrollabletextbox">
+            <table>
+              <thead>
+                <tr><th>prefecture</th><th>first</th><th>last</th></tr>
+              </thead>
+              <tbody>
+              {
+                Array.from( this.props.srcdata.places.entries() ).map( pair => {
+                  return <tr key={pair[ 0 ]}><td>{pair[ 1 ].name}</td><td>{datetostring(pair[ 1 ].begin_at)}</td><td>{datetostring(pair[ 1 ].finish_at)}</td></tr>
+                } )
+              }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <button className="btn-square-small" onClick={this._onClickShowLicense}>LICENSE...</button>
         <div className={ this.SHOW_HIDE_STYLES[ this.state.license_view ] }>
           <div className="scrollabletextbox">
             <div className="pre">

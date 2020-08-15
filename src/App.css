@@ -156,10 +156,8 @@ body {
   border-bottom: none;/*線を消す*/
 }
 
-.btn-license {
+.btn-square-small {
   display: inline-block;
-  padding: 0.5em 1em;
-  margin-right: 4pt;
   text-decoration: none;
   background: #448030;/*ボタン色*/
   color: #FFF;
@@ -167,11 +165,15 @@ body {
   border-radius: 0.05em;
   font-size: smaller;
 }
-.btn-license:active {
+.btn-square-small:active {
   /*ボタンを押したとき*/
   -webkit-transform: translateY(0.2em);
   transform: translateY(0.2em);/*下に動く*/
   border-bottom: none;/*線を消す*/
+}
+
+.blue .btn-square-small {
+  background: #4480c0;
 }
 
 .hidden {
@@ -189,4 +191,30 @@ body {
   font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
   font-size: 82%;
   overflow:scroll;
+}
+
+table{
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+table th{
+  text-align: center;
+  color:white;
+  background: linear-gradient(#829ebc,#225588);
+  border-left: 1px solid #3c6690;
+  border-top: 1px solid #3c6690;
+  border-bottom: 1px solid #3c6690;
+  box-shadow: 0px 1px 1px rgba(255,255,255,0.3) inset;
+  width: 25%;
+  padding: 10px 0;
+  font-size: small;
+}
+table th,table td{
+  padding: 1pt 0;
+  text-align: center;
+  font-size: small;
+}
+table tr:nth-child(odd){
+  background-color: #eee
 }
