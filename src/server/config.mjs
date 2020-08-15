@@ -74,6 +74,8 @@ export default function makeConfig()
     TOOLTIPS_CURSOR_OFFSET: 20,
     ANIMATION_BEGIN_AT: new Date( '2020-04-10' ),
 
+    MAP_TOKEN_COOKIE: 'mbt',
+
     STANDALONE: to_bool( env.REACT_APP_STANDALONE ) || false,
     SERVER_PORT: env.REACT_APP_SERVER_PORT || DEFAULT_SERVER_PORT,
     SERVER_HOST: env.REACT_APP_SERVER_HOST,
@@ -83,7 +85,6 @@ export default function makeConfig()
     SERVER_URI: `${SERVER_URI_PREFIX}/api/1.0/infectors`,
     SERVER_AUTHORIZE_URI: `${SERVER_URI_PREFIX}/api/1.0/auth`,
     SERVER_AUTHORIZE_EXPIRE: 1800,  // [second]
-    SERVER_AUTHORIZE_ERRORCODE: 405,
 
     SERVER_REDIS_RESTRICT_KEY: `${REDIS_ROOT}restriction`,
     SERVER_RESTRICT_MAX: 30000,

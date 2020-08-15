@@ -8,6 +8,9 @@ import helmet from 'helmet';
 import Redis from 'ioredis';
 import axios from 'axios';
 import crypto from 'crypto';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import connectRedis from 'connect-redis';
 import { datetostring } from "./util.mjs";
 // CSRFは後の課題とする
 import PoiTokyo from './poi_tokyo.mjs';
@@ -26,9 +29,25 @@ import PoiNara from "./poi_nara.mjs";
 import PoiOsaka from "./poi_osaka.mjs";
 //import { example_data } from '../example_data.js';
 
+const RedisStore = connectRedis( session );
 const redis = new Redis();
 const app = express();
+app.use( cookieParser() );
 app.use( helmet.xssFilter() );
+app.use( session( {
+  secret: 'covid19sessionkey',
+  saveUninitialized: true,
+  resave: true,
+  store: new RedisStore( {
+    client: redis,
+    prefix: 'session:'
+  } ),
+  cookie: {
+    httpOnly: false,
+    secure: !config.DEBUG,
+    maxAge: config.SERVER_AUTHORIZE_EXPIRE*1000,
+    path: config.SERVER_URI_PREFIX
+  } } ) );
 if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
 {
   app.use(function(req, res, next) {
@@ -37,16 +56,7 @@ if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
     next();
   });
 }
-//app.use( config.SERVER_URI_PREFIX, express.static( config.DEPLOY_DIRECTORY ) );
-app.get( `${config.SERVER_URI_PREFIX}/`, (req, res) => {
-  const token = crypto.randomBytes( 16 ).toString( 'hex' );
-  redis.setex( `session_${token}`, SERVER_AUTHORIZE_EXPIRE, 1 );
-    .then( () => res.set( 'Content-Type: text/html' ).set( `X-Session-Id: ${token}` ).sendFile( path.join( config.DEPLOY_DIRECTORY, 'index.html' ) ) );
-    .catch( err => {
-      Log.error( err );
-      res.status( 500 );
-    } );
-} );
+app.use( `${config.SERVER_URI_PREFIX}/static`, express.static( path.join( config.DEPLOY_DIRECTORY, 'static' ) ) );
 
 function merge_jsons( jsons )
 {
@@ -115,7 +125,7 @@ app.get( config.SERVER_URI, (req, res) => {
     .then( stat => {
       if ( !stat?.isFile() )
         throw new Error( 'no json' );
-      res.set( 'Content-Type: application/json' ).sendFile( p );
+      res.sendFile( p );
     } )
     .catch( err => {
       Log.error( err );
@@ -130,33 +140,47 @@ function restrictKey()
   return `${config.SERVER_REDIS_RESTRICT_KEY}_${date.getFullYear()}_${date.getMonth()+1}`;
 }
 
-app.post( config.SERVER_AUTHORIZE_URI, (req, res) => {
+function sendIndexHtml( res, token )
+{
+  res.cookie( config.MAP_TOKEN_COOKIE, token )
+    .sendFile( path.join( config.DEPLOY_DIRECTORY, 'index.html' ) );
+}
+
+function sendIndex( req, res )
+{
+  const uri = req.url.substring( config.SERVER_URI_PREFIX.length );
+  if ( !uri.match( /^\/?(index.html)?$/ ) )
+  {
+    res.sendFile( path.join( config.DEPLOY_DIRECTORY, uri ) );
+    return;
+  }
   const url = process.env.MAPBOX_AT;
   if ( (url || '') === '' )
   {
-    res.send( { token: process.env.REACT_APP_MapboxAccessToken } );
+    sendIndexHtml( res, process.env.REACT_APP_MapboxAccessToken );
     return;
   }
-  // TODO: authorization
   redis.incr( restrictKey() )
     .then( counter => {
       if ( counter > config.SERVER_RESTRICT_MAX )
       {
-        res.status( config.SERVER_AUTHORIZE_ERRORCODE );
+        sendIndexHtml( res, '' );
         return;
       }
       const date = new Date();
       date.setSeconds( date.getSeconds() + config.SERVER_AUTHORIZE_EXPIRE );
       axios.post( url, { expires: date.toISOString(), scopes: ["styles:read", "fonts:read"] } )
         .then( response => {
-          res.send( { token: response.data.token } );
+          sendIndexHtml( res, response.data.token );
         } )
         .catch( err => {
           Log.error( err );
           res.status( 500 ).send( "MAPBOX NOT AUTHORIZED" );
         } )
     } );
-} );
+}
+app.get( `${config.SERVER_URI_PREFIX}/*`, sendIndex );
+app.get( config.SERVER_URI_PREFIX, sendIndex );
 
 app.listen( config.SERVER_PORT, () => {
   Log.info( `server is running at port ${config.SERVER_PORT}` );
