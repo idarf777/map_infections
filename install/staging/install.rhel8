@@ -1,0 +1,28 @@
+#!/bin/sh
+
+DIRNAME="covid19map_server_staging"
+INST_DIR="install/staging"
+case $1 in
+  add)
+		cp `pwd`/$INST_DIR/covid19map_server /etc/init.d/$DIRNAME
+		chmod 755 /etc/init.d/$DIRNAME
+		/sbin/chkconfig --add $DIRNAME
+    echo "d /var/run/$DIRNAME 0755 appuser appuser -" > /etc/tmpfiles.d/$DIRNAME.conf
+    systemd-tmpfiles --create /etc/tmpfiles.d/$DIRNAME.conf
+    systemctl daemon-reload
+		;;
+  remove)
+		/sbin/chkconfig --del $DIRNAME
+		rm -f /etc/init.d/$DIRNAME
+    systemd-tmpfiles --remove /etc/tmpfiles.d/$DIRNAME.conf
+		rm -f /etc/tmpfiles.d/$DIRNAME.conf
+    systemctl daemon-reload
+    ;;
+  *)
+    echo ""
+    echo "install add    --- put daemon install to /etc/init.d"
+    echo "install remove --- remove daemon install from /etc/init.d"
+    echo ""
+    ;;
+esac
+

@@ -1,12 +1,23 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
-
+import App from './App.js';
+import * as serviceWorker from './serviceWorker.js';
+const config = window.covid19map.config;
+const cookies = new Map();
+if ( document.cookie )
+{
+  document.cookie.split( ';' ).forEach( c => {
+    const cs = c.split( '=' ).map( v => v.trim() );
+    if ( cs[ 1 ] !== '' )
+      cookies.set( cs[ 0 ], cs[ 1 ] );
+  } );
+}
+const t = process.env.REACT_APP_MapboxAccessToken || cookies.get( config.COOKIE_MAP_TOKEN );
+const app = t ? <App accessToken={t} /> : <p>{ 'ACCESSES EXCEEDED IN THIS MONTH' }</p>;
 ReactDOM.render(
   <React.StrictMode>
-    <div id="map"><App /></div>
+    <div id="map">{ app }</div>
   </React.StrictMode>,
   document.getElementById('root')
 );

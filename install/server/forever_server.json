@@ -1,0 +1,11 @@
+{
+  "append": true,
+  "watch": false,
+  "script": "src/server/server.mjs",
+  "sourceDir": "./",
+  "workingDir": "./",
+  "logFile": "/var/log/covid19map_server/node_server.log",
+  "outFile": "/var/log/covid19map_server/node_server_out.log",
+  "errFile": "/var/log/covid19map_server/node_server_err.log",
+  "pidFile": "/run/covid19map_server/server.pid"
+}

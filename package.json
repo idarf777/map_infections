@@ -1,6 +1,10 @@
 {
-  "name": "map_r_infections",
+  "name": "map_infections",
   "version": "0.1.0",
+  "engines": {
+    "node": ">=14.7"
+  },
+  "engineStrict": true,
   "private": true,
   "dependencies": {
     "@babel/core": "7.9.0",
@@ -16,6 +20,7 @@
     "@typescript-eslint/eslint-plugin": "^2.10.0",
     "@typescript-eslint/parser": "^2.10.0",
     "agh.sprintf": "0.0.11",
+    "app-root-path": "^3.0.0",
     "axios": "^0.19.2",
     "babel-eslint": "10.1.0",
     "babel-jest": "^24.9.0",
@@ -24,6 +29,8 @@
     "babel-preset-react-app": "^9.1.2",
     "camelcase": "^5.3.1",
     "case-sensitive-paths-webpack-plugin": "2.3.0",
+    "connect-redis": "^5.0.0",
+    "cookie-parser": "^1.4.5",
     "css-loader": "3.4.2",
     "csv": "^5.3.2",
     "dotenv": "8.2.0",
@@ -37,12 +44,14 @@
     "eslint-plugin-react": "7.19.0",
     "eslint-plugin-react-hooks": "^1.6.1",
     "express": "^4.17.1",
+    "express-session": "^1.17.1",
     "file-loader": "4.3.0",
     "fs-extra": "^8.1.0",
     "helmet": "^3.23.3",
     "html-webpack-plugin": "4.0.0-beta.11",
     "iconv-lite": "^0.6.2",
     "identity-obj-proxy": "3.0.0",
+    "ioredis": "^4.17.3",
     "jest": "24.9.0",
     "jest-environment-jsdom-fourteen": "1.0.1",
     "jest-resolve": "24.9.0",
@@ -66,6 +75,7 @@
     "resolve-url-loader": "3.1.1",
     "sass-loader": "8.0.2",
     "semver": "6.3.0",
+    "sqlite3": "^5.0.0",
     "style-loader": "0.23.1",
     "terser-webpack-plugin": "2.3.5",
     "ts-pnp": "1.1.6",
@@ -80,8 +90,8 @@
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js",
-    "server": "cross-env NODE_ENV=development nodemon src/server/server.js --exec babel-node --ignore json/*",
-    "dev": "cross-env NODE_ENV=development concurrently \"npm run start\" \"npm run server\""
+    "dev": "cross-env NODE_ENV=development concurrently \"npm run start\" \"npm run server\"",
+    "server": "cross-env NODE_ENV=development nodemon src/server/server.mjs --ignore json/* --ignore src/*.js --ignore src/*.css"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -102,6 +112,9 @@
   "devDependencies": {
     "@babel/core": "^7.10.4",
     "@babel/node": "^7.10.4",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-proposal-function-bind": "^7.10.5",
+    "@babel/plugin-transform-classes": "^7.10.4",
     "@babel/preset-env": "^7.10.4",
     "concurrently": "^5.2.0",
     "cross-env": "^7.0.2",
@@ -161,6 +174,14 @@
     "presets": [
       "react-app",
       "@babel/preset-env"
+    ],
+    "plugins": [
+      [
+        "@babel/proposal-class-properties",
+        {
+          "spec": true
+        }
+      ]
     ]
   }
 }

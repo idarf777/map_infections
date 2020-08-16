@@ -10,28 +10,28 @@ body {
 .map-overlay {
   font: medium 'Helvetica Neue', Arial, Helvetica, sans-serif;
   position: absolute;
-  width: 200px;
+  width: 170pt;
   top: 0;
   left: 0;
-  padding: 10px;
+  padding: 8pt;
 }
 
 .map-overlay .map-overlay-inner {
   background-color: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  border-radius: 3px;
-  padding: 10px;
-  margin-bottom: 10px;
+  box-shadow: 0 0.1em 0.2em rgba(0, 0, 0, 0.1);
+  border-radius: 0.3em;
+  padding: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 .map-overlay h2 {
-  line-height: 24px;
+  line-height: 2em;
   display: block;
-  margin: 0 0 10px;
+  margin: 0 0 1em;
 }
 
 .map-overlay .legend .bar {
-  height: 10px;
+  height: 1em;
   width: 100%;
   background: linear-gradient(to right, #49E3CE, #D8FEB5, #FEEDB1, #FEAD54, #D1374E );
   /*  background: linear-gradient(to right, #0198bd, #49E3CE, #D8FEB5, #FEEDB1, #FEAD54, #D1374E ); */
@@ -52,7 +52,7 @@ body {
 .map-overlay-inner fieldset {
   border: none;
   padding: 0;
-  margin: 0 0 10px;
+  margin: 0 0 1em;
 }
 
 .map-overlay-inner fieldset:last-child {
@@ -66,27 +66,11 @@ body {
 .map-overlay-inner label {
   display: block;
   font-weight: bold;
-  margin: 0 0 5px;
+  margin: 0 0 0.1em;
 }
 
 .map-overlay-inner .date label {
   font-size: xx-large;
-}
-
-.map-overlay-inner button {
-  display: inline-block;
-  width: 36px;
-  height: 20px;
-  border: none;
-  cursor: pointer;
-}
-
-.map-overlay-inner button:focus {
-  outline: none;
-}
-
-.map-overlay-inner button:hover {
-  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
 .map-overlay-inner .blue button {
@@ -107,7 +91,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  font-size: calc(10pt + 2vmin);
   color: white;
 }
 
@@ -119,23 +103,22 @@ body {
   position: absolute;
   top: 0;
   right: 0;
-  max-width: 320px;
+  max-width: 400pt;
   background: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  padding: 12px 24px;
-  margin: 20px;
-  font-size: 13px;
+  box-shadow: 0 0.1em 0.2em rgba(0,0,0,0.3);
+  padding: 1em 2em;
+  margin: 2em;
+  font-size: 11pt;
   line-height: 2;
   color: #6b6b76;
-  text-transform: uppercase;
-  outline: none;
+  overflow: auto;
 }
 
 .navigation-control {
   position: absolute;
-  bottom: 36px;
+  bottom: 2em;
   left: 0;
-  padding: 20px;
+  padding: 2em;
   zIndex: 1;
 }
 
@@ -145,11 +128,11 @@ body {
   pointerEvents: none;
 }
 .tooltip-desc {
-  padding: 10px;
-  font-size: 12px;
+  padding: 1em;
+  font-size: 10pt;
   line-height: 1.6em;
   color: #fff;
-  border-radius: 5px;
+  border-radius: 0.3em;
   background: #000;
   width: 100%;
 }
@@ -157,15 +140,81 @@ body {
 .btn-square {
   display: inline-block;
   padding: 0.5em 1em;
+  margin-right: 4pt;
   text-decoration: none;
   background: #668ad8;/*ボタン色*/
   color: #FFF;
-  border-bottom: solid 4px #627295;
-  border-radius: 3px;
+  border-bottom: solid 0.5em #627295;
+  border-radius: 0.3em;
+  font-size: large;
+  width: 75pt;
 }
 .btn-square:active {
   /*ボタンを押したとき*/
-  -webkit-transform: translateY(4px);
-  transform: translateY(4px);/*下に動く*/
+  -webkit-transform: translateY(1em);
+  transform: translateY(1em);/*下に動く*/
   border-bottom: none;/*線を消す*/
+}
+
+.btn-square-small {
+  display: inline-block;
+  text-decoration: none;
+  background: #448030;/*ボタン色*/
+  color: #FFF;
+  border-bottom: solid 0.1em #204010;
+  border-radius: 0.05em;
+  font-size: smaller;
+}
+.btn-square-small:active {
+  /*ボタンを押したとき*/
+  -webkit-transform: translateY(0.2em);
+  transform: translateY(0.2em);/*下に動く*/
+  border-bottom: none;/*線を消す*/
+}
+
+.blue .btn-square-small {
+  background: #4480c0;
+}
+
+.hidden {
+  display: none;
+}
+.shown {
+  display: block;
+}
+.pre {
+  white-space: pre-wrap;
+  font-size: small;
+}
+.scrollabletextbox {
+  height: 300pt;
+  font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
+  font-size: 82%;
+  overflow:scroll;
+}
+
+table{
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+table th{
+  text-align: center;
+  color:white;
+  background: linear-gradient(#829ebc,#225588);
+  border-left: 1px solid #3c6690;
+  border-top: 1px solid #3c6690;
+  border-bottom: 1px solid #3c6690;
+  box-shadow: 0px 1px 1px rgba(255,255,255,0.3) inset;
+  width: 25%;
+  padding: 10px 0;
+  font-size: small;
+}
+table th,table td{
+  padding: 1pt 0;
+  text-align: center;
+  font-size: small;
+}
+table tr:nth-child(odd){
+  background-color: #eee
 }

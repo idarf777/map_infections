@@ -1,5 +1,6 @@
 import agh from 'agh.sprintf';
-import { LOGLEVEL } from './server/config.mjs';
+import { LOGLEVEL } from './config.mjs';
+const config = global.covid19map.config;
 
 // console.logとconsole.errorをオーバーライドする
 function datetostring( date )
@@ -21,7 +22,7 @@ const PREFIXES = Object.freeze( new Map ( [
   [LOGLEVEL.EVERY, 'V'],  // EVERY == VERBOSE
   [LOGLEVEL.DEBUG, 'D'],
   [LOGLEVEL.INFO, 'I'],
-  [LOGLEVEL.ERROR, 'E']
+  [LOGLEVEL.ERROR, 'E'],
 ] ) );
 
 export default class Log
@@ -49,7 +50,7 @@ export default class Log
 
   static put( level, ...value )
   {
-    if ( window.covid19map.config.LOGLEVEL > level )
+    if ( config.LOGLEVEL > level )
       return;
     for ( const v of value )
     {

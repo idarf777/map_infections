@@ -1,0 +1,52 @@
+#!/bin/sh
+# chkconfig: 345 99 1
+# description: COVID19 MAP API SERVER
+# processname: covid19map_server
+
+APP_DIR="/usr/share/nginx/nodeapp/map_infections"
+INST_DIR="install/server"
+DIRNAME="covid19map_server"
+EXE_USER="appuser"
+LOG_LEVEL=1
+
+export HOME=/home/$EXE_USER
+
+if [ -f /etc/init.d/functions ] ; then
+  . /etc/init.d/functions
+elif [ -f /etc/rc.d/init.d/functions ] ; then
+  . /etc/rc.d/init.d/functions
+else
+  exit 1
+fi
+
+cd $APP_DIR
+case $1 in
+  start)
+    mkdir -p /run/$DIRNAME
+    chown appuser:appuser /run/$DIRNAME
+    chmod -R 775 /run/$DIRNAME
+    mkdir -p /var/log/$DIRNAME
+    chown appuser:appuser /var/log/$DIRNAME
+    chmod -R 775 /var/log/$DIRNAME
+    chown -R appuser:appuser .
+    chmod -R g+rw .
+    mkdir -p ./json/cache
+    chmod -R g+rwx ./json
+    chown appuser:appuser map_infectors_server.sqlite3
+    chmod g+rw map_infectors_server.sqlite3
+    su -c "NODE_ENV=production forever start $INST_DIR/forever_server.json" $EXE_USER
+  ;;
+  stop)
+    su -c "NODE_ENV=production forever stop `cat /run/$DIRNAME/server.pid`" $EXE_USER
+  ;;
+  restart)
+    su -c "NODE_ENV=production forever restart `cat /run/$DIRNAME/server.pid`" $EXE_USER
+  ;;
+  status)
+    su -c "NODE_ENV=production forever list|grep -E '$DIRNAME' --color=never" $EXE_USER
+  ;;
+  *)
+    exit
+  ;;
+esac
+

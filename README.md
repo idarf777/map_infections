@@ -1,3 +1,8 @@
+## 必要環境
+
+Node.js v14.7
+
+
 ## コマンド
 
 ### `npm run start`
@@ -48,6 +53,56 @@ Mapboxにサインアップしてアクセストークンを取得しておく�
 
 APIサーバとreactクライアント開発サーバの両方を走らせておき、http://localhost:3000 からreactクライアントを起動する。
 
+
+## daemon
+
+### 必要環境
+```
+sudo npm i -g forever
+```
+
+### ステージング
+#### インストールと起動
+```
+sudo su
+source install/staging/install.rhel8 add
+systemctl start covid19map_server_staging
+systemctl enable covid19map_server_staging
+```
+#### 削除
+```
+sudo su
+systemctl stop covid19map_server_staging
+source install/staging/install.rhel8 remove
+```
+
+### 本番
+#### インストールと起動
+```
+sudo su
+source install/server/install.rhel8 add
+systemctl start covid19map_server
+systemctl enable covid19map_server
+```
+#### 削除
+```
+sudo su
+systemctl stop covid19map_server
+source install/server/install.rhel8 remove
+```
+
+### ログ等
+
+/var/log/covid19map_server*にある。
+
+```
+su appuser -c "forever list"
+```
+でforeverのプロセスが見える。
+
+### nginxとの連携
+
+install/nginxを参照してなんとかする
 
 ## デバッグ方法
 

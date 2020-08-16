@@ -1,46 +1,73 @@
-import dotenv from 'dotenv';
 //import agh from 'agh.sprintf';
 import * as React from 'react';
 import axios from 'axios';
 import MapGL, {_MapContext as MapContext, NavigationControl} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
-import { config } from './config.js';
 import Log from './logger.js';
 import InfectorsLayer from "./infectors_layer.js";
 import ControlPanel from './control-panel.js';
-import { datetostring } from "./util.js";
+import { datetostring } from "./server/util.mjs";
 import { example_data } from "./example_data.js";
 import loader from "./loader.js";
 import './App.css';
-import ToolTip from "./tool_tip";
-import {to_bool, colorrange} from "./util";
+import ToolTip from "./tool_tip.js";
+import {colorrange, merge_object} from "./server/util.mjs";
+import makeConfig from "./server/config.mjs";
 
-dotenv.config();
+const config = makeConfig();
+window.covid19map = { config: config };
 
-let srcdata;// = loader( example_data );
-let src_ids;// = Array.from( srcdata.places.keys() );
 const PLAYBUTTON_TEXT = { start: 'START', stop: 'STOP' };
-const DATA_API_STATUS = { unloaded: 'UNLOAD', loading: 'LOADING...', loaded: 'LOADED', error: 'ERROR' };
+const DATA_API_STATUS = { unloaded: 'DATA UNLOAD', loading: 'LOADING DATA...', loaded: 'DATA LOADED', error: 'ERROR' };
 
 export default class App extends React.Component
 {
+  constructor(props) {
+    super(props);
+    // I'm using this ref to access methods on the DeckGL class
+    this.mapRef = React.createRef();
+  }
+
   _getElevationValue = ( d, opt ) => {
-    const id = d[ 0 ][ 0 ];
-    return (this.state && (opt?.is_real ? this.state.inf[ id ] : Math.min( this.state.inf_a[ id ], config.MAX_INFECTORS ) )) || 0;
+    const id = (typeof d === 'number') ? d : (d[ 0 ][ 0 ]);
+    const zoom = this.state.viewState?.zoom || config.MAP_ZOOM;
+    // zoom=7で1.0 11で0.1
+    let c = Math.max( Math.min( zoom, 11 ), 7 );// 11->-1 7->1
+    const coef = Math.pow( 10, (4 - (c - 7))/4.0 );
+    return (this.state && (opt?.is_real ? this.state.inf[ id ] : coef*Math.min( this.state.inf_a[ id ], config.MAX_INFECTORS ) )) || 0;
   };
   _getColorValue = d => {
-    let v = this._getElevationValue( d );
+    let v = this._getElevationValue( d, { is_real: true }  );
     if ( v !== 0 )
     {
       v = Math.min( (v + config.MAX_INFECTORS*0.1) / config.MAX_INFECTORS, 1.0 ); // ちょっとオフセットをつけて放物線でとる
       v = 1.0 - (1.0 - v)**4;
-      v *= config.MAX_INFECTORS;
+      v *= config.MAX_INFECTORS_COLOR;
     }
-    return Math.min( v, config.MAX_INFECTORS );
+    return Math.min( v, config.MAX_INFECTORS_COLOR );
+  }
+  _setHoveredDescription = ids => ids.map( id => `${this.state.srcdata.places.get( id ).name} : ${this._getElevationValue( id, { is_real: true } )}`  )
+  _setHoveredObject = info => {
+    const newstate = {};
+    if ( !info.object || !this.state.srcdata?.places?.has( info.object.points[ 0 ][ 0 ] ) )
+    {
+      newstate.hoveredIds = null;
+    }
+    else
+    {
+      const ids = info.object.points.map( p => p[ 0 ] );
+      merge_object( newstate, {
+        hoveredIds: ids,
+        hoveredValue: this._setHoveredDescription( ids ),
+        pointerX: info.x + config.TOOLTIPS_CURSOR_OFFSET,
+        pointerY: info.y
+      } );
+    }
+    this.setState( newstate );
   }
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
-    data: src_ids?.map( k => [ k ] ) || [],  // 配列の配列を指定する
+    data: this.state?.data || [],
     coverage: config.MAP_COVERAGE,
     getColorValue: this._getColorValue,
     getElevationValue: this._getElevationValue,
@@ -50,20 +77,12 @@ export default class App extends React.Component
     colorDomain: [0, config.MAX_INFECTORS_COLOR],  // 棒の色について、この幅で入力値を正規化する
     colorRange: colorrange( config.MAP_COLORRANGE ),
     extruded: true,
-    getPosition: d => srcdata && srcdata.places.get( d[ 0 ] )?.geopos,
+    getPosition: d => this.state.srcdata && this.state.srcdata.places.get( d[ 0 ] )?.geopos,
     opacity: 1.0,
     pickable: true,
     radius: config.MAP_POI_RADIUS,
     upperPercentile: config.MAP_UPPERPERCENTILE,
-    onHover: info => this.setState(
-      (info.object && srcdata?.places?.has( info.object.points[ 0 ][ 0 ] ) && {
-        hoveredId: info.object.points[ 0 ][ 0 ],
-        hoveredName: srcdata.places.get( info.object.points[ 0 ][ 0 ] ).name,
-        hoveredValue: this._getElevationValue( info.object.points, { is_real: true } ),
-        pointerX: info.x,
-        pointerY: info.y
-      }) || { hoveredId: null }
-    )
+    onHover: this._setHoveredObject
   });
 
   state = {
@@ -76,9 +95,9 @@ export default class App extends React.Component
     },
     layer_count: 0,
     layer_histogram: this.createLayer( 0 ),
-    begin_date: new Date(),//srcdata.begin_at,
-    finish_date: new Date(),//srcdata.finish_at,
-    max_day: 1,//srcdata.num_days,
+    begin_date: new Date(),
+    finish_date: new Date(),
+    max_day: 1,
     current_day: 0,
     timer_id: null,
     start_button_text: PLAYBUTTON_TEXT.start,
@@ -87,12 +106,18 @@ export default class App extends React.Component
     inf: []     // 感染者数
   };
 
+  animationStartDay()
+  {
+    return Math.floor( (config.ANIMATION_BEGIN_AT.getTime() - this.state.srcdata.begin_at.getTime())/(24*60*60*1000) );
+  }
   loadData( data )
   {
-Log.debug( colorrange( config.MAP_COLORRANGE ) );
-    srcdata = loader( data );
-    src_ids = Array.from( srcdata.places.keys() );
-    this.redrawLayer( { data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days } );
+    const srcdata = loader( data );
+    const src_ids = Array.from( srcdata.places.keys() );
+    this.setState(
+      (state, prop) => { return { srcdata: srcdata, src_ids: src_ids, data: src_ids.map( k => [ k ] ) || [], data_api_loaded: DATA_API_STATUS.loading } },
+      () => this.redrawLayer( { data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days, current_day: this.animationStartDay() } )
+    );
   }
   componentDidMount()
   {
@@ -101,9 +126,10 @@ Log.debug( colorrange( config.MAP_COLORRANGE ) );
       this.loadData( example_data );
       return;
     }
+    const host = config.SERVER_HOST || `${window.location.protocol}//${window.location.host}`;
     this.setState(
       (state, prop) => { return { data_api_loaded: DATA_API_STATUS.loading } },
-      () => axios.get( `${config.SERVER_HOST}:${config.SERVER_PORT}${config.SERVER_URI}` )
+      () => axios.get( `${host}${config.SERVER_URI}` )
               .then( ( response ) => {
                 //Log.debug( response );
                 this.loadData( response.data );
@@ -124,17 +150,24 @@ Log.debug( colorrange( config.MAP_COLORRANGE ) );
     );
   }
 
+  _onLoadMap = ev => {
+    Log.debug(ev.target);
+    const map = ev.target;
+    map.setLayoutProperty('country-label', 'text-field', ['get','name_ja']);
+  };
+
   _onViewStateChange = ({viewState}) => {
+    Log.debug( `zoom = ${viewState.zoom}` );
     this.setState( {viewState} );
   };
 
   _onInterval = () => {
     //Log.debug( `timer awaken` );
-    if ( !this.state.timer_id || !srcdata || this.state.current_day >= srcdata.num_days - 1 )
+    if ( !this.state.timer_id || !this.state.srcdata || this.state.current_day >= this.state.srcdata.num_days - 1 )
       return;
     const etm = Date.now() - this.state.timer_start_time; // [msec]
-    const eday = Math.min( Math.floor( etm / config.ANIMATION_SPEED ), srcdata.num_days - 1 );  // [day]
-    const emod = (eday >= srcdata.num_days - 1) ? 0 : ((etm - eday * config.ANIMATION_SPEED) / config.ANIMATION_SPEED);
+    const eday = Math.min( Math.floor( etm / config.ANIMATION_SPEED ), this.state.srcdata.num_days - 1 );  // [day]
+    const emod = (eday >= this.state.srcdata.num_days - 1) ? 0 : ((etm - eday * config.ANIMATION_SPEED) / config.ANIMATION_SPEED);
     this.doAnimation( eday, emod );
   };
 
@@ -144,26 +177,30 @@ Log.debug( colorrange( config.MAP_COLORRANGE ) );
   };
   onDebug02 = () =>
   {
+    Log.debug( 'onDebug02' );
   };
 
   doAnimation( day, ratio )
   {
-    if ( !srcdata )
+    if ( !this.state.srcdata )
       return;
     const nextstate = { inf: [].concat( this.state.inf ), inf_a: [].concat( this.state.inf_a ) };
-    src_ids.forEach( id => {
-      const vals = srcdata.values.get( id );
+    let isUpdateHovered = false;
+    this.state.src_ids.forEach( id => {
+      const vals = this.state.srcdata.values.get( id );
       let curval = vals[ day ];
       nextstate.inf[ id ] = curval;
-      if ( this.state.hoveredId === id )
-        nextstate.hoveredValue = curval;
-      if ( day < srcdata.num_days - 1 )
+      isUpdateHovered |= this.state.hoveredIds?.includes( id );
+      if ( day < this.state.srcdata.num_days - 1 )
       {
-        let nextval = vals[ day + 1 ];
-        curval += (nextval - curval) * (ratio || 0);
+        const d = vals[ day + 1 ] - curval;
+        const r = ratio && (( d >= 0 ) ? (1.0 - (1.0 - ratio)**3) : (ratio**3));
+        curval += d * (r || 0);
       }
       nextstate.inf_a[ id ] = curval;
     } );
+    if ( isUpdateHovered )
+      nextstate.hoveredValue = this._setHoveredDescription( this.state.hoveredIds );
     this.redrawLayer( { ...nextstate, current_day: day } );
   }
   startAnimation( cb )
@@ -172,11 +209,11 @@ Log.debug( colorrange( config.MAP_COLORRANGE ) );
       return cb && cb();
     let tid = setInterval( this._onInterval, config.ANIMATION_TIME_RESOLUTION );
     Log.debug( `timer ${tid} set` );
-    const beginday = 0; // 表示開始日
+    const beginday = this.state.current_day; // 表示開始日
     const dnow = new Date( Date.now() );
-    dnow.setDate( dnow.getDate() - beginday );
+    dnow.setMilliseconds( dnow.getMilliseconds() - beginday*config.ANIMATION_SPEED );
     this.setState(
-      (state, props) => { return { timer_id: tid, timer_start_time: dnow.getTime(), start_button_text: PLAYBUTTON_TEXT.stop, current_day: 0 } },
+      (state, props) => { return { timer_id: tid, timer_start_time: dnow.getTime(), start_button_text: PLAYBUTTON_TEXT.stop, current_day: beginday } },
       () => cb && cb()
     );
   }
@@ -192,7 +229,10 @@ Log.debug( colorrange( config.MAP_COLORRANGE ) );
     );
   }
   onClickStart = () => this.state.timer_id ? this.stopAnimation() : this.startAnimation();
-
+  onClickReset = () => {
+    this.stopAnimation();
+    this.doAnimation( this.animationStartDay() );
+  }
   onDateChanged = ( ev ) => this.stopAnimation( () => ev?.target?.value && this.doAnimation( parseInt( ev.target.value ) ) );
 
   render() {
@@ -206,12 +246,13 @@ Log.debug( colorrange( config.MAP_COLORRANGE ) );
       >
         <MapGL
           mapStyle={config.MAP_STYLE}
-          mapboxApiAccessToken={process.env.REACT_APP_MapboxAccessToken}
+          mapboxApiAccessToken={this.props.accessToken}
+          ref={map => {this.mapRef = map}}
         />
         <div className="navigation-control">
           <NavigationControl />
         </div>
-        <ControlPanel containerComponent={this.props.containerComponent} apimsg={this.state.data_api_loaded}/>
+        <ControlPanel containerComponent={this.props.containerComponent} apimsg={this.state.data_api_loaded} srcdata={this.state.srcdata} />
         <div className="map-overlay top">
           <div className="map-overlay-inner">
             <div className="date">
@@ -242,22 +283,22 @@ Log.debug( colorrange( config.MAP_COLORRANGE ) );
             </fieldset>
 */}
             <fieldset>
-{/*
-              <label></label>
-*/}
               <div id="swatches">
+{/*
                 <div className="blue">
                   <button id="blue_button" onClick={this.onDebug01} />
                 </div>
                 <div className="green">
                   <button id="green_button" onClick={this.onDebug02} />
                 </div>
-                <a href="/#" className="btn-square" onClick={this.onClickStart}>{this.state.start_button_text}</a>
+*/}
+                <button className="btn-square" onClick={this.onClickStart}>{this.state.start_button_text}</button>
+                <button className="btn-square" onClick={this.onClickReset}>RESET</button>
               </div>
             </fieldset>
           </div>
         </div>
-        <ToolTip containerComponent={this.props.containerComponent} visible={this.state.hoveredId != null} sx={this.state.pointerX} sy={this.state.pointerY} desc={this.state.hoveredName} value={this.state.hoveredValue}/>
+        <ToolTip containerComponent={this.props.containerComponent} visible={this.state.hoveredIds != null} sx={this.state.pointerX} sy={this.state.pointerY} descriptions={this.state.hoveredValue}/>
       </DeckGL>
     );
   }
