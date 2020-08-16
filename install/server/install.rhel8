@@ -1,7 +1,7 @@
 #!/bin/sh
 
 DIRNAME="covid19map_server"
-INST_DIR="install/serve"
+INST_DIR="install/server"
 case $1 in
   add)
 		cp `pwd`/$INST_DIR/covid19map_server /etc/init.d/$DIRNAME

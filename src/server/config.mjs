@@ -47,7 +47,7 @@ export default function makeConfig()
 
   return Object.freeze( {
     DEBUG: is_debug,
-    LOGLEVEL: Number(env.REACT_APP_LOGLEVEL) || LOGLEVEL.INFO,
+    LOGLEVEL: (env.REACT_APP_LOGLEVEL != null) ? Number(env.REACT_APP_LOGLEVEL) : LOGLEVEL.INFO,
     ROOT_DIRECTORY: appRoot.path,  // Reactでは使えない
     MAX_INFECTORS: 100,
     MAX_INFECTORS_COLOR: 70,
@@ -73,7 +73,9 @@ export default function makeConfig()
     TOOLTIPS_CURSOR_OFFSET: 20,
     ANIMATION_BEGIN_AT: new Date( '2020-04-10' ),
 
-    MAP_TOKEN_COOKIE: 'mbt',
+    COOKIE_MAP_TOKEN: 'mbt',
+    COOKIE_EXPIRE_DATE: 'edt',
+    COOKIE_EXPIRE: 900,
 
     STANDALONE: to_bool( env.REACT_APP_STANDALONE ) || false,
     SERVER_PORT: env.REACT_APP_SERVER_PORT || DEFAULT_SERVER_PORT,

@@ -26,9 +26,9 @@ export default class ControlPanel extends PureComponent
               </thead>
               <tbody>
               {
-                Array.from( this.props.srcdata.places.entries() ).map( pair => {
-                  return <tr key={pair[ 0 ]}><td>{pair[ 1 ].name}</td><td>{datetostring(pair[ 1 ].begin_at)}</td><td>{datetostring(pair[ 1 ].finish_at)}</td></tr>
-                } )
+                this.props.srcdata && Array.from( this.props.srcdata.places.entries() ).map( pair => {
+                    return <tr key={pair[ 0 ]}><td>{pair[ 1 ].name}</td><td>{datetostring(pair[ 1 ].begin_at)}</td><td>{datetostring(pair[ 1 ].finish_at)}</td></tr>
+                  } )
               }
               </tbody>
             </table>

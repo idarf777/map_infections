@@ -15,7 +15,7 @@ export default class BasePoi
     const { pref_name, alter_citys, cb_alter_citys, csv_uri, cb_load_csv, cb_parse_csv, csv_encoding, row_begin, min_columns, col_date, cb_date, col_city, cb_city, cb_name } = arg;
     const set_irregular = new Set();
 
-    Log.debug( `getting ${pref_name} CSV...` );
+    Log.info( `getting ${pref_name} CSV...` );
     const map_poi = await DbPoi.getMap( pref_name );
     alter_citys && alter_citys.forEach( names => map_poi.set( names[ 0 ], map_poi.get( names[ 1 ] ) ) );
     cb_alter_citys && cb_alter_citys( map_poi );
@@ -23,7 +23,7 @@ export default class BasePoi
     const cache_dir = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_CACHE_DIR}/${pref_name}` );
     await mkdirp( cache_dir );
     await fs.writeFile( path.join( cache_dir, 'src' ), cr.data );
-    Log.debug( `parsing ${pref_name} CSV...` );
+    Log.info( `parsing ${pref_name} CSV...` );
     const rows = await ( cb_parse_csv ? cb_parse_csv( cr ) : parse_csv( iconv.decode( cr.data, csv_encoding ) ) );
     const map_city_infectors = new Map();
     for ( let rownum = row_begin; rownum < rows.length; rownum++ )
@@ -72,7 +72,7 @@ export default class BasePoi
         } ).filter( e => e )
       };
     } );
-    Log.debug( `parsed ${pref_name} CSV` );
+    Log.info( `parsed ${pref_name} CSV` );
     if ( spots.length === 0  ||  spots.reduce( (sum, spot) => (sum + spot.data?.length || 0), 0 ) === 0 )
       return {};
     const tms_begin = spots.map( spot => ((spot.data?.length || 0) > 0) && new Date( spot.data[ 0 ].date ) ).filter( e => e ).sort( (a,b) => a.getTime() - b.getTime() );

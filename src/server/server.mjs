@@ -28,7 +28,7 @@ import PoiKyoto from "./poi_kyoto.mjs";
 import PoiNara from "./poi_nara.mjs";
 import PoiOsaka from "./poi_osaka.mjs";
 //import { example_data } from '../example_data.js';
-
+const COOKIE_OPTIONS = Object.freeze( { maxAge: config.COOKIE_EXPIRE*1000, path: config.SERVER_URI_PREFIX } );
 const RedisStore = connectRedis( session );
 const redis = new Redis();
 const app = express();
@@ -43,10 +43,9 @@ app.use( session( {
     prefix: 'session:'
   } ),
   cookie: {
+    ...COOKIE_OPTIONS,
     httpOnly: false,
-    secure: !config.DEBUG,
-    maxAge: config.SERVER_AUTHORIZE_EXPIRE*1000,
-    path: config.SERVER_URI_PREFIX
+    secure: !config.DEBUG
   } } ) );
 if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
 {
@@ -105,6 +104,11 @@ const CITIES = [
 ];
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
+  if ( !config.DEBUG && req.query.token !== process.env.MAKEDATA_TOKEN )
+  {
+    res.status( 501 );
+    return;
+  }
   mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) )
   .then( () => Promise.all( CITIES.map( city => make_data( city ) ) ) )
   .then( jsons => {
@@ -112,7 +116,7 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
     res.send( merged );
     return write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged );
   } )
-  .then( () => Log.debug( 'MAKE DATA complete.' ) )
+  .then( () => Log.info( 'MAKE DATA complete.' ) )
   .catch( ex => {
     Log.error( ex );
     res.status( 500 ).send( ex.message );
@@ -128,7 +132,7 @@ app.get( config.SERVER_URI, (req, res) => {
       res.sendFile( p );
     } )
     .catch( err => {
-      Log.error( err );
+      Log.debug( err );
       res.status( 500 ).send( {message: `get "${config.SERVER_MAKE_DATA_URI}" first!`} );
     } );
   }
@@ -140,10 +144,15 @@ function restrictKey()
   return `${config.SERVER_REDIS_RESTRICT_KEY}_${date.getFullYear()}_${date.getMonth()+1}`;
 }
 
-function sendIndexHtml( res, token )
+function sendIndexHtml( req, res, token )
 {
-  res.cookie( config.MAP_TOKEN_COOKIE, token )
-    .sendFile( path.join( config.DEPLOY_DIRECTORY, 'index.html' ) );
+  if ( token && (!req.cookies || req.cookies[ config.COOKIE_MAP_TOKEN ] !== token) )
+  {
+    req.session[ config.COOKIE_MAP_TOKEN ] = token;
+    req.session[ config.COOKIE_EXPIRE_DATE ] = Date.now() + COOKIE_OPTIONS.maxAge;
+    res.cookie( config.COOKIE_MAP_TOKEN, token, COOKIE_OPTIONS )
+  }
+  res.sendFile( path.join( config.DEPLOY_DIRECTORY, 'index.html' ) );
 }
 
 function sendIndex( req, res )
@@ -157,24 +166,24 @@ function sendIndex( req, res )
   const url = process.env.MAPBOX_AT;
   if ( (url || '') === '' )
   {
-    sendIndexHtml( res, process.env.REACT_APP_MapboxAccessToken );
+    sendIndexHtml( req, res, process.env.REACT_APP_MapboxAccessToken );
     return;
   }
   redis.incr( restrictKey() )
     .then( counter => {
-      if ( counter > config.SERVER_RESTRICT_MAX )
+      if ( counter > config.SERVER_RESTRICT_MAX  ||  (req.session[ config.COOKIE_EXPIRE_DATE ] || 0) > Date.now() )
       {
-        sendIndexHtml( res, '' );
+        sendIndexHtml( req, res );
         return;
       }
       const date = new Date();
       date.setSeconds( date.getSeconds() + config.SERVER_AUTHORIZE_EXPIRE );
       axios.post( url, { expires: date.toISOString(), scopes: ["styles:read", "fonts:read"] } )
         .then( response => {
-          sendIndexHtml( res, response.data.token );
+          sendIndexHtml( req, res, response.data.token );
         } )
         .catch( err => {
-          Log.error( err );
+          Log.debug( err );
           res.status( 500 ).send( "MAPBOX NOT AUTHORIZED" );
         } )
     } );

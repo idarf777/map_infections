@@ -13,7 +13,7 @@ if ( document.cookie )
       cookies.set( cs[ 0 ], cs[ 1 ] );
   } );
 }
-const t = process.env.REACT_APP_MapboxAccessToken || cookies.get( config.MAP_TOKEN_COOKIE );
+const t = process.env.REACT_APP_MapboxAccessToken || cookies.get( config.COOKIE_MAP_TOKEN );
 const app = t ? <App accessToken={t} /> : <p>{ 'ACCESSES EXCEEDED IN THIS MONTH' }</p>;
 ReactDOM.render(
   <React.StrictMode>

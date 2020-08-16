@@ -97,7 +97,7 @@ async function load_csv( date, cache_dir )
       const cache = csv_filename( prefix, m, cache_dir );
       if ( !(await fs.lstat( cache ))?.isFile() )
         continue;
-      Log.debug( `loading ${cache} from cache ...` );
+      Log.info( `loading ${cache} from cache ...` );
       return fs.readFile( cache );
     }
     catch
@@ -113,10 +113,10 @@ async function load_csv( date, cache_dir )
     const h = await axios.head( uri, { validateStatus: false } ).catch( () => {} );
     if ( h?.status === 200 )
     {
-      Log.debug( `trying GET ${uri} ...` );
+      Log.info( `trying GET ${uri} ...` );
       const response = await axios.get( uri );
       if ( response )
-        Log.debug( `status = ${response.status}` );
+        Log.info( `status = ${response.status}` );
       if ( response?.data )
         await fs.writeFile( cache, response.data );
       return response?.data;
@@ -140,7 +140,7 @@ export default class PoiTokyo
     const cache_dir = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_CACHE_DIR}/tokyo` );
     await mkdirp( cache_dir );
     // TOKYO_CSV.DATA_BEGIN_AT以降の取得可能なCSVをすべて取得する
-    Log.debug( 'getting tokyo CSV...' );
+    Log.info( 'getting tokyo CSV...' );
     const map_poi = await DbPoi.getMap( '東京都' );
     const csvs = new Map();
     let lastdate = null;
@@ -171,7 +171,7 @@ export default class PoiTokyo
       csvs.set( date.getTime(), csvs.get( prevdate.getTime() ) || firstcsv );
     }
 
-    Log.debug( 'parsing tokyo CSV...' );
+    Log.info( 'parsing tokyo CSV...' );
     const map_city_infectors = new Map();
     const timestamps = Array.from( csvs.keys() ).sort();
     for ( const tm of timestamps )
@@ -180,7 +180,7 @@ export default class PoiTokyo
       const rows = await parse_csv( csvs.get( tm ) );
       if ( !( rows && rows.length > 0 && rows[ 0 ].length >= 2 && rows[ 0 ][ 0 ].match( /^[^\d]+$/ ) && rows[ 0 ][ 1 ].match( /^\d+$/ ) ) )  // 先頭行が「文字,数字」であるか検証
       {
-        Log.debug( `CSV at ${datetostring( date )} is invalid` );
+        Log.info( `CSV at ${datetostring( date )} is invalid` );
         await remove_csv_cache( date, cache_dir ).catch( ex => {} );
         continue;
       }
@@ -200,7 +200,7 @@ export default class PoiTokyo
     for ( const spot of map_city_infectors.values() )
       spot.data = spot.data.filter( d => d.infectors > 0 );
 
-    Log.debug( 'parsed tokyo CSV' );
+    Log.info( 'parsed tokyo CSV' );
     return {
       begin_at: datetostring( timestamps[ 0 ] ),
       finish_at: datetostring( timestamps[ timestamps.length - 1 ] ),

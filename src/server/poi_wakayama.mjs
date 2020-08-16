@@ -1,5 +1,6 @@
 import iconv from "iconv-lite";
 import BasePoi from "./base_poi.mjs";
+import { parse_csv } from "./util.mjs";
 const config = global.covid19map.config;
 
 async function parse_localcsv( cr )
