@@ -178,7 +178,7 @@ export default class PoiTokyo
     {
       const date = new Date( tm );
       const rows = await parse_csv( csvs.get( tm ) );
-      if ( !( rows && rows.length > 0 && rows[ 0 ].length >= 2 && rows[ 0 ][ 0 ].match( /^[^\d]+$/ ) && rows[ 0 ][ 1 ].match( /^\d+$/ ) ) )  // 先頭行が「文字,数字」であるか検証
+      if ( !( rows && rows.length > 0 && rows[ 0 ].length >= 2 && rows[ 0 ][ 0 ].match( /^[^\d]+$/ ) && rows[ 0 ][ 1 ].match( /^\(?\d+\)?$/ ) ) )  // 先頭行が「文字,数字」であるか検証
       {
         Log.info( `CSV at ${datetostring( date )} is invalid` );
         await remove_csv_cache( date, cache_dir ).catch( ex => {} );
@@ -192,7 +192,8 @@ export default class PoiTokyo
         if ( !map_city_infectors.has( name ) )
           map_city_infectors.set( name, { geopos: map_poi.get( name ).geopos(), name: `東京都${name}`, data: [] } );
         const vals = map_city_infectors.get( name ).data;
-        const subtotal = parseInt( d[ 1 ] );
+        const m = d[ 1 ].match( /(\d+)/ );
+        const subtotal = parseInt( (m && m[ 1 ]) || '0' );
         const prev_subtotal = (vals.length > 0) ? vals[ vals.length - 1 ].subtotal : subtotal;  // 初日の新規感染者はデータがない=0人
         vals.push( { date: datetostring( date ), infectors: Math.max( 0, subtotal - prev_subtotal ), subtotal: subtotal } );
       }
