@@ -160,9 +160,12 @@ function sendIndexHtml( req, res, token )
 function sendIndex( req, res )
 {
   const uri = req.url.substring( config.SERVER_URI_PREFIX.length );
-  if ( !uri.match( /^\/?(index.html)?$/ ) )
+  if ( !uri.match( /^\/?(index.html)?(\?([^\/]*))?$/ ) )
   {
-    res.sendFile( path.join( config.DEPLOY_DIRECTORY, uri ) );
+    if ( config.DEBUG )
+      res.sendFile( path.join( config.DEPLOY_DIRECTORY, uri.replace( /\.\./g, '' ) ) );
+    else
+      res.status( 404 );  // index.html以外はnginxがルーティングしないはず
     return;
   }
   const url = process.env.MAPBOX_AT;
