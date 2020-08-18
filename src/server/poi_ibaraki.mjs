@@ -22,7 +22,7 @@ async function parse_html( html )
     const dm = date.trim().match( /((\d+)\/)?(\d+)\/(\d+)/ );
     if ( !dm )
       continue;
-    const year = dm[ 2 ] || new Date().getFullYear(); // このへん2021年になってみないとわからない
+    const year = Number( dm[ 2 ] || new Date().getFullYear() ); // このへん2021年になってみないとわからない
     csv.push( [ new Date( year, parseInt( dm[ 3 ] ) - 1, parseInt( dm[ 4 ] ) ), city ] );
   }
   return csv.sort( (a, b) => a[ 0 ].getTime() - b[ 0 ].getTime() );

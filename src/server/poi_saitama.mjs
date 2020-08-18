@@ -29,7 +29,7 @@ export default class PoiSaitama extends BasePoi
         const dm = row[ 1 ].trim().match( /((\d+)\/)?(\d+)\/(\d+)/ );
         if ( !dm )
           return null;
-        let year = dm[ 2 ] || new Date().getFullYear(); // このへん2021年になってみないとわからない
+        let year = Number( dm[ 2 ] || new Date().getFullYear() ); // このへん2021年になってみないとわからない
         if ( year < 100 )
           year += 2000;
         return new Date( year, parseInt( dm[ 3 ] ) - 1, parseInt( dm[ 4 ] ) );
