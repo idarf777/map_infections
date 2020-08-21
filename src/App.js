@@ -108,7 +108,7 @@ export default class App extends React.Component
 
   animationStartDay()
   {
-    return Math.floor( (config.ANIMATION_BEGIN_AT.getTime() - this.state.srcdata.begin_at.getTime())/(24*60*60*1000) );
+    return (this.state?.srcdata && Math.floor( (config.ANIMATION_BEGIN_AT.getTime() - this.state.srcdata.begin_at.getTime())/(24*60*60*1000) )) || 0;
   }
   loadData( data )
   {
