@@ -1,7 +1,8 @@
 ## 必要環境
 
 Node.js v14.7
-
+Redis 3.x
+開発はWindows10、デプロイサーバはCentOS 7 or 8を想定
 
 ## コマンド
 
@@ -14,6 +15,9 @@ APIサーバが走る。
 ### `npm run dev`
 APIサーバとreactクライアント開発サーバの両方が走る。
 
+### `npm run build`
+reactクライアントをproduction用にビルドする。dist/index.htmlから開く。
+
 ## 環境変数
 
 | 環境変数名 | 内容 | APIサーバ | クライアント |
@@ -23,36 +27,35 @@ APIサーバとreactクライアント開発サーバの両方が走る。
 | REACT_APP_LOGLEVEL | ログレベル (0～3、0で全ログ出力) |  〇  |  〇 |
 | REACT_APP_DEBUG | デバッグモード |  〇  |  〇 |
 
-[dotenv](https://www.npmjs.com/package/dotenv) が効いているので、「.env」ファイルの記述がシェル変数よりも優先される。
+[dotenv](https://www.npmjs.com/package/dotenv) が効いているので、「.env.development.local」ファイルの記述がシェル変数よりも優先される。
 
 ## 事前準備
-`npm install`してからAPIサーバを走らせて、まず  http://localhost:3001/api/1.0/make_data をGETする。
-5分ほどでデータJSONが作成される(ブラウザがタイムアウトリトライしないように、タブを閉じること)。
-これは最初の1回だけでよい。
 
-この際、環境変数で以下を設定しておくこと。
+最初にMapboxにサインアップして、アクセストークンを取得しておくこと。
+
+```
+cp .env.development .env.development.local
+cp .env.production .env.production.local
+npm install
+npm run server
+(別端末から) curl http://localhost:3001/api/1.0/make_data
+```
+
+5分ほどでデータJSONが作成される。これは最初の1回だけでよい。
+
+## 開発用の起動
+.env.development.localを編集し、環境変数に以下を設定する。
 
 | | |
 | --------------------------- | ---------------------- |
+| REACT_APP_MapboxAccessToken | 取得したMapboxのアクセストークン |
 | REACT_APP_SERVER_ALLOW_FROM_ALL | 1 |
 | REACT_APP_LOGLEVEL | 1 |
 | REACT_APP_DEBUG | 1 |
 
-進捗状況はサーバのログ(コンソール)でのみ確認できる。
+APIサーバとreactクライアント開発サーバの両方を走らせた状態で http://localhost:3000 をブラウザで開くと、reactクライアントが起動する。
 
-Mapboxにサインアップしてアクセストークンを取得しておくこと。
-
-## 開発用の起動
-環境変数を次のように設定する。
-
-| | |
-| --------------------------- | ---------------------- |
-| REACT_APP_MapboxAccessToken | Mapboxのアクセストークン |
-| REACT_APP_DEBUG | 1 |
-| REACT_APP_LOGLEVEL | (必要に応じて) |
-
-APIサーバとreactクライアント開発サーバの両方を走らせておき、http://localhost:3000 からreactクライアントを起動する。
-
+productionでも起動する場合は.env.production.localを編集し、環境変数MAPBOX_ATにtemporary tokenを取得するためのURIを書く。URI中のアクセストークンはpublic READ権限およびREAD:TOKEN, WRITE:TOKEN権限が設定されていること。
 
 ## daemon
 
@@ -102,7 +105,62 @@ su appuser -c "forever list"
 
 ### nginxとの連携
 
-install/nginxを参照してなんとかする
+```npm run build```でproductionビルドされていることが前提となる。
+
+| | |
+| --------------------------- | ---------------------- |
+| ドメイン名 | www.hogehoge.jp |
+| プロジェクトルートディレクトリ | /webapp |
+| REACT_APP_SERVER_PORT | 3001 |
+| REACT_APP_SERVER_HOST | (空文字列) |
+| REACT_APP_LOGLEREACT_APP_SERVER_URI_PREFIXVEL | /covid19map |
+
+上記の設定では、次のようなconfになる。
+
+```
+upstream nodeapp {
+   server localhost:3001;
+}
+map $http_upgrade $connection_upgrade {
+   default upgrade;
+   ''      close;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.hogehoge.jp;
+    return 301 https://$host$request_uri;
+}
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+
+    server_name www.hogehoge.jp;
+
+    location / {
+		    return 301 https://$host/covid19map/;
+    }
+    location /covid19map/ {
+        alias /webapp/map_infections/dist/;
+        index index.html;
+    }
+    location ~ ^/covid19map($|/$|/index.html|/api/) {
+        proxy_pass                              http://nodeapp;
+        proxy_redirect                          off;
+        proxy_redirect                          off;
+        proxy_set_header Host                   $host;
+        proxy_set_header X-Real-IP              $remote_addr;
+        proxy_set_header X-Forwarded-Host       $host;
+        proxy_set_header X-Forwarded-Server     $host;
+        proxy_set_header X-Forwarded-For        $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade                $http_upgrade;
+        proxy_set_header Connection             $connection_upgrade;
+    }
+}
+```
+
+/covid19mapはdist/*を静的参照するが、/covid19map/api/*および/covid19map/index.htmlはAPIサーバに接続する。
 
 ## デバッグ方法
 
