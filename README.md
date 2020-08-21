@@ -55,9 +55,11 @@ npm run server
 
 APIサーバとreactクライアント開発サーバの両方を走らせた状態で http://localhost:3000 をブラウザで開くと、reactクライアントが起動する。
 
-productionでも起動する場合は.env.production.localを編集し、環境変数MAPBOX_ATにtemporary tokenを取得するためのURIを書く。URI中のアクセストークンはpublic READ権限およびREAD:TOKEN, WRITE:TOKEN権限が設定されていること。
-
 ## daemon
+
+productionで起動することが前提となる。
+
+.env.production.localを編集し、環境変数MAPBOX_ATにtemporary tokenを取得するためのURIを書く。このURI中のアクセストークンはpublic READ権限およびREAD:TOKEN, WRITE:TOKEN権限が設定されていること。
 
 ### 必要環境
 ```
@@ -105,7 +107,7 @@ su appuser -c "forever list"
 
 ### nginxとの連携
 
-```npm run build```でproductionビルドされていることが前提となる。
+デプロイする際はreactクライアントが```npm run build```でproductionビルドされていることが前提となる。
 
 | | |
 | --------------------------- | ---------------------- |
@@ -115,7 +117,7 @@ su appuser -c "forever list"
 | REACT_APP_SERVER_HOST | (空文字列) |
 | REACT_APP_LOGLEREACT_APP_SERVER_URI_PREFIXVEL | /covid19map |
 
-上記の設定では、次のようなconfになる。
+上記の設定では、たとえば次のようなconfになる。
 
 ```
 upstream nodeapp {
@@ -135,9 +137,7 @@ server {
 server {
     listen 443 ssl;
     listen [::]:443 ssl;
-
     server_name www.hogehoge.jp;
-
     location / {
 		    return 301 https://$host/covid19map/;
     }
@@ -157,6 +157,12 @@ server {
         proxy_set_header Upgrade                $http_upgrade;
         proxy_set_header Connection             $connection_upgrade;
     }
+    
+    # 以下、SSL証明書の設定
+    ssl_ecdh_curve prime256v1;
+    .
+    .
+    .
 }
 ```
 
