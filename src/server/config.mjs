@@ -166,6 +166,15 @@ export default function makeConfig()
       DATA_URI: 'https://raw.githubusercontent.com/codeforosaka/covid19/development/data/data.json',
       LICENSE: license.MIT
     },
+
+
+
+    TOKUSHIMA_HTML: {
+      DATA_URI: 'https://www.pref.tokushima.lg.jp/ippannokata/kenko/kansensho/5034012#20',
+      LICENSE: license.MIT
+    },
+    
+    
   } );
 
 }
