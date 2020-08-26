@@ -27,9 +27,8 @@ import PoiGifu from "./poi_gifu.mjs";
 import PoiKyoto from "./poi_kyoto.mjs";
 import PoiNara from "./poi_nara.mjs";
 import PoiOsaka from "./poi_osaka.mjs";
-
 import PoiTokushima from "./poi_tokushima.mjs";
-
+import PoiIbaraki from "./poi_ibaraki.mjs";
 //import { example_data } from '../example_data.js';
 const COOKIE_OPTIONS = Object.freeze( { maxAge: config.COOKIE_EXPIRE*1000, path: config.SERVER_URI_PREFIX } );
 const RedisStore = connectRedis( session );
@@ -90,7 +89,7 @@ async function make_data( city )
 }
 
 const CITIES = [
-/*  [ 'tokyo', PoiTokyo ],
+  [ 'tokyo', PoiTokyo ],
   [ 'chiba', PoiChiba ],
   [ 'saitama', PoiSaitama ],
   [ 'kanagawa', PoiKanagawa ],
@@ -101,12 +100,11 @@ const CITIES = [
   [ 'mie', PoiMie ],
   [ 'wakayama', PoiWakayama ],
   [ 'gifu', PoiGifu ],
-*/   [ 'kyoto', PoiKyoto ],
-/*  [ 'nara', PoiNara ],
+  [ 'kyoto', PoiKyoto ],
+  [ 'nara', PoiNara ],
   [ 'osaka', PoiOsaka ],
-*/
-
   [ 'tokushima', PoiTokushima ],
+  [ 'ibaraki', PoiIbaraki ]
 ];
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
@@ -164,9 +162,10 @@ function sendIndexHtml( req, res, token )
 function sendIndex( req, res )
 {
   const uri = req.url.substring( config.SERVER_URI_PREFIX.length );
-  if ( !uri.match( /^\/?(index.html)?$/ ) )
+  if ( config.DEBUG && !uri.match( /^\/?(index.html)?(\?([^\/]*))?$/ ) )
   {
-    res.sendFile( path.join( config.DEPLOY_DIRECTORY, uri ) );
+    // index.html以外はnginxがルーティングしないはず
+    res.sendFile( path.join( config.DEPLOY_DIRECTORY, uri.replace( /\.\./g, '' ) ) );
     return;
   }
   const url = process.env.MAPBOX_AT;

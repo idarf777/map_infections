@@ -10,6 +10,23 @@ const config = global.covid19map.config;
 
 export default class BasePoi
 {
+  // const ALTER_CITY_NAMES = [['浜松市内', '浜松市'], ['駿東郡', '清水町'], ['周智郡', '森町'], ['田方郡', '函南町'], ['榛原郡', '吉田町'], ['賀茂郡', '西伊豆町'], ['東部保健所管内', '沼津市'], ['中部保健所管内', '静岡市'], ['西部保健所管内', '浜松市']];
+  // BasePoi.process_csv( {
+  //  pref_name: '静岡県',               // [必須] 都道府県名
+  //  alter_citys: ALTER_CITY_NAMES,    // 市区町村の別名
+  //  cb_alter_citys: map_poi => altercitys( map_poi ), // 市区町村名のMapを操作する
+  //  csv_uri, config.SHIZUOKA_CSV.DATA_URI,  // CSVのダウンロード元URI
+  //  cb_load_csv: () => load_csv(),  // CSVをダウンロードする csv_uriは無効になる
+  //  cb_parse_csv: cr => parse_html( iconv.decode( cr.data, 'UTF8' ),  // CSVをパースする csv_encodingは無効になる
+  //  csv_encoding: 'CP932',  // CSVの文字コード
+  //  row_begin: 1,     // データ開始行 0-origin
+  //  min_columns: 10,  // 最小列数
+  //  col_date: 1,      // 年月日の列  0-origin
+  //  cb_date: row => new Date( row[ 1 ] ), // 年月日をパースする  col_dateは無効になる
+  //  col_city: 2,      // 市区町村の列  0-origin
+  //  cb_city: row => row[ 2 ],        // 市区町村をパースする  col_cityは無効になる
+  //  cb_name: row => row[ 3 ] + '市'  // 市区町村名を操作する
+  // } )
   static async process_csv( arg )
   {
     const { pref_name, alter_citys, cb_alter_citys, csv_uri, cb_load_csv, cb_parse_csv, csv_encoding, row_begin, min_columns, col_date, cb_date, col_city, cb_city, cb_name } = arg;

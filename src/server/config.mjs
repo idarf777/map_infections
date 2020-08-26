@@ -104,7 +104,7 @@ export default function makeConfig()
       DATA_BEGIN_AT: new Date( '2020-04-10' ),
       DATA_LACK_COUNT: 3,  // これ以上ファイルが欠けていたら終了とみなす
       LICENSE: license.MIT
-    },
+    },  // 東京都はPDFでしか公開していない
     KANAGAWA_CSV: {
       DATA_URI: 'https://www.pref.kanagawa.jp/osirase/1369/data/csv/patient.csv',
       LICENSE: license.FREE
@@ -112,17 +112,19 @@ export default function makeConfig()
     CHIBA_XLS: {
       DATA_URI: 'https://www.city.chiba.jp/hokenfukushi/iryoeisei/seisaku/covid-19/documents/01patient.xlsx', // 千葉県のデータは居住地なし
       LICENSE: license.FREE
-    },
+    },  // 千葉県は市区町村単位のデータを公開していない
     SAITAMA_CSV: {
-      DATA_URI: 'https://opendata.pref.saitama.lg.jp/data/dataset/c3a8db28-b943-4fcc-82ec-b7febd460bec/resource/',
       INDEX_URI: 'https://opendata.pref.saitama.lg.jp/data/dataset/covid19-jokyo',
-      SEARCH_KEY: '<a href="https://opendata.pref.saitama.lg.jp/data/dataset/c3a8db28-b943-4fcc-82ec-b7febd460bec/resource/',
       LICENSE: license.FREE
-    },
+    },  // CSVリンクをスクレイピングで探す
+    IBARAKI_HTML: {
+      DATA_URI: 'https://www.pref.ibaraki.jp/1saigai/2019-ncov/ichiran.html',
+      LICENSE: license.FREE
+    },  // スクレイピングでデータを拾う
     YAMANASHI_XLS: {
       DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/youseisha.xlsx',
       LICENSE: license.FREE
-    },
+    }, // 山梨県は2020/6/14からデータを更新していない
     SHIZUOKA_CSV: {
       DATA_URI: 'https://opendata.pref.shizuoka.jp/dataset/8167/resource/46279/220001_shizuoka_covid19_patients.csv',
       LICENSE: license.CC,
@@ -140,7 +142,7 @@ export default function makeConfig()
     NAGANO_HTML: {
       DATA_URI: 'https://www.pref.nagano.lg.jp/hoken-shippei/kenko/kenko/kansensho/joho/corona-doko.html',
       LICENSE: license.CC
-    },
+    }, // スクレイピングでデータを拾う
     MIE_CSV: {
       DATA_URI: 'https://www.pref.mie.lg.jp/common/content/000896797.csv',
       LICENSE: license.CC
@@ -153,28 +155,24 @@ export default function makeConfig()
       DATA_URI: 'https://data.gifu-opendata.pref.gifu.lg.jp/dataset/4661bf9d-6f75-43fb-9d59-f02eb84bb6e3/resource/9c35ee55-a140-4cd8-a266-a74edf60aa80/download/210005gifucovid19patients.csv',
       LICENSE: license.CC
     },
-    // 滋賀県はかなり面倒なので後まわし
-    KYOTO_HTML: {
-      DATA_URI: 'https://www.pref.kyoto.jp/kentai/corona/hassei1-50.html',
-      LICENSE: license.FREE
-    },
+    // 滋賀県はCSV等のデータで提供しておらず、スクレイピングする必要があるが、ページをまたがっていてかなり面倒なので後まわし
+    KYOTO_JSON: {
+      DATA_URI: 'https://raw.githubusercontent.com/stopcovid19-kyoto/covid19/master/data/data.json',
+      HTML_URI: 'https://www.pref.kyoto.jp/kentai/corona/hassei1-50.html',
+      LICENSE: license.MIT
+    }, // 京都府はスクレイピングしても過去の新規感染者の日付が追えない
     NARA_XLS: {
       DATA_URI: 'http://www.pref.nara.jp/secure/227193/%E5%A5%88%E8%89%AF%E7%9C%8C_01%E6%96%B0%E5%9E%8B%E3%82%B3%E3%83%AD%E3%83%8A%E3%82%A6%E3%82%A4%E3%83%AB%E3%82%B9%E6%84%9F%E6%9F%93%E8%80%85_%E6%82%A3%E8%80%85%E3%83%AA%E3%82%B9%E3%83%88.xlsx',
       LICENSE: license.FREE
     },
     OSAKA_JSON: {
-      DATA_URI: 'https://raw.githubusercontent.com/codeforosaka/covid19/development/data/data.json',
+      DATA_URI: 'https://raw.githubusercontent.com/codeforosaka/covid19/master/data/data.json',
       LICENSE: license.MIT
     },
-
-
-
     TOKUSHIMA_HTML: {
       DATA_URI: 'https://www.pref.tokushima.lg.jp/ippannokata/kenko/kansensho/5034012#20',
       LICENSE: license.MIT
-    },
-    
-    
+    } // 大阪府はCSV等のデータで提供していない
   } );
 
 }
