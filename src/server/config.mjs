@@ -168,7 +168,11 @@ export default function makeConfig()
     OSAKA_JSON: {
       DATA_URI: 'https://raw.githubusercontent.com/codeforosaka/covid19/master/data/data.json',
       LICENSE: license.MIT
-    }, // 大阪府はCSV等のデータで提供していない
+    },
+    TOKUSHIMA_HTML: {
+      DATA_URI: 'https://www.pref.tokushima.lg.jp/ippannokata/kenko/kansensho/5034012#20',
+      LICENSE: license.MIT
+    } // 大阪府はCSV等のデータで提供していない
   } );
 
 }
