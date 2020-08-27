@@ -27,7 +27,9 @@ import PoiGifu from "./poi_gifu.mjs";
 import PoiKyoto from "./poi_kyoto.mjs";
 import PoiNara from "./poi_nara.mjs";
 import PoiOsaka from "./poi_osaka.mjs";
+import PoiTokushima from "./poi_tokushima.mjs";
 import PoiIbaraki from "./poi_ibaraki.mjs";
+import PoiTochigi from "./poi_tochigi.mjs";
 //import { example_data } from '../example_data.js';
 const COOKIE_OPTIONS = Object.freeze( { maxAge: config.COOKIE_EXPIRE*1000, path: config.SERVER_URI_PREFIX } );
 const RedisStore = connectRedis( session );
@@ -102,13 +104,15 @@ const CITIES = [
   [ 'kyoto', PoiKyoto ],
   [ 'nara', PoiNara ],
   [ 'osaka', PoiOsaka ],
+  [ 'tokushima', PoiTokushima ],
   [ 'ibaraki', PoiIbaraki ],
+  [ 'tochigi', PoiTochigi ]
 ];
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   if ( !config.DEBUG && req.query.token !== process.env.MAKEDATA_TOKEN )
   {
-    res.status( 501 );
+    res.status( 501 ).send( 'bad auth' );
     return;
   }
   mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) )

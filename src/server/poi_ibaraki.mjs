@@ -17,13 +17,12 @@ async function parse_html( html )
     const m = re.exec( rows );
     if ( !m )
       break;
-    const date = m[ 1 ];
-    const city = m[ 2 ];
-    const dm = date.trim().match( /((\d+)\/)?(\d+)\/(\d+)/ );
+    const mr = m.map( (v,i) => (i > 0) && v.replace( /&.+?;/g, '' ).trim() );
+    const dm = mr[ 1 ].match( /((\d+)\/)?(\d+)\/(\d+)/ );
     if ( !dm )
       continue;
     const year = Number( dm[ 2 ] || new Date().getFullYear() ); // このへん2021年になってみないとわからない
-    csv.push( [ new Date( year, parseInt( dm[ 3 ] ) - 1, parseInt( dm[ 4 ] ) ), city ] );
+    csv.push( [ new Date( year, parseInt( dm[ 3 ] ) - 1, parseInt( dm[ 4 ] ) ), mr[ 2 ] ] );
   }
   return csv.sort( (a, b) => a[ 0 ].getTime() - b[ 0 ].getTime() );
 }
