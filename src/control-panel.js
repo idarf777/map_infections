@@ -15,9 +15,9 @@ export default class ControlPanel extends PureComponent
   render() {
     return (
       <div className="control-panel">
-        <h3>{this.props.apimsg}</h3>
+        <div className="right"><h3>{this.props.apimsg}</h3></div>
 
-        <div className="blue"><button className="btn-square-small" onClick={this._onClickShowDescription}>ABOUT DATA...</button></div>
+        <div className="right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowDescription}>ABOUT DATA...</button></div></div>
         <div className={ this.SHOW_HIDE_STYLES[ this.state.description_view ] }>
           <div className="scrollabletextbox">
             <table>
@@ -35,7 +35,7 @@ export default class ControlPanel extends PureComponent
           </div>
         </div>
 
-        <button className="btn-square-small" onClick={this._onClickShowLicense}>LICENSE...</button>
+        <div className="right"><button className="btn-square-small" onClick={this._onClickShowLicense}>LICENSE...</button></div>
         <div className={ this.SHOW_HIDE_STYLES[ this.state.license_view ] }>
           <div className="scrollabletextbox">
             <div className="pre">
