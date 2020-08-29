@@ -3,7 +3,7 @@ import iconv from "iconv-lite";
 import encoding from 'encoding-japanese';
 const config = global.covid19map.config;
 
-const ALTER_CITY_NAMES = [['徳島県', ''], ['大阪市（帰省先：高松市）', ''], ['岡山県', '']];
+const ALTER_CITY_NAMES = [['徳島県', ''], ['大阪市（帰省先：高松市）', '高松市'], ['岡山県', '']];
 async function parse_json( cr )
 {
   const json = JSON.parse( iconv.decode( cr.data, 'UTF8' ) );

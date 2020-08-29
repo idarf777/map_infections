@@ -176,8 +176,11 @@ export default function makeConfig()
     KAGAWA_HTML: {
       DATA_URI: 'https://www.pref.kagawa.lg.jp/content/etc/subsite/kansenshoujouhou/kansen/se9si9200517102553.shtml',
       LICENSE: license.FREE
+    },
+    KOCHI_CSV: {
+      DATA_URI: 'https://www.pref.kochi.lg.jp/soshiki/111301/files/2020041300141/390003_kochi_covid19_patients.csv',
+      LICENSE: license.CC
     }
-
   } );
 
 }
