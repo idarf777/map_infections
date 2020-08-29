@@ -169,6 +169,7 @@ export default function makeConfig()
       DATA_URI: 'https://raw.githubusercontent.com/codeforosaka/covid19/master/data/data.json',
       LICENSE: license.MIT
     }, // 大阪府はCSV等のデータで提供していない
+    // 四国
     TOKUSHIMA_HTML: {
       DATA_URI: 'https://www.pref.tokushima.lg.jp/ippannokata/kenko/kansensho/5034012#20',
       LICENSE: license.FREE
@@ -180,7 +181,12 @@ export default function makeConfig()
     KOCHI_CSV: {
       DATA_URI: 'https://www.pref.kochi.lg.jp/soshiki/111301/files/2020041300141/390003_kochi_covid19_patients.csv',
       LICENSE: license.CC
+    },
+    EHIME_CSV: {
+      DATA_URI: 'https://www.pref.ehime.jp/opendata-catalog/dataset/2174/resource/7057/380008_ehime_covid19_patients.csv',
+      LICENSE: license.CC
     }
+
   } );
 
 }
