@@ -29,7 +29,7 @@ async function parse_html( html )
   }
   return csv;
 }
-export default class PoiKyoto extends BasePoi
+export default class PoiTokushima extends BasePoi
 {
   static async load()
   {
