@@ -168,7 +168,7 @@ export default function makeConfig()
       DATA_URI: 'https://raw.githubusercontent.com/stopcovid19-kyoto/covid19/master/data/data.json',
       HTML_URI: 'https://www.pref.kyoto.jp/kentai/corona/hassei1-50.html',
       LICENSE: license.MIT
-    }, // 京都府はスクレイピングしても過去の新規感染者の日付が追えない
+    },
     NARA_XLS: {
       DATA_URI: 'http://www.pref.nara.jp/secure/227193/%E5%A5%88%E8%89%AF%E7%9C%8C_01%E6%96%B0%E5%9E%8B%E3%82%B3%E3%83%AD%E3%83%8A%E3%82%A6%E3%82%A4%E3%83%AB%E3%82%B9%E6%84%9F%E6%9F%93%E8%80%85_%E6%82%A3%E8%80%85%E3%83%AA%E3%82%B9%E3%83%88.xlsx',
       LICENSE: license.FREE

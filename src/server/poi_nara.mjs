@@ -3,7 +3,7 @@ import { sanitize_poi_name } from "./util.mjs";
 import BasePoi from "./base_poi.mjs";
 const config = global.covid19map.config;
 
-const ALTER_CITY_NAMES = [['奈良県内', ''], ['郡山保健所管内', '大和郡山市'], ['中和保健所管内', '大和高田市']];
+const ALTER_CITY_NAMES = [['郡山保健所管内', '大和郡山市'], ['中和保健所管内', '大和高田市']];
 async function parse_xlsx( cr )
 {
   const book = xlsx.read( cr.data, { cellDates: true } );
