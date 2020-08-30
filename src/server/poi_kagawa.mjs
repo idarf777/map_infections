@@ -3,7 +3,12 @@ import iconv from "iconv-lite";
 import encoding from 'encoding-japanese';
 const config = global.covid19map.config;
 
-const ALTER_CITY_NAMES = [['徳島県', ''], ['大阪市（帰省先：高松市）', '高松市'], ['岡山県', '']];
+//const ALTER_CITY_NAMES = [['徳島県', ''], ['大阪市（帰省先：高松市）', '高松市'], ['岡山県', '']];
+function filter_city( city )
+{
+  const m = city.match( /帰省先[：:](.+?)[）)\s\S]/ );
+  return m ? m[ 1 ] : city;
+}
 async function parse_json( cr )
 {
   const json = JSON.parse( iconv.decode( cr.data, 'UTF8' ) );
@@ -56,13 +61,13 @@ async function parse_html( html )
 
     index = nextSearch(hText, index);
     str = hText[index].replace( /&nbsp;/g, "");
-    var no = str.match(/^<div class=\".*\">(\d+)/);
+    var no = str.match(/^<div class=\".+?\">(\d+)/);
 
     index = nextSearch(hText, index);
     str = hText[index].replace( /&nbsp;/g, "");
     
     if( str.includes( '月') ){
-      var result = str.match(/^<div class=\".*\">(\d+)月(\d+)日/);
+      var result = str.match(/^<div class=\".+?\">(\d+)月(\d+)日/);
       var mon = result[ 1 ];
       var day = result[ 2 ];
 
@@ -72,19 +77,19 @@ async function parse_html( html )
       // 日にちのカラムが前のと同じ。何もしない。
     }
 
-    var age = str.match(/^<div class=\".*\">(\d+)代/);
+    var age = str.match(/^<div class=\".+?\">(\d+)代/);
 
     index = nextSearch(hText, index);
     str = hText[index].replace( /&nbsp;/g, "");
-    var sex = str.match(/^<div class=\".*\">(.*?)<\/div>/);
+    var sex = str.match(/^<div class=\".+?\">(.*?)<\/div>/);
 
     index = nextSearch(hText, index);
     str = hText[index].replace( /&nbsp;/g, "");
     
-    var city = str.match(/^<div class=\".*\">(.*?)<\/div>/);
+    var city = str.match(/^<div class=\".+?\">(.*?)<\/div>/);
   
-    csv.push( [ new Date( 2020, mon-1, day), city[ 1 ] ] );
-    console.log(no[ 1 ], "....", mon, "月", day, "日　", city[ 1 ] );
+    csv.push( [ new Date( 2020, mon-1, day), filter_city( city[ 1 ] ) ] );
+    //console.log(no[ 1 ], "....", mon, "月", day, "日　", city[ 1 ] );
   
     if( no[ 1 ] == 1){
       break;
@@ -99,7 +104,7 @@ export default class PoiKagawa extends BasePoi
   {
     return BasePoi.process_csv( {
       pref_name: '香川県',
-      alter_citys: ALTER_CITY_NAMES,
+      //alter_citys: ALTER_CITY_NAMES,
       csv_uri: config.KAGAWA_HTML.DATA_URI,
       cb_parse_csv: cr => parse_html( cr ),
       row_begin: 0,
