@@ -28,9 +28,9 @@ import PoiKyoto from "./poi_kyoto.mjs";
 import PoiNara from "./poi_nara.mjs";
 import PoiOsaka from "./poi_osaka.mjs";
 import PoiIbaraki from "./poi_ibaraki.mjs";
+import PoiTochigi from "./poi_tochigi.mjs";
 // 北陸
 import PoiIshikawa from "./poi_ishikawa.mjs";
-
 // 四国
 import PoiTokushima from "./poi_tokushima.mjs";
 import PoiKagawa from "./poi_kagawa.mjs";
@@ -111,22 +111,18 @@ const CITIES = [
   [ 'nara', PoiNara ],
   [ 'osaka', PoiOsaka ],
   [ 'ibaraki', PoiIbaraki ],
-// 北陸
-*/  [ 'ishikawa', PoiIshikawa ],
-
-
-// 四国
-/*  [ 'tokushima', PoiTokushima ],
+  [ 'tochigi', PoiTochigi ],
+  [ 'ishikawa', PoiIshikawa ],
+  [ 'tokushima', PoiTokushima ],
   [ 'kagawa', PoiKagawa ],
   [ 'kochi', PoiKochi ],
-  [ 'ehime', PoiEhime ],
-*/
+  [ 'ehime', PoiEhime ]
 ];
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   if ( !config.DEBUG && req.query.token !== process.env.MAKEDATA_TOKEN )
   {
-    res.status( 501 );
+    res.status( 501 ).send( 'bad auth' );
     return;
   }
   mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) )

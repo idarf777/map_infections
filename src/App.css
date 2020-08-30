@@ -107,7 +107,7 @@ body {
   background: #fff;
   box-shadow: 0 0.1em 0.2em rgba(0,0,0,0.3);
   padding: 1em 2em;
-  margin: 2em;
+  margin: 8pt;
   font-size: 11pt;
   line-height: 2;
   color: #6b6b76;
@@ -191,6 +191,16 @@ body {
   font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
   font-size: 82%;
   overflow:scroll;
+}
+
+.left{
+  text-align: left;
+}
+.center{
+  text-align: center;
+}
+.right{
+  text-align: right;
 }
 
 table{

@@ -1,8 +1,8 @@
 ## 必要環境
 
-Node.js v14.7
-Redis 3.x
-開発はWindows10、デプロイサーバはCentOS 7 or 8を想定
+- Node.js v14.7
+- Redis 3.x
+- 開発はWindows10、デプロイサーバはCentOS 7 or 8を想定
 
 ## コマンド
 
@@ -41,7 +41,7 @@ npm run server
 (別端末から) curl http://localhost:3001/api/1.0/make_data
 ```
 
-5分ほどでデータJSONが作成される。これは最初の1回だけでよい。
+5～15分ほどでデータJSONが作成される。これは最初の1回だけでよい。
 
 ## 開発用の起動
 .env.development.localを編集し、環境変数に以下を設定する。
@@ -167,6 +167,8 @@ server {
 ```
 
 /covid19mapはdist/*を静的参照するが、/covid19map/api/*および/covid19map/index.htmlはAPIサーバに接続する。
+
+また、デプロイサーバではcronを設定して```curl http://localhost:3001/api/1.0/make_data```を1日1回実行し、データJSONを自動更新すること。
 
 ## デバッグ方法
 

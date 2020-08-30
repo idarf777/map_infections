@@ -121,6 +121,10 @@ export default function makeConfig()
       DATA_URI: 'https://www.pref.ibaraki.jp/1saigai/2019-ncov/ichiran.html',
       LICENSE: license.FREE
     },  // スクレイピングでデータを拾う
+    TOCHIGI_HTML: {
+      DATA_URI: 'http://www.pref.tochigi.lg.jp/e04/welfare/hoken-eisei/kansen/hp/coronakensahasseijyoukyou.html',
+      LICENSE: license.FREE
+    },  // URIをスクレイピングで探す
     YAMANASHI_XLS: {
       DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/youseisha.xlsx',
       LICENSE: license.FREE
