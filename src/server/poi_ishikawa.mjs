@@ -2,8 +2,8 @@ import BasePoi from "./base_poi.mjs";
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
-  ['県外', ''],
-  ['県内', ''],
+  //['県外', ''],
+  //['県内', ''],
   ['県内（金沢市保健所管内）', '金沢市'], 
   ['県内（石川中央保健福祉センター管内）', '金沢市'], 
   ['県内（南加賀保健福祉センター管内）', '小松市'], 
