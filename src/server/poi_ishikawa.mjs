@@ -1,0 +1,27 @@
+import BasePoi from "./base_poi.mjs";
+const config = global.covid19map.config;
+
+const ALTER_CITY_NAMES = [
+  ['県外', ''],
+  ['県内', ''],
+  ['県内（金沢市保健所管内）', '金沢市'], 
+  ['県内（石川中央保健福祉センター管内）', '金沢市'], 
+  ['県内（南加賀保健福祉センター管内）', '小松市'], 
+];
+export default class PoiIshikawa extends BasePoi
+{
+  static async load()
+  {
+    return BasePoi.process_csv( {
+      pref_name: '石川県',
+      alter_citys: ALTER_CITY_NAMES,
+      csv_uri: config.ISHIKAWA_CSV.DATA_URI,
+      csv_encoding: 'CP932',
+//      csv_encoding: 'UTF8',
+      row_begin: 1,
+      min_columns: 6,
+      col_date: 4,
+      col_city: 5
+    } );
+  }
+}
