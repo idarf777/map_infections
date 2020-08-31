@@ -36,6 +36,9 @@ import PoiTokushima from "./poi_tokushima.mjs";
 import PoiKagawa from "./poi_kagawa.mjs";
 import PoiKochi from "./poi_kochi.mjs";
 import PoiEhime from "./poi_ehime.mjs";
+// 九州
+import PoiFukuoka from "./poi_fukuoka.mjs";
+
 //import { example_data } from '../example_data.js';
 const COOKIE_OPTIONS = Object.freeze( { maxAge: config.COOKIE_EXPIRE*1000, path: config.SERVER_URI_PREFIX } );
 const RedisStore = connectRedis( session );
@@ -96,7 +99,7 @@ async function make_data( city )
 }
 
 const CITIES = [
-/*  [ 'tokyo', PoiTokyo ],
+  [ 'tokyo', PoiTokyo ],
   [ 'chiba', PoiChiba ],
   [ 'saitama', PoiSaitama ],
   [ 'kanagawa', PoiKanagawa ],
@@ -116,7 +119,8 @@ const CITIES = [
   [ 'tokushima', PoiTokushima ],
   [ 'kagawa', PoiKagawa ],
   [ 'kochi', PoiKochi ],
-  [ 'ehime', PoiEhime ]
+  [ 'ehime', PoiEhime ],
+  [ 'fukuoka', PoiFukuoka],
 ];
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
