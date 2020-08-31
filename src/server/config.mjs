@@ -52,10 +52,10 @@ export default function makeConfig()
     MAX_INFECTORS: 100,
     MAX_INFECTORS_COLOR: 70,
     MAP_STYLE: 'mapbox://styles/mapbox/light-v10',
-    MAP_ZOOM: 7.2,
+    MAP_ZOOM: 6.5,
     MAP_PITCH: 40,  // [degree]
     MAP_BEARING: 0,
-    MAP_CENTER: [138.0, 35.4], // [degree]
+    MAP_CENTER: [136.63, 35.0], // [degree]
     MAP_ELEVATION: 150000,  // [m]
     MAP_COLORRANGE: [
       [1, 152, 189],    // 0のとき
@@ -125,6 +125,10 @@ export default function makeConfig()
       DATA_URI: 'http://www.pref.tochigi.lg.jp/e04/welfare/hoken-eisei/kansen/hp/coronakensahasseijyoukyou.html',
       LICENSE: license.FREE
     },  // URIをスクレイピングで探す
+    GUNMA_CSV: {
+      DATA_URI: 'http://stopcovid19.pref.gunma.jp/csv/01kanja.csv',
+      LICENSE: license.MIT
+    },
     YAMANASHI_XLS: {
       DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/youseisha.xlsx',
       LICENSE: license.FREE
@@ -164,7 +168,7 @@ export default function makeConfig()
       DATA_URI: 'https://raw.githubusercontent.com/stopcovid19-kyoto/covid19/master/data/data.json',
       HTML_URI: 'https://www.pref.kyoto.jp/kentai/corona/hassei1-50.html',
       LICENSE: license.MIT
-    }, // 京都府はスクレイピングしても過去の新規感染者の日付が追えない
+    },
     NARA_XLS: {
       DATA_URI: 'http://www.pref.nara.jp/secure/227193/%E5%A5%88%E8%89%AF%E7%9C%8C_01%E6%96%B0%E5%9E%8B%E3%82%B3%E3%83%AD%E3%83%8A%E3%82%A6%E3%82%A4%E3%83%AB%E3%82%B9%E6%84%9F%E6%9F%93%E8%80%85_%E6%82%A3%E8%80%85%E3%83%AA%E3%82%B9%E3%83%88.xlsx',
       LICENSE: license.FREE
@@ -178,7 +182,6 @@ export default function makeConfig()
       DATA_URI: 'https://www.pref.ishikawa.lg.jp/kansen/documents/170003_ishikawa_covid19_patients.csv',
       LICENSE: license.FREE
     },
-
     // 四国
     TOKUSHIMA_HTML: {
       DATA_URI: 'https://www.pref.tokushima.lg.jp/ippannokata/kenko/kansensho/5034012#20',

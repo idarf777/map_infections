@@ -29,6 +29,7 @@ import PoiNara from "./poi_nara.mjs";
 import PoiOsaka from "./poi_osaka.mjs";
 import PoiIbaraki from "./poi_ibaraki.mjs";
 import PoiTochigi from "./poi_tochigi.mjs";
+import PoiGunma from "./poi_gunma.mjs";
 // 北陸
 import PoiIshikawa from "./poi_ishikawa.mjs";
 // 四国
@@ -115,6 +116,7 @@ const CITIES = [
   [ 'osaka', PoiOsaka ],
   [ 'ibaraki', PoiIbaraki ],
   [ 'tochigi', PoiTochigi ],
+  [ 'gunma', PoiGunma ],
   [ 'ishikawa', PoiIshikawa ],
   [ 'tokushima', PoiTokushima ],
   [ 'kagawa', PoiKagawa ],

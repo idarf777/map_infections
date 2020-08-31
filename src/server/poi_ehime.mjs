@@ -2,9 +2,9 @@ import BasePoi from "./base_poi.mjs";
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
-  ['その他', ''],
+  //['その他', ''],
   ['東予地域', '四国中央市'],
-  ['非公表', ''], 
+  //['非公表', ''],
 ];
 export default class PoiEhime extends BasePoi
 {

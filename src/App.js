@@ -157,7 +157,7 @@ export default class App extends React.Component
   };
 
   _onViewStateChange = ({viewState}) => {
-    Log.debug( `zoom = ${viewState.zoom}` );
+    Log.debug( viewState );
     this.setState( {viewState} );
   };
 
