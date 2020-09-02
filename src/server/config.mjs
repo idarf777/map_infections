@@ -129,6 +129,10 @@ export default function makeConfig()
       DATA_URI: 'http://stopcovid19.pref.gunma.jp/csv/01kanja.csv',
       LICENSE: license.MIT
     },
+    NIIGATA_HTML: {
+      DATA_URI: 'https://www.pref.niigata.lg.jp/site/shingata-corona/256362836.html',
+      LICENSE: license.FREE
+    }, // 山梨県は2020/6/14からデータを更新していない
     YAMANASHI_XLS: {
       DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/youseisha.xlsx',
       LICENSE: license.FREE
