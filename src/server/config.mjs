@@ -133,6 +133,10 @@ export default function makeConfig()
       DATA_URI: 'https://www.pref.niigata.lg.jp/site/shingata-corona/256362836.html',
       LICENSE: license.FREE
     }, // 山梨県は2020/6/14からデータを更新していない
+    TOYAMA_HTML: {
+      DATA_URI: 'http://www.pref.toyama.jp/cms_sec/1205/kj00021798.html',
+      LICENSE: license.FREE
+    },  // URIをスクレイピングで探す
     YAMANASHI_XLS: {
       DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/youseisha.xlsx',
       LICENSE: license.FREE
