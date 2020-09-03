@@ -137,8 +137,9 @@ export default function makeConfig()
       DATA_URI: 'http://www.pref.toyama.jp/cms_sec/1205/kj00021798.html',
       LICENSE: license.FREE
     },  // URIをスクレイピングで探す
-    YAMANASHI_XLS: {
+    YAMANASHI_XLSX: {
       DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/youseisha.xlsx',
+      HTML_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/info_coronavirus_prevention.html',
       LICENSE: license.FREE
     }, // 山梨県は2020/6/14からデータを更新していない
     SHIZUOKA_CSV: {
