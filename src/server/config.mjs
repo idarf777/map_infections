@@ -209,6 +209,12 @@ export default function makeConfig()
       DATA_URI: 'http://data.bodik.jp/dataset/09951e04-dc5d-42e9-9a49-37443be6787e/resource/de7ce61e-1849-47a1-b758-bca3f809cdf8/download/20200902prefnagasakicovidpatients.csv',
       LICENSE: license.CC
     },
+    SAGA_HTML: {
+      DATA_URI: 'https://www.pref.saga.lg.jp/kiji00373220/index.html',
+      LICENSE: license.FREE
+    },
+
+
 
   } );
 
