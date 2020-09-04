@@ -1,7 +1,7 @@
 import BasePoi from "./base_poi.mjs";
 const config = global.covid19map.config;
 
-const ALTER_CITY_NAMES = [['不定', ''], ['尾張地方', '一宮市'], ['三河地方', '岡崎市'], ['一宮保健所管内', '一宮市']];
+const ALTER_CITY_NAMES = [['尾張地方', '一宮市'], ['三河地方', '岡崎市'], ['一宮保健所管内', '一宮市']];
 export default class PoiAichi extends BasePoi
 {
   static async load()

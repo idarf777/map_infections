@@ -168,7 +168,7 @@ export default function makeConfig()
       DATA_URI: 'https://raw.githubusercontent.com/stopcovid19-kyoto/covid19/master/data/data.json',
       HTML_URI: 'https://www.pref.kyoto.jp/kentai/corona/hassei1-50.html',
       LICENSE: license.MIT
-    }, // 京都府はスクレイピングしても過去の新規感染者の日付が追えない
+    },
     NARA_XLS: {
       DATA_URI: 'http://www.pref.nara.jp/secure/227193/%E5%A5%88%E8%89%AF%E7%9C%8C_01%E6%96%B0%E5%9E%8B%E3%82%B3%E3%83%AD%E3%83%8A%E3%82%A6%E3%82%A4%E3%83%AB%E3%82%B9%E6%84%9F%E6%9F%93%E8%80%85_%E6%82%A3%E8%80%85%E3%83%AA%E3%82%B9%E3%83%88.xlsx',
       LICENSE: license.FREE
@@ -193,12 +193,28 @@ export default function makeConfig()
     },
     KOCHI_CSV: {
       DATA_URI: 'https://www.pref.kochi.lg.jp/soshiki/111301/files/2020041300141/390003_kochi_covid19_patients.csv',
-      LICENSE: license.CC
+      LICENSE: license.FREE
     },
     EHIME_CSV: {
       DATA_URI: 'https://www.pref.ehime.jp/opendata-catalog/dataset/2174/resource/7057/380008_ehime_covid19_patients.csv',
       LICENSE: license.CC
-    }
+    },
+
+    // 九州
+    FUKUOKA_CSV: {
+      DATA_URI: 'https://ckan.open-governmentdata.org/dataset/8a9688c2-7b9f-4347-ad6e-de3b339ef740/resource/c27769a2-8634-47aa-9714-7e21c4038dd4/download/400009_pref_fukuoka_covid19_patients.csv',
+      LICENSE: license.CC
+    },
+    NAGASAKI_HTML: {
+      DATA_URI: 'https://data.bodik.jp/dataset/420000_covidpatients/resource/de7ce61e-1849-47a1-b758-bca3f809cdf8',
+      LICENSE: license.CC
+    },
+    SAGA_HTML: {
+      DATA_URI: 'https://www.pref.saga.lg.jp/kiji00373220/index.html',
+      LICENSE: license.FREE
+    },
+
+
 
   } );
 
