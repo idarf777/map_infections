@@ -129,8 +129,21 @@ export default function makeConfig()
       DATA_URI: 'http://stopcovid19.pref.gunma.jp/csv/01kanja.csv',
       LICENSE: license.MIT
     },
-    YAMANASHI_XLS: {
+    FUKUSHIMA_HTML: {
+      DATA_URI: 'https://www.pref.fukushima.lg.jp/sec/21045c/fukushima-hasseijyoukyou.html',
+      LICENSE: license.FREE
+    },
+    NIIGATA_HTML: {
+      DATA_URI: 'https://www.pref.niigata.lg.jp/site/shingata-corona/256362836.html',
+      LICENSE: license.FREE
+    }, // 山梨県は2020/6/14からデータを更新していない
+    TOYAMA_HTML: {
+      DATA_URI: 'http://www.pref.toyama.jp/cms_sec/1205/kj00021798.html',
+      LICENSE: license.FREE
+    },  // URIをスクレイピングで探す
+    YAMANASHI_XLSX: {
       DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/youseisha.xlsx',
+      HTML_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/info_coronavirus_prevention.html',
       LICENSE: license.FREE
     }, // 山梨県は2020/6/14からデータを更新していない
     SHIZUOKA_CSV: {
