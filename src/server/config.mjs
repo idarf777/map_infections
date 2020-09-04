@@ -193,7 +193,7 @@ export default function makeConfig()
     },
     KOCHI_CSV: {
       DATA_URI: 'https://www.pref.kochi.lg.jp/soshiki/111301/files/2020041300141/390003_kochi_covid19_patients.csv',
-      LICENSE: license.CC
+      LICENSE: license.FREE
     },
     EHIME_CSV: {
       DATA_URI: 'https://www.pref.ehime.jp/opendata-catalog/dataset/2174/resource/7057/380008_ehime_covid19_patients.csv',
