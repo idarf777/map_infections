@@ -205,8 +205,8 @@ export default function makeConfig()
       DATA_URI: 'https://ckan.open-governmentdata.org/dataset/8a9688c2-7b9f-4347-ad6e-de3b339ef740/resource/c27769a2-8634-47aa-9714-7e21c4038dd4/download/400009_pref_fukuoka_covid19_patients.csv',
       LICENSE: license.CC
     },
-    NAGASAKI_CSV: {
-      DATA_URI: 'http://data.bodik.jp/dataset/09951e04-dc5d-42e9-9a49-37443be6787e/resource/de7ce61e-1849-47a1-b758-bca3f809cdf8/download/20200902prefnagasakicovidpatients.csv',
+    NAGASAKI_HTML: {
+      DATA_URI: 'https://data.bodik.jp/dataset/420000_covidpatients/resource/de7ce61e-1849-47a1-b758-bca3f809cdf8',
       LICENSE: license.CC
     },
     SAGA_HTML: {

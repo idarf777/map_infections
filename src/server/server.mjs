@@ -102,7 +102,7 @@ async function make_data( city )
 }
 
 const CITIES = [
-/*  [ 'tokyo', PoiTokyo ],
+  [ 'tokyo', PoiTokyo ],
   [ 'chiba', PoiChiba ],
   [ 'saitama', PoiSaitama ],
   [ 'kanagawa', PoiKanagawa ],
@@ -126,7 +126,7 @@ const CITIES = [
   [ 'ehime', PoiEhime ],
   [ 'fukuoka', PoiFukuoka],
   [ 'nagasaki', PoiNagasaki],
-*/  [ 'saga', PoiSaga],
+  [ 'saga', PoiSaga],
 ];
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
