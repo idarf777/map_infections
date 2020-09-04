@@ -17,6 +17,7 @@ import PoiTokyo from './poi_tokyo.mjs';
 import PoiKanagawa from './poi_kanagawa.mjs';
 import PoiChiba from "./poi_chiba.mjs";
 import PoiSaitama from "./poi_saitama.mjs";
+import PoiFukushima from "./poi_fukushima.mjs";
 import PoiNiigata from "./poi_niigata.mjs";
 import PoiToyama from "./poi_toyama.mjs";
 import PoiYamanashi from "./poi_yamanashi.mjs";
@@ -104,6 +105,7 @@ const CITIES = [
   [ 'saitama', PoiSaitama ],
   [ 'kanagawa', PoiKanagawa ],
   [ 'niigata', PoiNiigata ],
+  [ 'fukushima', PoiFukushima ],
   [ 'toyama', PoiToyama ],
   [ 'yamanashi', PoiYamanashi ],
   [ 'shizuoka', PoiShizuoka ],
