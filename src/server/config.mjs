@@ -230,6 +230,10 @@ export default function makeConfig()
       DATA_URI: 'https://data.bodik.jp/dataset/f632f467-716c-46aa-8838-0d535f98b291/resource/3714d264-70f3-4518-a57a-8391e0851d7d/download/440001oitacovid19patients.csv',
       LICENSE: license.CC
     },
+    KUMAMOTO_JSON: {
+      DATA_URI: 'https://raw.githubusercontent.com/codeforkumamoto/covid19/development/data/data.json',
+      LICENSE: license.MIT
+    }, 
 
 
 
