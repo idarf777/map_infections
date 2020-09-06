@@ -13,26 +13,32 @@ import session from 'express-session';
 import connectRedis from 'connect-redis';
 import { datetostring } from "./util.mjs";
 // CSRFは後の課題とする
+
+// 東北
+import PoiMiyagi from "./poi_miyagi.mjs";
+import PoiFukushima from "./poi_fukushima.mjs";
+// 関東甲信越
 import PoiTokyo from './poi_tokyo.mjs';
 import PoiKanagawa from './poi_kanagawa.mjs';
 import PoiChiba from "./poi_chiba.mjs";
 import PoiSaitama from "./poi_saitama.mjs";
-import PoiFukushima from "./poi_fukushima.mjs";
-import PoiNiigata from "./poi_niigata.mjs";
-import PoiToyama from "./poi_toyama.mjs";
-import PoiYamanashi from "./poi_yamanashi.mjs";
-import PoiShizuoka from "./poi_shizuoka.mjs";
-import PoiAichi from "./poi_aichi.mjs";
-import PoiNagano from "./poi_nagano.mjs";
-import PoiMie from "./poi_mie.mjs";
-import PoiWakayama from "./poi_wakayama.mjs";
-import PoiGifu from "./poi_gifu.mjs";
-import PoiKyoto from "./poi_kyoto.mjs";
-import PoiNara from "./poi_nara.mjs";
-import PoiOsaka from "./poi_osaka.mjs";
 import PoiIbaraki from "./poi_ibaraki.mjs";
 import PoiTochigi from "./poi_tochigi.mjs";
 import PoiGunma from "./poi_gunma.mjs";
+import PoiNiigata from "./poi_niigata.mjs";
+import PoiToyama from "./poi_toyama.mjs";
+import PoiYamanashi from "./poi_yamanashi.mjs";
+import PoiNagano from "./poi_nagano.mjs";
+// 中部
+import PoiShizuoka from "./poi_shizuoka.mjs";
+import PoiAichi from "./poi_aichi.mjs";
+import PoiMie from "./poi_mie.mjs";
+import PoiWakayama from "./poi_wakayama.mjs";
+import PoiGifu from "./poi_gifu.mjs";
+// 近畿
+import PoiKyoto from "./poi_kyoto.mjs";
+import PoiNara from "./poi_nara.mjs";
+import PoiOsaka from "./poi_osaka.mjs";
 // 北陸
 import PoiIshikawa from "./poi_ishikawa.mjs";
 // 四国
@@ -114,6 +120,7 @@ const CITIES = [
   [ 'saitama', PoiSaitama ],
   [ 'kanagawa', PoiKanagawa ],
   [ 'niigata', PoiNiigata ],
+  [ 'miyagi', PoiMiyagi ],
   [ 'fukushima', PoiFukushima ],
   [ 'toyama', PoiToyama ],
   [ 'yamanashi', PoiYamanashi ],
