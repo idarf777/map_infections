@@ -15,6 +15,10 @@ import { datetostring } from "./util.mjs";
 // CSRFは後の課題とする
 
 // 東北
+import PoiAomori from "./poi_aomori.mjs";
+import PoiAkita from "./poi_akita.mjs";
+import PoiYamagata from "./poi_yamagata.mjs";
+import PoiIwate from "./poi_iwate.mjs";
 import PoiMiyagi from "./poi_miyagi.mjs";
 import PoiFukushima from "./poi_fukushima.mjs";
 // 関東甲信越
@@ -120,6 +124,10 @@ const CITIES = [
   [ 'saitama', PoiSaitama ],
   [ 'kanagawa', PoiKanagawa ],
   [ 'niigata', PoiNiigata ],
+  [ 'aomori', PoiAomori ],
+  [ 'akita', PoiAkita ],
+  [ 'yamagata', PoiYamagata ],
+  [ 'iwate', PoiIwate ],
   [ 'miyagi', PoiMiyagi ],
   [ 'fukushima', PoiFukushima ],
   [ 'toyama', PoiToyama ],

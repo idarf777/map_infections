@@ -48,7 +48,7 @@ async function parse_xlsx( promise )
       break;
     csv.push( [ isValidDate ? cellDate.v : csv[ csv.length-1 ][ 0 ], isValidCity ? sanitize_poi_name( cellCity.v ) : csv[ csv.length-1 ][ 1 ] ] );
   }
-  return csv;
+  return csv.sort( (a, b) => a[ 0 ].getTime() - b[ 0 ].getTime() );
 }
 export default class PoiMiyagi extends BasePoi
 {
