@@ -44,6 +44,10 @@ import PoiEhime from "./poi_ehime.mjs";
 import PoiFukuoka from "./poi_fukuoka.mjs";
 import PoiNagasaki from "./poi_nagasaki.mjs";
 import PoiSaga from "./poi_saga.mjs";
+import PoiOhita from "./poi_ohita.mjs";
+import PoiKumamoto from "./poi_kumamoto.mjs";
+import PoiMiyazaki from "./poi_miyazaki.mjs";
+
 
 //import { example_data } from '../example_data.js';
 const COOKIE_OPTIONS = Object.freeze( { maxAge: config.COOKIE_EXPIRE*1000, path: config.SERVER_URI_PREFIX } );
@@ -133,6 +137,9 @@ const CITIES = [
   [ 'fukuoka', PoiFukuoka],
   [ 'nagasaki', PoiNagasaki],
   [ 'saga', PoiSaga],
+  [ 'ohita', PoiOhita],
+  [ 'kumamoto', PoiKumamoto],
+  [ 'miyazaki', PoiMiyazaki ],
 ];
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
