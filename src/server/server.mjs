@@ -37,9 +37,10 @@ import PoiNagano from "./poi_nagano.mjs";
 import PoiShizuoka from "./poi_shizuoka.mjs";
 import PoiAichi from "./poi_aichi.mjs";
 import PoiMie from "./poi_mie.mjs";
-import PoiWakayama from "./poi_wakayama.mjs";
 import PoiGifu from "./poi_gifu.mjs";
 // 近畿
+import PoiWakayama from "./poi_wakayama.mjs";
+import PoiShiga from "./poi_shiga.mjs";
 import PoiKyoto from "./poi_kyoto.mjs";
 import PoiNara from "./poi_nara.mjs";
 import PoiOsaka from "./poi_osaka.mjs";
@@ -137,6 +138,7 @@ const CITIES = [
   [ 'nagano', PoiNagano ],
   [ 'mie', PoiMie ],
   [ 'wakayama', PoiWakayama ],
+  [ 'shiga', PoiShiga ],
   [ 'gifu', PoiGifu ],
   [ 'kyoto', PoiKyoto ],
   [ 'nara', PoiNara ],

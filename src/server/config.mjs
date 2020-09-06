@@ -196,7 +196,10 @@ export default function makeConfig()
       DATA_URI: 'https://data.gifu-opendata.pref.gifu.lg.jp/dataset/4661bf9d-6f75-43fb-9d59-f02eb84bb6e3/resource/9c35ee55-a140-4cd8-a266-a74edf60aa80/download/210005gifucovid19patients.csv',
       LICENSE: license.CC
     },
-    // 滋賀県はCSV等のデータで提供しておらず、スクレイピングする必要があるが、ページをまたがっていてかなり面倒なので後まわし
+    SHIGA_JSON: {
+      DATA_URI: 'https://shiga-pref-org.github.io/covid19-data/data.json',
+      LICENSE: license.CC
+    }, // 滋賀県はCSV等のデータで提供しておらず、スクレイピングも面倒なのでデータは別サイトからもらう
     KYOTO_JSON: {
       DATA_URI: 'https://raw.githubusercontent.com/stopcovid19-kyoto/covid19/master/data/data.json',
       HTML_URI: 'https://www.pref.kyoto.jp/kentai/corona/hassei1-50.html',
