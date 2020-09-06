@@ -234,7 +234,10 @@ export default function makeConfig()
       DATA_URI: 'https://raw.githubusercontent.com/codeforkumamoto/covid19/development/data/data.json',
       LICENSE: license.MIT
     }, 
-
+    MIYAZAKI_HTML: {
+      DATA_URI: 'https://www.pref.miyazaki.lg.jp/kansensho-taisaku/covid-19/hassei_list.html',
+      LICENSE: license.FREE
+    },
 
 
   } );
