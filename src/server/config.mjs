@@ -129,6 +129,26 @@ export default function makeConfig()
       DATA_URI: 'http://stopcovid19.pref.gunma.jp/csv/01kanja.csv',
       LICENSE: license.MIT
     },
+    AOMORI_CSV: {
+      INDEX_URI: 'https://opendata.pref.aomori.lg.jp/dataset/1531.html',
+      LICENSE: license.CC
+    },  // CSVリンクをスクレイピングで探す
+    AKITA_HTML: {
+      DATA_URI: 'https://www.pref.akita.lg.jp/pages/archive/47957',
+      LICENSE: license.FREE
+    },  // スクレイピングでデータを拾う
+    YAMAGATA_CSV: {
+      INDEX_URI: 'https://www.pref.yamagata.jp/kenfuku/kenko/kansen/720130425shingata_corona.html',
+      LICENSE: license.CC
+    },  // CSVリンクをスクレイピングで探す
+    IWATE_HTML: {
+      DATA_URI: 'https://www.pref.iwate.jp/kurashikankyou/iryou/covid19/1029635/index.html',
+      LICENSE: license.FREE
+    },  // スクレイピングでデータを拾う
+    MIYAGI_XLSX: {
+      HTML_URI: 'https://www.pref.miyagi.jp/site/covid-19/02.html',
+      LICENSE: license.FREE
+    },  // URIをスクレイピングで探す
     FUKUSHIMA_HTML: {
       DATA_URI: 'https://www.pref.fukushima.lg.jp/sec/21045c/fukushima-hasseijyoukyou.html',
       LICENSE: license.FREE

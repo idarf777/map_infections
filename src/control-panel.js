@@ -77,6 +77,8 @@ export default class ControlPanel extends PureComponent
             <p>山梨県のデータセットは、<a href="https://www.pref.yamanashi.jp/koucho/coronavirus/documents/youseisha.xlsx">新型コロナウイルス陽性患者属性</a>を利用しています。<a href="https://creativecommons.org/licenses/by/4.0/deed.ja">クリエイティブ・コモンズ・ライセンス表示4.0国際</a>©山梨県福祉保健部健康増進課 </p>
             <p>神奈川県のデータセットは、以下の著作物を改変して利用しています。新型コロナウイルス感染症対策　陽性患者数及び陽性患者の属性データ、神奈川県、<a href="https://creativecommons.org/licenses/by/4.0/deed.ja">クリエイティブ・コモンズ・ライセンス表示4.0国際</a></p>
             <p>茨城県のデータセットは、以下の著作物を改変して利用しています。<a href="https://www.pref.ibaraki.jp/1saigai/2019-ncov/ichiran.html">新型コロナウイルス感染症陽性者一覧</a>、茨城県保健福祉部疾病対策課健康危機管理対策室、<a href="https://creativecommons.org/licenses/by/4.0/deed.ja">クリエイティブ・コモンズ・ライセンス表示4.0国際</a></p>
+            <p>山形県のデータセットは、以下の著作物を改変して利用しています。<a href="https://www.pref.yamagata.jp/ou/kikakushinko/020051/opendata.html">新型コロナウイルス感染症(COVID-19)について</a>、山形県健康福祉企画課、<a href="https://creativecommons.org/licenses/by/4.0/deed.ja">クリエイティブ・コモンズ・ライセンス表示4.0国際</a></p>
+            <p>青森県のデータセットは、以下の著作物を改変して利用しています。<a href="https://opendata.pref.aomori.lg.jp/dataset/1531.html">青森県の所有する新型コロナウイルス感染症の陽性患者等に関する情報</a>、青森県健康福祉部保健衛生課、<a href="https://creativecommons.org/licenses/by/4.0/deed.ja">クリエイティブ・コモンズ・ライセンス表示4.0国際</a></p>
           </div>
 {/*
           <p>
