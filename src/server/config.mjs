@@ -238,7 +238,11 @@ export default function makeConfig()
       DATA_URI: 'https://www.pref.miyazaki.lg.jp/kansensho-taisaku/covid-19/hassei_list.html',
       LICENSE: license.FREE
     },
-
+    KAGOSHIMA_HTML: {
+      DATA_URI: 'https://www.pref.kagoshima.jp/ae06/kenko-fukushi/kenko-iryo/kansen/kansensho/coronavirus.html',
+      LICENSE: license.FREE
+    },
+ 
 
   } );
 
