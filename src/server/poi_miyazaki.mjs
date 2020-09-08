@@ -35,10 +35,7 @@ async function parse_html( html )
         no = m[ 1 ];
     }else{
       if( no-1 != m[ 1 ]){
-          //console.log( "error " + no + " " + m[4]) ;
-          // HTML ファイルに患者番号の不連続がある
-          // 147 138 146 
-          // 139 137 
+          //console.log( "error " + no) ;
       }
         no = m[ 1 ];
     }
