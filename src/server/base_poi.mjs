@@ -4,6 +4,7 @@ import DbPoi from "./db_poi.mjs";
 import iconv from "iconv-lite";
 import axios from "axios";
 import mkdirp from "mkdirp";
+import encoding from 'encoding-japanese';
 import path from "path";
 import { promises as fs } from "fs";
 const config = global.covid19map.config;
@@ -41,7 +42,7 @@ export default class BasePoi
     await mkdirp( cache_dir );
     await fs.writeFile( path.join( cache_dir, 'src' ), cr.data );
     Log.info( `parsing ${pref_name} CSV...` );
-    const rows = await ( cb_parse_csv ? cb_parse_csv( cr ) : parse_csv( iconv.decode( cr.data, csv_encoding ) ) );
+    const rows = await ( cb_parse_csv ? cb_parse_csv( cr ) : parse_csv( iconv.decode( cr.data, csv_encoding || encoding.detect( cr.data ) ) ) );
     const map_city_infectors = new Map();
     for ( let rownum = row_begin; rownum < rows.length; rownum++ )
     {
@@ -52,7 +53,7 @@ export default class BasePoi
       if ( !date )
         continue;
       const city = sanitize_poi_name( (cb_city && cb_city( row )) || row[ col_city ] );
-      if ( !map_poi.get( city ) )
+      if ( !map_poi.has( city ) )
       {
         Log.info( `${pref_name}${city} not found, put into ${pref_name}` );
         map_poi.set( city, map_poi.get( '' ) );
@@ -78,9 +79,11 @@ export default class BasePoi
     const spots = Array.from( map_city_infectors.entries() ).map( pair => {
       let subtotal = 0;
       const key = pair[ 0 ];
-      let name = (cb_name && cb_name( key )) || (pref_name +  ((key === '') ? '(生活地:非公表)' : (set_irregular.has( key ) && `(生活地:${key})` ) || key) );
+      const name = (cb_name && cb_name( key )) || (pref_name +  ((key === '') ? '(生活地:非公表)' : (set_irregular.has( key ) && `(生活地:${key})` ) || key) );
+      const poi = map_poi.get( pair[ 0 ] );
       return {
-        geopos: map_poi.get( pair[ 0 ] ).geopos(),
+        city_code: poi.city_cd * ((poi.city_cd < 1000) ? 1000 : 1),
+        geopos: poi.geopos(),
         name,
         data: Array.from( pair[ 1 ].keys() ).sort().map( tm => {
           const infectors = pair[ 1 ].get( tm );
@@ -94,6 +97,6 @@ export default class BasePoi
       return {};
     const tms_begin = spots.map( spot => ((spot.data?.length || 0) > 0) && new Date( spot.data[ 0 ].date ) ).filter( e => e ).sort( (a,b) => a.getTime() - b.getTime() );
     const tms_finish = spots.map( spot => ((spot.data?.length || 0) > 0) && new Date( spot.data[ spot.data.length - 1 ].date ) ).filter( e => e ).sort( (a,b) => b.getTime() - a.getTime() );
-    return { begin_at: datetostring( tms_begin[ 0 ] ), finish_at: datetostring( tms_finish[ 0 ] ), spots: spots.filter( spot => spot.data.reduce( (sum, v) => sum + v.infectors, 0 ) > 0 ) };
+    return { pref_code: map_poi.get( '' ).city_cd, name: pref_name, begin_at: datetostring( tms_begin[ 0 ] ), finish_at: datetostring( tms_finish[ 0 ] ), spots: spots.filter( spot => spot.data.reduce( (sum, v) => sum + v.infectors, 0 ) > 0 ) };
   }
 }

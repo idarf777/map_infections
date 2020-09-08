@@ -16,7 +16,7 @@ const ALTER_CITY_NAMES = [
 async function load_xlsx( data )
 {
   const html = iconv.decode( data, 'UTF8' );
-  const m = html.match( /<a href="([^.]+?\.xlsx)">新型コロナ患者状況一覧表/ );
+  const m = html.match( /<a .*?href="([^.]+?\.xlsx)".*?>新型コロナ患者状況一覧表/ );
   if ( m == null )
     throw new Error( "no uri on miyagi-pref" );
   let uri = m[ 1 ].trim();

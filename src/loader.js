@@ -31,10 +31,10 @@ export default function Loader( json )
       vs.push( infectors );
       ts.push( subtotal );
     }
-    src_places.set( curspot, { geopos: spot.geopos, name: spot.name, begin_at: new Date( spot.data[ 0 ].date ), finish_at: new Date( spot.data[ spot.data.length-1 ].date ) } );
+    src_places.set( curspot, { city_code: spot.city_code, geopos: spot.geopos, name: spot.name, begin_at: new Date( spot.data[ 0 ].date ), finish_at: new Date( spot.data[ spot.data.length-1 ].date ) } );
     src_values.set( curspot, vs );
     src_subtotals.set( curspot, ts );
     curspot++;
   }
-  return { begin_at: bgn, finish_at: fin, num_days: ((src_values.size === 0) ? 0 : src_values.entries().next().value[ 1 ].length), places: src_places, values: src_values, subtotals: src_subtotals };
+  return { begin_at: bgn, finish_at: fin, num_days: ((src_values.size === 0) ? 0 : src_values.entries().next().value[ 1 ].length), places: src_places, values: src_values, subtotals: src_subtotals, summary: data.summary };
 }
