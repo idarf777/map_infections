@@ -26,8 +26,9 @@ export default class ControlPanel extends PureComponent
               </thead>
               <tbody>
               {
-                this.props.srcdata && Array.from( this.props.srcdata.places.entries() ).map( pair => {
-                    return <tr key={pair[ 0 ]}><td>{pair[ 1 ].name}</td><td>{datetostring(pair[ 1 ].begin_at)}</td><td>{datetostring(pair[ 1 ].finish_at)}</td></tr>
+                this.props.srcdata && this.props.srcdata.summary.concat( Array.from( this.props.srcdata.places.values() ).sort( (a, b) => a.city_code - b.city_code ) )
+                  .map( (v, i) => {
+                    return <tr key={i}><td>{v.name}</td><td>{datetostring(v.begin_at)}</td><td>{datetostring(v.finish_at)}</td></tr>
                   } )
               }
               </tbody>

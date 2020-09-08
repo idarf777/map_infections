@@ -156,16 +156,17 @@ export default function makeConfig()
     NIIGATA_HTML: {
       DATA_URI: 'https://www.pref.niigata.lg.jp/site/shingata-corona/256362836.html',
       LICENSE: license.FREE
-    }, // 山梨県は2020/6/14からデータを更新していない
+    },
     TOYAMA_HTML: {
       DATA_URI: 'http://www.pref.toyama.jp/cms_sec/1205/kj00021798.html',
       LICENSE: license.FREE
     },  // URIをスクレイピングで探す
     YAMANASHI_XLSX: {
-      DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/youseisha.xlsx',
+      DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/yousei.xlsx',
       HTML_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/info_coronavirus_prevention.html',
-      LICENSE: license.FREE
-    }, // 山梨県は2020/6/14からデータを更新していない
+      INDEX_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/info_coronavirus_data.html',
+      LICENSE: license.CC
+    }, // 山梨県はなぜかデータが2系統ある
     SHIZUOKA_CSV: {
       DATA_URI: 'https://opendata.pref.shizuoka.jp/dataset/8167/resource/46279/220001_shizuoka_covid19_patients.csv',
       LICENSE: license.CC,

@@ -71,7 +71,7 @@ async function parse_html( html )
       city = m[10];
     }
 */
-    console.log(no + " " + m[ 2 ] + " " + city);
+    //console.log(no + " " + m[ 2 ] + " " + city);
 
     csv.push( [ new Date( 2020, mon - 1, day ), city[0] ] );
   }

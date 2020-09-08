@@ -190,7 +190,10 @@ export default class PoiTokyo
         if ( !name )
           continue;
         if ( !map_city_infectors.has( name ) )
-          map_city_infectors.set( name, { geopos: map_poi.get( name ).geopos(), name: `東京都${name}`, data: [] } );
+        {
+          const poi = map_poi.get( name );
+          map_city_infectors.set( name, { city_code: poi.city_cd, geopos: poi.geopos(), name: `東京都${name}`, data: [] } );
+        }
         const vals = map_city_infectors.get( name ).data;
         const m = d[ 1 ].match( /(\d+)/ );
         const subtotal = parseInt( (m && m[ 1 ]) || '0' );
@@ -203,6 +206,8 @@ export default class PoiTokyo
 
     Log.info( 'parsed tokyo CSV' );
     return {
+      pref_code: 13,
+      name: '東京都',
       begin_at: datetostring( timestamps[ 0 ] ),
       finish_at: datetostring( timestamps[ timestamps.length - 1 ] ),
       spots: Array.from( map_city_infectors.values() ).filter( spot => spot.data.reduce( (sum, v) => sum + v.infectors, 0 ) > 0 )

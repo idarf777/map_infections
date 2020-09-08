@@ -113,6 +113,7 @@ export default class App extends React.Component
   loadData( data )
   {
     const srcdata = loader( data );
+Log.debug(srcdata);
     const src_ids = Array.from( srcdata.places.keys() );
     this.setState(
       (state, prop) => { return { srcdata: srcdata, src_ids: src_ids, data: src_ids.map( k => [ k ] ) || [], data_api_loaded: DATA_API_STATUS.loading } },

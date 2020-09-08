@@ -102,9 +102,10 @@ function merge_jsons( jsons )
   if ( spots.length === 0 )
     throw new Error( 'no data to fit' );
   return {
-    begin_at: datetostring( jsons.map( json => json.begin_at && new Date( json.begin_at ).getTime() ).filter( e => e ).sort()[ 0 ] ),
-    finish_at: datetostring( jsons.map( json => json.finish_at && new Date( json.finish_at ).getTime() ).filter( e => e ).sort().reverse()[ 0 ] ),
-    spots: spots
+    begin_at: datetostring( Math.min( ...jsons.map( json => json.begin_at && new Date( json.begin_at ).getTime() ).filter( e => e ) ) ),
+    finish_at: datetostring( Math.max( ...jsons.map( json => json.finish_at && new Date( json.finish_at ).getTime() ).filter( e => e ) ) ),
+    spots: spots,
+    summary: jsons.map( json => { return { pref_code: json.pref_code, name: json.name, begin_at: json.begin_at, finish_at: json.finish_at } } ).sort( (a, b) => a.pref_code - b.pref_code )
   };
 }
 
@@ -169,18 +170,46 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
     res.status( 501 ).send( 'bad auth' );
     return;
   }
+  // Promise.allは、どれか例外があると残りの実行が不定になるので使わない
+  const jsons = [];
+  const errors = [];
   mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) )
-  .then( () => Promise.all( CITIES.map( city => make_data( city ) ) ) )
-  .then( jsons => {
-    const merged = merge_jsons( jsons );
-    res.send( merged );
-    return write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged );
-  } )
-  .then( () => Log.info( 'MAKE DATA complete.' ) )
-  .catch( ex => {
-    Log.error( ex );
-    res.status( 500 ).send( ex.message );
-  } );
+    .then( () => {
+      let count = 0;
+      CITIES.map( city => {
+        make_data( city )
+          .then( data => jsons.push( data ) )
+          .catch( err => {
+            Log.error( err );
+            errors.push( `${city[ 0 ]}: ${err.message}` );
+          } )
+          .finally( () => {
+            Log.info( `${city[ 0 ]} complete.` );
+            if ( ++count < CITIES.length )
+              return;
+            Log.info( 'merging data...' )
+            const merged = merge_jsons( jsons );
+            if ( errors.length > 0 )
+            {
+              Log.error( `${errors.length} ERROR${(errors.length > 1) ? 's':''}:` );
+              Log.error( errors );
+            }
+            write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged )
+              .then( () => {
+                res.send( merged );
+                Log.info( 'MAKE DATA complete.' )
+              } )
+              .catch( ex => {
+                Log.error( ex );
+                res.status( 500 ).send( ex.message )
+              } );
+          } );
+      } )
+    } )
+    .catch( ex => {
+      Log.error( ex );
+      res.status( 500 ).send( ex.message );
+    } );
 })
 
 app.get( config.SERVER_URI, (req, res) => {
