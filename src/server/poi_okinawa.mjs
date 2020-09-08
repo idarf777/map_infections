@@ -2,6 +2,7 @@ import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
 import axios from "axios";
 import encoding from 'encoding-japanese';
+import Log from './logger.mjs';
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
@@ -25,7 +26,7 @@ async function parse_html( html )
     const m = re_for_html.exec(html);
     if( m != null){
       const js_url = 'https://okinawa.stopcovid19.jp/_nuxt/' + m[1];
-      console.log(js_url);
+      //console.log(js_url);
 
     /* デバッグ用　参考のため残しておく
       await axios({
@@ -60,12 +61,12 @@ async function parse_html( html )
         const day = mm[ 3 ];
         const city = mm[ 4 ];
         no++;
-        console.log(no + ":" + year + " " + mon + " " + day + " " + city );
+        //console.log(no + ":" + year + " " + mon + " " + day + " " + city );
       
         csv.push( [ new Date( year, mon - 1, day ), city ] );
       }
     }else{
-      console.log( "???? error : cant find patients data on js src.");
+      Log.error( "???? error : cant find patients data on js src.");
       return;
     }
   }
@@ -78,7 +79,7 @@ export default class PoiOkinawa extends BasePoi
   {
     return BasePoi.process_csv( {
         pref_name: '沖縄県',
-//        alter_citys: ALTER_CITY_NAMES,
+        alter_citys: ALTER_CITY_NAMES,
         csv_uri: config.OKINAWA_HTML.DATA_URI,
         cb_parse_csv: cr => parse_html( iconv.decode( cr.data, 'UTF8' ) ),
         row_begin: 0,

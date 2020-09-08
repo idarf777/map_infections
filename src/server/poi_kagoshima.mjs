@@ -1,5 +1,6 @@
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
+import Log from './logger.mjs';
 const config = global.covid19map.config;
 
 async function parse_html( html )
@@ -38,7 +39,7 @@ async function parse_html( html )
           }      
         }
         if( index >= hText.length){
-          console.log("???? HTML is wrong at poi_kanagawa.mjs");
+          Log.error("???? HTML is wrong at poi_kanagawa.mjs");
         }
         const date = hText[++index].match(/(\d+)月(\d+)日/);
         if( date != null ){
@@ -48,7 +49,7 @@ async function parse_html( html )
         }
         city = hText[index].match(/<td>(.+?)<\/td>/);
         if( city == null ){
-          console.log("???? can't find city:HTML is wrong at poi_kanagawa.mjs");
+          Log.error("???? can't find city:HTML is wrong at poi_kanagawa.mjs");
         }
     }
     if ( !m )
@@ -58,14 +59,14 @@ async function parse_html( html )
         p_no = no;;
     }else{
       if( p_no-1 != no){
-          console.log( "error " + no ) ;
+        Log.error( "error " + no ) ;
       }
       p_no = no;
     }
 //    if( no == 173){
 //      const x = 1;
 //    }
-    console.log(no + " " + mon + "月" + day + "日  " + city[1]);
+    //console.log(no + " " + mon + "月" + day + "日  " + city[1]);
 
     csv.push( [ new Date( 2020, mon - 1, day ), city[1] ] );
     if( no <= 1){

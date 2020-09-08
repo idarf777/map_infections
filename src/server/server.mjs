@@ -190,9 +190,13 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
               return;
             Log.info( 'merging data...' )
             const merged = merge_jsons( jsons );
-            if ( errors.length > 0 )
+            if ( errors.length === 0 )
             {
-              Log.error( `${errors.length} ERROR${(errors.length > 1) ? 's':''}:` );
+              Log.info( 'merged with no errors.' )
+            }
+            else
+            {
+              Log.error( `merged with ${errors.length} ERROR${(errors.length > 1) ? 's':''}:` );
               Log.error( errors );
             }
             write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged )
