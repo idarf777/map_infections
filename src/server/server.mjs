@@ -21,7 +21,7 @@ import PoiYamagata from "./poi_yamagata.mjs";
 import PoiIwate from "./poi_iwate.mjs";
 import PoiMiyagi from "./poi_miyagi.mjs";
 import PoiFukushima from "./poi_fukushima.mjs";
-// 関東甲信越
+// 関東
 import PoiTokyo from './poi_tokyo.mjs';
 import PoiKanagawa from './poi_kanagawa.mjs';
 import PoiChiba from "./poi_chiba.mjs";
@@ -29,6 +29,7 @@ import PoiSaitama from "./poi_saitama.mjs";
 import PoiIbaraki from "./poi_ibaraki.mjs";
 import PoiTochigi from "./poi_tochigi.mjs";
 import PoiGunma from "./poi_gunma.mjs";
+// 甲信越
 import PoiNiigata from "./poi_niigata.mjs";
 import PoiToyama from "./poi_toyama.mjs";
 import PoiYamanashi from "./poi_yamanashi.mjs";
@@ -135,7 +136,7 @@ const CITIES = [
   [ 'miyagi', PoiMiyagi ],
   [ 'fukushima', PoiFukushima ],
   [ 'toyama', PoiToyama ],
-//  [ 'yamanashi', PoiYamanashi ],
+  [ 'yamanashi', PoiYamanashi ],
   [ 'shizuoka', PoiShizuoka ],
   [ 'aichi', PoiAichi ],
   [ 'nagano', PoiNagano ],
