@@ -59,9 +59,6 @@ async function parse_html( html )
     }else{
       if( p_no-1 != no){
           console.log( "error " + no ) ;
-          // HTML ファイルに患者番号の不連続がある
-          // 147 138 146 
-          // 139 137 
       }
       p_no = no;
     }

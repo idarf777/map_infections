@@ -242,8 +242,10 @@ export default function makeConfig()
       DATA_URI: 'https://www.pref.kagoshima.jp/ae06/kenko-fukushi/kenko-iryo/kansen/kansensho/coronavirus.html',
       LICENSE: license.FREE
     },
- 
-
+    OKINAWA_HTML: {
+      DATA_URI: 'https://okinawa.stopcovid19.jp/cards/attributes-of-confirmed-cases/',
+      LICENSE: license.CC
+    },
   } );
 
 }
