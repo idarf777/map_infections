@@ -228,3 +228,14 @@ table th,table td{
 table tr:nth-child(odd){
   background-color: #eee
 }
+
+.sns-text {
+  display: inline-block;
+  font-weight: bold;
+}
+.sns-icon {
+  display: inline-block;
+  color: #0000b0;
+  padding: 0.3em;
+  font-size: 16pt;
+}

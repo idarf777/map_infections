@@ -16,7 +16,6 @@ export default class ControlPanel extends PureComponent
     return (
       <div className="control-panel">
         <div className="right"><h3>{this.props.apimsg}</h3></div>
-
         <div className="right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowDescription}>ABOUT DATA...</button></div></div>
         <div className={ this.SHOW_HIDE_STYLES[ this.state.description_view ] }>
           <div className="scrollabletextbox">
@@ -101,6 +100,17 @@ export default class ControlPanel extends PureComponent
 */}
         </div>
 
+        <div className="right">
+          <div className="sns-text">
+            SHARE:
+          </div>
+          <div className="sns-icon">
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.shizentai-factory.com/covid19map/index.html" target="_blank" rel="noopener noreferrer"><i title="Share by facebook" className="fa fa-facebook fa-big"></i></a>
+          </div>
+          <div className="sns-icon">
+            <a href="https://twitter.com/intent/tweet?url=https://www.shizentai-factory.com/covid19map/index.html&text=COVID-19+NUMBER+OF+INFECTED+MAP+ANIMATION" target="_blank" rel="noopener noreferrer"><i title="Share by Twitter" className="fab fa-twitter-square"></i></a>
+          </div>
+        </div>
       </div>
     );
   }
