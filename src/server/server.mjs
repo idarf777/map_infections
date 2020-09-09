@@ -52,6 +52,7 @@ import PoiYamaguchi from "./poi_yamaguchi.mjs";
 import PoiHiroshima from "./poi_hiroshima.mjs";
 import PoiOkayama from "./poi_okayama.mjs";
 import PoiShimane from "./poi_shimane.mjs";
+import PoiTottori from "./poi_tottori.mjs";
 // 四国
 import PoiTokushima from "./poi_tokushima.mjs";
 import PoiKagawa from "./poi_kagawa.mjs";
@@ -129,7 +130,7 @@ async function make_data( city )
 }
 
 const CITIES = [
-/*  [ 'tokyo', PoiTokyo ],
+  [ 'tokyo', PoiTokyo ],
   [ 'chiba', PoiChiba ],
   [ 'saitama', PoiSaitama ],
   [ 'kanagawa', PoiKanagawa ],
@@ -156,15 +157,18 @@ const CITIES = [
   [ 'tochigi', PoiTochigi ],
   [ 'gunma', PoiGunma ],
   [ 'ishikawa', PoiIshikawa ],
-*/
-//  [ 'yamaguchi', PoiYamaguchi],
-//  [ 'hiroshima', PoiHiroshima],
-//  [ 'okayama', PoiOkayama],
+
+  [ 'yamaguchi', PoiYamaguchi],
+  [ 'hiroshima', PoiHiroshima],
+  [ 'okayama', PoiOkayama],
   [ 'shimane', PoiShimane],
-/*  [ 'tokushima', PoiTokushima ],
+  [ 'tottori', PoiTottori],
+
+  [ 'tokushima', PoiTokushima ],
   [ 'kagawa', PoiKagawa ],
   [ 'kochi', PoiKochi ],
   [ 'ehime', PoiEhime ],
+ 
   [ 'fukuoka', PoiFukuoka],
   [ 'nagasaki', PoiNagasaki],
   [ 'saga', PoiSaga],
@@ -173,7 +177,6 @@ const CITIES = [
   [ 'miyazaki', PoiMiyazaki ],
   [ 'kagoshima', PoiKagoshima ],
   [ 'okinawa', PoiOkinawa ],
-*/
 
 ];
 

@@ -221,7 +221,7 @@ export default function makeConfig()
     },
     // 中国
     YAMAGUCHI_CSV: {
-      DATA_URI: 'https://yamaguchi-opendata.jp/ckan/dataset/f6e5cff9-ae43-4cd9-a398-085187277edf/resource/f56e6552-4c5d-4ec6-91c0-090f553e0aea/download/350001_yamaguchi_covid19_patients.csv',
+      DATA_URI: 'https://yamaguchi-opendata.jp/ckan/dataset/f6e5cff9-ae43-4cd9-a398-085187277edf/resource/f56e6552-4c5d-4ec6-91c0-090f553e0aea/download/',
       LICENSE: license.CC // https://creativecommons.org/licenses/by/4.0/deed.ja 
     },
     HIROSHIMA_HTML: {
@@ -234,7 +234,11 @@ export default function makeConfig()
     },
     SHIMANE_HTML: {
       DATA_URI: 'https://shimane-covid19.com/',
-      LICENSE: license.CC
+      LICENSE: license.FREE
+    },
+    TOTTORI_HTML: {
+      DATA_URI: 'https://www.pref.tottori.lg.jp/291425.htm',
+      LICENSE: license.FREE
     },
 
     // 四国
