@@ -50,6 +50,7 @@ import PoiIshikawa from "./poi_ishikawa.mjs";
 // 中国
 import PoiYamaguchi from "./poi_yamaguchi.mjs";
 import PoiHiroshima from "./poi_hiroshima.mjs";
+import PoiOkayama from "./poi_okayama.mjs";
 // 四国
 import PoiTokushima from "./poi_tokushima.mjs";
 import PoiKagawa from "./poi_kagawa.mjs";
@@ -156,7 +157,8 @@ const CITIES = [
   [ 'ishikawa', PoiIshikawa ],
 */
 //  [ 'yamaguchi', PoiYamaguchi],
-  [ 'hiroshima', PoiHiroshima],
+//  [ 'hiroshima', PoiHiroshima],
+  [ 'okayama', PoiOkayama],
 /*  [ 'tokushima', PoiTokushima ],
   [ 'kagawa', PoiKagawa ],
   [ 'kochi', PoiKochi ],
