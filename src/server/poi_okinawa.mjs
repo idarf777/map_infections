@@ -39,7 +39,7 @@ async function parse_html( html )
         console.log(response);
       });
       */
-      const t_js = await (axios.create({ 'responseType': 'arraybuffer' } ).get( js_url ));
+      const t_js = await (axios.create({ responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( js_url, { 'axios-retry': { retries: config.HTTP_RETRY } } ));
       const detected = encoding.detect(t_js.data);
       const tJs = iconv.decode( t_js.data, detected ) 
 

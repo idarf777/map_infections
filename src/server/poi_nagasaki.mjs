@@ -13,11 +13,9 @@ async function parse_html_then_get_csv( html ){
   const hText = iconv.decode(html, detected);
   const re = /[\r\n|\r|\n] +?<li>[\r\n|\r|\n] +?<a class=\"btn btn-primary resource-url-analytics resource-type-None\" href=\"(.+?)\"/;  
   const csv_url = re.exec(hText);
-  const csv_rd = await (axios.create( {'responseType':'arraybuffer'} ).get(csv_url[1]) );
+  const csv_rd = await (axios.create( {responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT} ).get(csv_url[1], { 'axios-retry': { retries: config.HTTP_RETRY } }) );
   const detected_1 = encoding.detect(csv_rd.data);
-  const csv = await parse_csv( iconv.decode(csv_rd.data, detected_1) );
-
-  return csv;
+  return await parse_csv( iconv.decode(csv_rd.data, detected_1) );
 }
 
 export default class PoiNagasaki extends BasePoi

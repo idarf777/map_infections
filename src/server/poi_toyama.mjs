@@ -18,7 +18,7 @@ async function load_xlsx( data )
     const host = config.TOYAMA_HTML.DATA_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+\/)/ )[ 1 ];
     uri = `${host}${uri}`;
   }
-  return axios.create( { 'responseType': 'arraybuffer' } ).get( uri );
+  return axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( uri, { 'axios-retry': { retries: config.HTTP_RETRY } } );
 }
 async function parse_xlsx( promise )
 {

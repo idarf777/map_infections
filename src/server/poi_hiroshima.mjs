@@ -1,5 +1,6 @@
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
+import Log from "./logger.mjs";
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
@@ -91,7 +92,7 @@ async function parse_html( html )
       p_no = no;
   }else{
     if( p_no-1 != no){
-        console.log( "???? serial error " + no + " " + p_no) ;
+        Log.error( "???? serial error " + no + " " + p_no) ;
     }
     p_no = to_no;
   }
@@ -100,7 +101,7 @@ async function parse_html( html )
     let x = 1;
   }
 
-  console.log( no + ":" + mon + " " + day + " " + city);
+  //console.log( no + ":" + mon + " " + day + " " + city);
 
   while(true){
     csv.push( [ new Date( 2020, mon - 1, day ), city ] );

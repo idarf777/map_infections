@@ -4,14 +4,14 @@ const config = global.covid19map.config;
 
 async function load_csv()
 {
-  const resIndex = await axios.get( config.SAITAMA_CSV.INDEX_URI );
+  const resIndex = await axios.get( config.SAITAMA_CSV.INDEX_URI, { timeout: config.HTTP_GET_TIMEOUT } );
   const lastLinkIndex = resIndex.data.lastIndexOf( '時点の状況です。' );
   if ( lastLinkIndex < 0 )
     throw new Error( "bad html" );
   const m = resIndex.data.substring( lastLinkIndex ).match( /^[\s\S]*?<a href="(https:\/\/opendata[^"]+)"/ );
   if ( !m )
     throw new Error( "bad link" );
-  return axios.create( { 'responseType': 'arraybuffer' } ).get( m[ 1 ] );
+  return axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( m[ 1 ], { 'axios-retry': { retries: config.HTTP_RETRY } } );
 }
 export default class PoiSaitama extends BasePoi
 {

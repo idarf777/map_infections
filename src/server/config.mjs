@@ -87,6 +87,8 @@ export default function makeConfig()
     SERVER_AUTHORIZE_URI: `${SERVER_URI_PREFIX}/api/1.0/auth`,
     SERVER_AUTHORIZE_EXPIRE: 1800,  // [second]
 
+    SERVER_REDIS_MAKE_DATA_BUSY_KEY: `${REDIS_ROOT}makedatabusy`,
+    SERVER_MAKE_DATA_BUSY_EXPIRE: 300,  // [second]
     SERVER_REDIS_RESTRICT_KEY: `${REDIS_ROOT}restriction`,
     SERVER_RESTRICT_MAX: 30000,
 
@@ -98,6 +100,10 @@ export default function makeConfig()
     DEPLOY_DIRECTORY: path.join( appRoot.path, 'dist' ),
 
     CITY_NAME_DATABASE: 'map_infectors_server.sqlite3',
+
+    HTTP_RETRY: 3,
+    HTTP_GET_TIMEOUT: 10000, // [msec]
+    HTTP_POST_TIMEOUT: 5000, // [msec]
 
     TOKYO_CSV: {
       DATA_URI: 'https://raw.githubusercontent.com/smatsumt/parse-tokyo-covid-report-pdf/master/csv/',

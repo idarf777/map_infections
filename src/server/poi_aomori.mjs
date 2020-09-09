@@ -11,7 +11,7 @@ const ALTER_CITY_NAMES = [
 ];
 async function load_csv()
 {
-  const resIndex = await axios.get( config.AOMORI_CSV.INDEX_URI );
+  const resIndex = await axios.get( config.AOMORI_CSV.INDEX_URI, { timeout: config.HTTP_GET_TIMEOUT } );
   const m = resIndex.data.match( /陽性患者関係\.csv[\s\S]+?<a .*?class="download".*?href="([^.]+?\.csv)"/ );
   if ( m == null )
     throw new Error( "no uri on aomori-pref" );
@@ -21,7 +21,7 @@ async function load_csv()
     const host = config.AOMORI_CSV.INDEX_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+\/)/ )[ 1 ];
     uri = `${host}${uri}`;
   }
-  return axios.create( { 'responseType': 'arraybuffer' } ).get( uri );
+  return axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( uri, { 'axios-retry': { retries: config.HTTP_RETRY } } );
 }
 export default class PoiAomori extends BasePoi
 {
