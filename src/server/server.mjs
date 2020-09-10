@@ -7,11 +7,12 @@ import path from 'path';
 import helmet from 'helmet';
 import Redis from 'ioredis';
 import axios from 'axios';
+import axiosRetry from 'axios-retry';
 import crypto from 'crypto';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
-import { datetostring } from "./util.mjs";
+import { datetostring, to_bool } from "./util.mjs";
 // CSRFは後の課題とする
 
 // 東北
@@ -70,6 +71,7 @@ import PoiOkinawa from "./poi_okinawa.mjs";
 
 
 //import { example_data } from '../example_data.js';
+axiosRetry( axios, { retries: config.HTTP_RETRY } );
 const COOKIE_OPTIONS = Object.freeze( { maxAge: config.COOKIE_EXPIRE*1000, path: config.SERVER_URI_PREFIX } );
 const RedisStore = connectRedis( session );
 const redis = new Redis();
@@ -129,107 +131,171 @@ async function make_data( city )
   return pois;
 }
 
+async function execMakeData( cities )
+{
+  const jsons = new Array( cities.length );
+  const errors = [];
+  for ( let i=0; i<cities.length; i++ )
+  {
+    try
+    {
+      jsons[ i ] = await make_data( cities[ i ] );  // mapだとラムダ式が別関数とみなされてawaitがエラーになる
+    }
+    catch ( ex )
+    {
+      Log.error( ex );
+      errors.push( `${cities[ i ][ 0 ]}: ${ex.message}` );
+    }
+  }
+  return { jsons: jsons.filter( v => v ), errors };
+}
+
 const CITIES = [
-  [ 'tokyo', PoiTokyo ],
-  [ 'chiba', PoiChiba ],
-  [ 'saitama', PoiSaitama ],
-  [ 'kanagawa', PoiKanagawa ],
-  [ 'niigata', PoiNiigata ],
-  [ 'aomori', PoiAomori ],
-  [ 'akita', PoiAkita ],
-  [ 'yamagata', PoiYamagata ],
-  [ 'iwate', PoiIwate ],
-  [ 'miyagi', PoiMiyagi ],
-  [ 'fukushima', PoiFukushima ],
-  [ 'toyama', PoiToyama ],
-  [ 'yamanashi', PoiYamanashi ],
-  [ 'shizuoka', PoiShizuoka ],
-  [ 'aichi', PoiAichi ],
-  [ 'nagano', PoiNagano ],
-  [ 'mie', PoiMie ],
-  [ 'wakayama', PoiWakayama ],
-  [ 'shiga', PoiShiga ],
-  [ 'gifu', PoiGifu ],
-  [ 'kyoto', PoiKyoto ],
-  [ 'nara', PoiNara ],
-  [ 'osaka', PoiOsaka ],
-  [ 'ibaraki', PoiIbaraki ],
-  [ 'tochigi', PoiTochigi ],
-  [ 'gunma', PoiGunma ],
-  [ 'ishikawa', PoiIshikawa ],
-
-  [ 'yamaguchi', PoiYamaguchi],
-  [ 'hiroshima', PoiHiroshima],
-  [ 'okayama', PoiOkayama],
-  [ 'shimane', PoiShimane],
-  [ 'tottori', PoiTottori],
-
-  [ 'tokushima', PoiTokushima ],
-  [ 'kagawa', PoiKagawa ],
-  [ 'kochi', PoiKochi ],
-  [ 'ehime', PoiEhime ],
- 
-  [ 'fukuoka', PoiFukuoka],
-  [ 'nagasaki', PoiNagasaki],
-  [ 'saga', PoiSaga],
-  [ 'ohita', PoiOhita],
-  [ 'kumamoto', PoiKumamoto],
-  [ 'miyazaki', PoiMiyazaki ],
+  // [ 'tokyo', PoiTokyo ],
+  // [ 'chiba', PoiChiba ],
+  // [ 'saitama', PoiSaitama ],
+  // [ 'kanagawa', PoiKanagawa ],
+  // [ 'niigata', PoiNiigata ],
+  // [ 'aomori', PoiAomori ],
+  // [ 'akita', PoiAkita ],
+  // [ 'yamagata', PoiYamagata ],
+  // [ 'iwate', PoiIwate ],
+  // [ 'miyagi', PoiMiyagi ],
+  // [ 'fukushima', PoiFukushima ],
+  // [ 'toyama', PoiToyama ],
+  // [ 'yamanashi', PoiYamanashi ],
+  // [ 'shizuoka', PoiShizuoka ],
+  // [ 'aichi', PoiAichi ],
+  // [ 'nagano', PoiNagano ],
+  // [ 'mie', PoiMie ],
+  // [ 'wakayama', PoiWakayama ],
+  // [ 'shiga', PoiShiga ],
+  // [ 'gifu', PoiGifu ],
+  // [ 'kyoto', PoiKyoto ],
+  // [ 'nara', PoiNara ],
+  // [ 'osaka', PoiOsaka ],
+  // [ 'ibaraki', PoiIbaraki ],
+  // [ 'tochigi', PoiTochigi ],
+  // [ 'gunma', PoiGunma ],
+  // [ 'ishikawa', PoiIshikawa ],
+  // [ 'yamaguchi', PoiYamaguchi],
+  // [ 'hiroshima', PoiHiroshima],
+  // [ 'okayama', PoiOkayama],
+  // [ 'shimane', PoiShimane],
+  // [ 'tottori', PoiTottori],
+  // [ 'tokushima', PoiTokushima ],
+  // [ 'kagawa', PoiKagawa ],
+  // [ 'kochi', PoiKochi ],
+  // [ 'ehime', PoiEhime ],
+  // [ 'fukuoka', PoiFukuoka],
+  // [ 'nagasaki', PoiNagasaki],
+  // [ 'saga', PoiSaga],
+  // [ 'ohita', PoiOhita],
+  // [ 'kumamoto', PoiKumamoto],
+  // [ 'miyazaki', PoiMiyazaki ],
   [ 'kagoshima', PoiKagoshima ],
-  [ 'okinawa', PoiOkinawa ],
-
+  // [ 'okinawa', PoiOkinawa ],
 ];
 
+async function busy_lock()
+{
+  if ( !to_bool( process.env.MAKE_DATA_BUSY_ENABLE ) )
+    return null;
+  const v = await redis.getset( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY, 1 );
+  await redis.expire( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY, config.SERVER_MAKE_DATA_BUSY_EXPIRE );
+  return v;
+}
+async function busy_unlock()
+{
+  return process.env.MAKE_DATA_BUSY_ENABLE ? redis.del( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY ) : true;
+}
+
+
+// Promise.allは、どれか例外があると残りの実行が不定になるので使わない
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   if ( !config.DEBUG && req.query.token !== process.env.MAKEDATA_TOKEN )
   {
     res.status( 501 ).send( 'bad auth' );
     return;
   }
-  // Promise.allは、どれか例外があると残りの実行が不定になるので使わない
-  const jsons = [];
-  const errors = [];
-  mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) )
+  (req.query.unbusy ? busy_unlock() : busy_lock())
+    .then( v => {
+      if ( v )
+        throw new Error( 'busy' );
+      return mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) );
+    } )
     .then( () => {
-      let count = 0;
-      CITIES.map( city => {
-        make_data( city )
-          .then( data => jsons.push( data ) )
-          .catch( err => {
-            Log.error( err );
-            errors.push( `${city[ 0 ]}: ${err.message}` );
+      if ( config.DEBUG )
+      {
+        // ひとつひとつ順番にやる
+        let data;
+        let errors;
+        execMakeData( CITIES )
+          .then( r => {
+            errors = r.errors;
+            return merge_jsons( r.jsons );
           } )
-          .finally( () => {
-            Log.info( `${city[ 0 ]} complete.` );
-            if ( ++count < CITIES.length )
-              return;
-            Log.info( 'merging data...' )
-            const merged = merge_jsons( jsons );
-            if ( errors.length === 0 )
-            {
-              Log.info( 'merged with no errors.' )
-            }
-            else
-            {
-              Log.error( `merged with ${errors.length} ERROR${(errors.length > 1) ? 's':''}:` );
-              Log.error( errors );
-            }
-            write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged )
-              .then( () => {
-                res.send( merged );
-                Log.info( 'MAKE DATA complete.' )
-              } )
-              .catch( ex => {
-                Log.error( ex );
-                res.status( 500 ).send( ex.message )
-              } );
+          .then( merged => {
+            data = merged;
+            return write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged );
+          } )
+          .then( r => busy_unlock() )
+          .then( r => res.send( data ) )
+          .then( r => {
+            Log.info( `MAKE DATA complete with ${errors.length} error(s).` );
+            ( errors.length > 0 ) && Log.error( errors );
+          } )
+          .catch( ex => {
+            Log.error( ex );
+            res.status( 500 ).send( ex.message )
           } );
-      } )
+      }
+      else
+      {
+        // 全て非同期で一斉にやる
+        const jsons = [];
+        const errors = [];
+        let count = 0;
+        CITIES.map( city => {
+          make_data( city )
+            .then( data => jsons.push( data ) )
+            .catch( err => {
+              Log.error( err );
+              errors.push( `${city[ 0 ]}: ${err.message}` );
+            } )
+            .finally( () => {
+              Log.info( `${city[ 0 ]} complete.` );
+              if ( ++count < CITIES.length )
+                return;
+              Log.info( 'merging data...' )
+              const merged = merge_jsons( jsons );
+              if ( errors.length === 0 )
+              {
+                Log.info( 'merged with no errors.' )
+              }
+              else
+              {
+                Log.error( `merged with ${errors.length} ERROR${(errors.length > 1) ? 's':''}:` );
+                Log.error( errors );
+              }
+              write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged )
+                .then( r => busy_unlock() )
+                .then( r => res.send( merged ) )
+                .then( r => Log.info( 'MAKE DATA complete.' ) )
+                .catch( ex => {
+                  Log.error( ex );
+                  res.status( 500 ).send( ex.message )
+                } );
+            } );
+        } )
+      }
     } )
     .catch( ex => {
+      if ( ex.message !== 'busy' )
+        redis.del( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY );
       Log.error( ex );
       res.status( 500 ).send( ex.message );
-    } );
+    } )
 })
 
 app.get( config.SERVER_URI, (req, res) => {
@@ -288,7 +354,7 @@ function sendIndex( req, res )
       }
       const date = new Date();
       date.setSeconds( date.getSeconds() + config.SERVER_AUTHORIZE_EXPIRE );
-      axios.post( url, { expires: date.toISOString(), scopes: ["styles:read", "fonts:read"] } )
+      axios.post( url, { expires: date.toISOString(), scopes: ["styles:read", "fonts:read"], timeout: config.HTTP_POST_TIMEOUT } )
         .then( response => {
           sendIndexHtml( req, res, response.data.token );
         } )

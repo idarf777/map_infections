@@ -38,7 +38,7 @@ async function parse_both( cr )
 {
   const fromJson = await parse_json( cr );
   const mindate = ( fromJson.length > 0 ) ? fromJson[ fromJson.length - 1 ][ 0 ] : new Date( 0 );
-  const crhtml = await axios.create( { 'responseType': 'arraybuffer' } ).get( config.KYOTO_JSON.HTML_URI );
+  const crhtml = await axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( config.KYOTO_JSON.HTML_URI, { 'axios-retry': { retries: config.HTTP_RETRY } } );
   return fromJson.concat( parse_html( iconv.decode( crhtml.data, 'UTF8' ), mindate ) ).map( v => [ v[ 0 ], mapCityNames.get( v[ 1 ] ) || v[ 1 ] ] );
 }
 export default class PoiKyoto extends BasePoi

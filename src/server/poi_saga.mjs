@@ -49,7 +49,7 @@ async function parse_html( html )
       }
     }
  
-    const city = m[ 12 ].replace('&nbsp;',''); 
+    const city = m[ 12 ].replace(/&nbsp;|[　\s()（）]/g,'');
     csv.push( [ new Date( 2020, mon - 1, day ), city ] );
   }
   return csv;

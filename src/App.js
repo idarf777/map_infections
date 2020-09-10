@@ -130,7 +130,7 @@ Log.debug(srcdata);
     const host = config.SERVER_HOST || `${window.location.protocol}//${window.location.host}`;
     this.setState(
       (state, prop) => { return { data_api_loaded: DATA_API_STATUS.loading } },
-      () => axios.get( `${host}${config.SERVER_URI}` )
+      () => axios.get( `${host}${config.SERVER_URI}`, { timeout: config.HTTP_GET_TIMEOUT } )
               .then( ( response ) => {
                 //Log.debug( response );
                 this.loadData( response.data );
