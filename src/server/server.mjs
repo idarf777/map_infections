@@ -12,7 +12,7 @@ import crypto from 'crypto';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
-import { datetostring } from "./util.mjs";
+import { datetostring, to_bool } from "./util.mjs";
 // CSRFは後の課題とする
 
 // 東北
@@ -151,58 +151,55 @@ async function execMakeData( cities )
 }
 
 const CITIES = [
-  [ 'tokyo', PoiTokyo ],
-  [ 'chiba', PoiChiba ],
-  [ 'saitama', PoiSaitama ],
-  [ 'kanagawa', PoiKanagawa ],
-  [ 'niigata', PoiNiigata ],
-  [ 'aomori', PoiAomori ],
-  [ 'akita', PoiAkita ],
-  [ 'yamagata', PoiYamagata ],
-  [ 'iwate', PoiIwate ],
-  [ 'miyagi', PoiMiyagi ],
-  [ 'fukushima', PoiFukushima ],
-  [ 'toyama', PoiToyama ],
-  [ 'yamanashi', PoiYamanashi ],
-  [ 'shizuoka', PoiShizuoka ],
-  [ 'aichi', PoiAichi ],
-  [ 'nagano', PoiNagano ],
-  [ 'mie', PoiMie ],
-  [ 'wakayama', PoiWakayama ],
-  [ 'shiga', PoiShiga ],
-  [ 'gifu', PoiGifu ],
-  [ 'kyoto', PoiKyoto ],
-  [ 'nara', PoiNara ],
-  [ 'osaka', PoiOsaka ],
-  [ 'ibaraki', PoiIbaraki ],
-  [ 'tochigi', PoiTochigi ],
-  [ 'gunma', PoiGunma ],
-  [ 'ishikawa', PoiIshikawa ],
-
-  [ 'yamaguchi', PoiYamaguchi],
-  [ 'hiroshima', PoiHiroshima],
-  [ 'okayama', PoiOkayama],
-  [ 'shimane', PoiShimane],
-  [ 'tottori', PoiTottori],
-
-  [ 'tokushima', PoiTokushima ],
-  [ 'kagawa', PoiKagawa ],
-  [ 'kochi', PoiKochi ],
-  [ 'ehime', PoiEhime ],
- 
-  [ 'fukuoka', PoiFukuoka],
-  [ 'nagasaki', PoiNagasaki],
-  [ 'saga', PoiSaga],
-  [ 'ohita', PoiOhita],
-  [ 'kumamoto', PoiKumamoto],
-  [ 'miyazaki', PoiMiyazaki ],
+  // [ 'tokyo', PoiTokyo ],
+  // [ 'chiba', PoiChiba ],
+  // [ 'saitama', PoiSaitama ],
+  // [ 'kanagawa', PoiKanagawa ],
+  // [ 'niigata', PoiNiigata ],
+  // [ 'aomori', PoiAomori ],
+  // [ 'akita', PoiAkita ],
+  // [ 'yamagata', PoiYamagata ],
+  // [ 'iwate', PoiIwate ],
+  // [ 'miyagi', PoiMiyagi ],
+  // [ 'fukushima', PoiFukushima ],
+  // [ 'toyama', PoiToyama ],
+  // [ 'yamanashi', PoiYamanashi ],
+  // [ 'shizuoka', PoiShizuoka ],
+  // [ 'aichi', PoiAichi ],
+  // [ 'nagano', PoiNagano ],
+  // [ 'mie', PoiMie ],
+  // [ 'wakayama', PoiWakayama ],
+  // [ 'shiga', PoiShiga ],
+  // [ 'gifu', PoiGifu ],
+  // [ 'kyoto', PoiKyoto ],
+  // [ 'nara', PoiNara ],
+  // [ 'osaka', PoiOsaka ],
+  // [ 'ibaraki', PoiIbaraki ],
+  // [ 'tochigi', PoiTochigi ],
+  // [ 'gunma', PoiGunma ],
+  // [ 'ishikawa', PoiIshikawa ],
+  // [ 'yamaguchi', PoiYamaguchi],
+  // [ 'hiroshima', PoiHiroshima],
+  // [ 'okayama', PoiOkayama],
+  // [ 'shimane', PoiShimane],
+  // [ 'tottori', PoiTottori],
+  // [ 'tokushima', PoiTokushima ],
+  // [ 'kagawa', PoiKagawa ],
+  // [ 'kochi', PoiKochi ],
+  // [ 'ehime', PoiEhime ],
+  // [ 'fukuoka', PoiFukuoka],
+  // [ 'nagasaki', PoiNagasaki],
+  // [ 'saga', PoiSaga],
+  // [ 'ohita', PoiOhita],
+  // [ 'kumamoto', PoiKumamoto],
+  // [ 'miyazaki', PoiMiyazaki ],
   [ 'kagoshima', PoiKagoshima ],
-  [ 'okinawa', PoiOkinawa ],
+  // [ 'okinawa', PoiOkinawa ],
 ];
 
 async function busy_lock()
 {
-  if ( !process.env.MAKE_DATA_BUSY_ENABLE )
+  if ( !to_bool( process.env.MAKE_DATA_BUSY_ENABLE ) )
     return null;
   const v = await redis.getset( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY, 1 );
   await redis.expire( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY, config.SERVER_MAKE_DATA_BUSY_EXPIRE );
@@ -294,7 +291,8 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
       }
     } )
     .catch( ex => {
-      redis.del( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY );
+      if ( ex.message !== 'busy' )
+        redis.del( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY );
       Log.error( ex );
       res.status( 500 ).send( ex.message );
     } )

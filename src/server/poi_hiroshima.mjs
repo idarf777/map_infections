@@ -4,7 +4,7 @@ import Log from "./logger.mjs";
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
-  ['', '']
+  ['安芸郡', '府中町']
 ];
 
 async function parse_html( html )
