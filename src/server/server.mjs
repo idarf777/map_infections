@@ -47,6 +47,7 @@ import PoiNara from "./poi_nara.mjs";
 import PoiOsaka from "./poi_osaka.mjs";
 // 北陸
 import PoiIshikawa from "./poi_ishikawa.mjs";
+import PoiFukui from "./poi_fukui.mjs";
 // 中国
 import PoiYamaguchi from "./poi_yamaguchi.mjs";
 import PoiHiroshima from "./poi_hiroshima.mjs";
@@ -130,7 +131,7 @@ async function make_data( city )
 }
 
 const CITIES = [
-  [ 'tokyo', PoiTokyo ],
+/*  [ 'tokyo', PoiTokyo ],
   [ 'chiba', PoiChiba ],
   [ 'saitama', PoiSaitama ],
   [ 'kanagawa', PoiKanagawa ],
@@ -156,8 +157,10 @@ const CITIES = [
   [ 'ibaraki', PoiIbaraki ],
   [ 'tochigi', PoiTochigi ],
   [ 'gunma', PoiGunma ],
-  [ 'ishikawa', PoiIshikawa ],
-
+*/
+//  [ 'ishikawa', PoiIshikawa ],
+  [ 'fukui',    PoiFukui],
+/*
   [ 'yamaguchi', PoiYamaguchi],
   [ 'hiroshima', PoiHiroshima],
   [ 'okayama', PoiOkayama],
@@ -177,7 +180,7 @@ const CITIES = [
   [ 'miyazaki', PoiMiyazaki ],
   [ 'kagoshima', PoiKagoshima ],
   [ 'okinawa', PoiOkinawa ],
-
+*/
 ];
 
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
