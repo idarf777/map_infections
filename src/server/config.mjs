@@ -106,7 +106,7 @@ export default function makeConfig()
     HTTP_POST_TIMEOUT: 5000, // [msec]
 
     TOKYO_CSV: {
-      DATA_URI: 'https://raw.githubusercontent.com/smatsumt/parse-tokyo-covid-report-pdf/master/csv/',
+      DATA_URI: 'https://raw.githubusercontent.com/idarf777/parse-tokyo-covid-report-pdf/master/csv/',
       DATA_BEGIN_AT: new Date( '2020-04-10' ),
       DATA_LACK_COUNT: 3,  // これ以上ファイルが欠けていたら終了とみなす
       LICENSE: license.MIT
