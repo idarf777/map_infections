@@ -1,5 +1,6 @@
 import { config } from './make_config.mjs';
 import Log from './logger.mjs';
+import DbPoi from './db_poi.mjs';
 import express from 'express';
 import mkdirp from 'mkdirp';
 import { promises as fs } from "fs";
@@ -137,11 +138,20 @@ function merge_jsons( jsons )
   } );
   if ( spots.length === 0 )
     throw new Error( 'no data to fit' );
+  const summary = jsons.filter( json => json && Object.keys( json ).length > 0 ).map( json => { return { pref_code: json.pref_code, name: json.name, begin_at: json.begin_at, finish_at: json.finish_at, subtotal: progresses[ json.pref_code ] } } ).sort( (a, b) => a.pref_code - b.pref_code );
+  for( let i = 0, curpref = 1; i < summary.length && curpref <= 47; )
+  {
+    const pref = curpref++;
+    if ( summary[ i ].pref_code === pref )
+      i++;
+    else
+      DbPoi.get( pref ).then( row => Log.info( `pref_code = ${pref} (${row.name}) is missing` ) );
+  }
   return {
     begin_at: datetostring( Math.min( ...jsons.map( json => json.begin_at && new Date( json.begin_at ).getTime() ).filter( e => e ) ) ),
     finish_at: datetostring( Math.max( ...jsons.map( json => json.finish_at && new Date( json.finish_at ).getTime() ).filter( e => e ) ) ),
-    spots: spots,
-    summary: jsons.map( json => { return { pref_code: json.pref_code, name: json.name, begin_at: json.begin_at, finish_at: json.finish_at, subtotal: progresses[ json.pref_code ] } } ).sort( (a, b) => a.pref_code - b.pref_code )
+    spots,
+    summary
   };
 }
 
@@ -206,11 +216,11 @@ const CITIES = [
   [ 'tochigi', PoiTochigi ],
   [ 'gunma', PoiGunma ],
   [ 'ishikawa', PoiIshikawa ],
-  [ 'yamaguchi', PoiYamaguchi],
-  [ 'hiroshima', PoiHiroshima],
-  [ 'okayama', PoiOkayama],
-  [ 'shimane', PoiShimane],
-  [ 'tottori', PoiTottori],
+  [ 'yamaguchi', PoiYamaguchi ],
+  [ 'hiroshima', PoiHiroshima ],
+  [ 'okayama', PoiOkayama ],
+  [ 'shimane', PoiShimane ],
+  [ 'tottori', PoiTottori ],
   [ 'tokushima', PoiTokushima ],
   [ 'kagawa', PoiKagawa ],
   [ 'kochi', PoiKochi ],

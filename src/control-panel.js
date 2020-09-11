@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {PureComponent} from 'react';
 import { datetostring } from "./server/util.mjs";
+//import Log from './logger.js';
 
 export default class ControlPanel extends PureComponent
 {
@@ -25,7 +26,7 @@ export default class ControlPanel extends PureComponent
               </thead>
               <tbody>
               {
-                this.props.srcdata && this.props.srcdata.summary.concat( Array.from( this.props.srcdata.places.values() ).sort( (a, b) => a.city_code - b.city_code ) )
+                this.props.srcdata && this.props.srcdata.summary.concat( Array.from( this.props.srcdata.places.values() ) ).sort( (a, b) => (a.city_code || a.pref_code) - (b.city_code || b.pref_code) )
                   .map( (v, i) => {
                     return <tr key={i}><td>{v.name}</td><td>{datetostring(v.begin_at)}</td><td>{datetostring(v.finish_at)}</td></tr>
                   } )

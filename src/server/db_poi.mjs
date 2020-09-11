@@ -82,5 +82,13 @@ export default class DbPoi
     }
     return m;
   }
+  static async get( city_cd )
+  {
+    const db = DB.get();
+    return new Promise( (resolve, reject) => db.serialize( () => db.all(
+      `SELECT city_cd,pref,name,latitude,longitude FROM ${TABLE_NAME} WHERE city_cd = ${city_cd}`,
+      (err, rows) => err ? reject( err ) : resolve( new Poi( rows[ 0 ] ) )
+    ) ) );
+  }
 
 }
