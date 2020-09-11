@@ -15,6 +15,8 @@ import connectRedis from 'connect-redis';
 import { datetostring, to_bool } from "./util.mjs";
 // CSRFは後の課題とする
 
+// 北海道
+import PoiHokkaido from "./poi_hokkaido.mjs";
 // 東北
 import PoiAomori from "./poi_aomori.mjs";
 import PoiAkita from "./poi_akita.mjs";
@@ -48,6 +50,7 @@ import PoiNara from "./poi_nara.mjs";
 import PoiOsaka from "./poi_osaka.mjs";
 // 北陸
 import PoiIshikawa from "./poi_ishikawa.mjs";
+import PoiFukui from "./poi_fukui.mjs";
 // 中国
 import PoiYamaguchi from "./poi_yamaguchi.mjs";
 import PoiHiroshima from "./poi_hiroshima.mjs";
@@ -104,9 +107,32 @@ app.use( `${config.SERVER_URI_PREFIX}/static`, express.static( path.join( config
 function merge_jsons( jsons )
 {
   let spots = [];
+  const progresses = {};
   jsons.forEach( json => {
-    if ( json.begin_at && json.finish_at )
-      spots = spots.concat( json.spots.filter( spot => ((spot.data?.length || 0) > 0) ) );
+    if ( !( json.begin_at && json.finish_at ) )
+      return;
+    const curspots = json.spots.filter( spot => ((spot.data?.length || 0) > 0) );
+    if ( curspots.length === 0 )
+    {
+      json.begin_at = null;
+      json.finish_at = null;
+      return;
+    }
+    spots = spots.concat( curspots );
+    // 都道府県単位の推移を計算する
+    const map_ifc = new Map();
+    curspots.forEach( spot => spot.data.forEach( d => map_ifc.set( d.date, (map_ifc.get( d.date ) || 0) + d.infectors ) ) );  // 同日の新規感染者数の合計
+    const sm = [];
+    let st = 0;
+    for ( const date = new Date( json.begin_at ), enddate = new Date( json.finish_at ); date.getTime() <= enddate.getTime(); date.setDate( date.getDate() + 1 ) )
+    {
+      const sd = datetostring( date );
+      const n = map_ifc.get( sd ) || 0;
+      st += n;
+      if ( n > 0 )
+        sm.push( { date: sd, infectors: n, subtotal: st } );
+    }
+    progresses[ json.pref_code ] = sm;
   } );
   if ( spots.length === 0 )
     throw new Error( 'no data to fit' );
@@ -114,7 +140,7 @@ function merge_jsons( jsons )
     begin_at: datetostring( Math.min( ...jsons.map( json => json.begin_at && new Date( json.begin_at ).getTime() ).filter( e => e ) ) ),
     finish_at: datetostring( Math.max( ...jsons.map( json => json.finish_at && new Date( json.finish_at ).getTime() ).filter( e => e ) ) ),
     spots: spots,
-    summary: jsons.map( json => { return { pref_code: json.pref_code, name: json.name, begin_at: json.begin_at, finish_at: json.finish_at } } ).sort( (a, b) => a.pref_code - b.pref_code )
+    summary: jsons.map( json => { return { pref_code: json.pref_code, name: json.name, begin_at: json.begin_at, finish_at: json.finish_at, subtotal: progresses[ json.pref_code ] } } ).sort( (a, b) => a.pref_code - b.pref_code )
   };
 }
 
@@ -178,23 +204,25 @@ const CITIES = [
   [ 'tochigi', PoiTochigi ],
   [ 'gunma', PoiGunma ],
   [ 'ishikawa', PoiIshikawa ],
-  [ 'yamaguchi', PoiYamaguchi],
-  [ 'hiroshima', PoiHiroshima],
-  [ 'okayama', PoiOkayama],
-  [ 'shimane', PoiShimane],
-  [ 'tottori', PoiTottori],
+  [ 'yamaguchi', PoiYamaguchi ],
+  [ 'hiroshima', PoiHiroshima ],
+  [ 'okayama', PoiOkayama ],
+  [ 'shimane', PoiShimane ],
+  [ 'tottori', PoiTottori ],
   [ 'tokushima', PoiTokushima ],
   [ 'kagawa', PoiKagawa ],
   [ 'kochi', PoiKochi ],
   [ 'ehime', PoiEhime ],
-  [ 'fukuoka', PoiFukuoka],
-  [ 'nagasaki', PoiNagasaki],
-  [ 'saga', PoiSaga],
-  [ 'ohita', PoiOhita],
-  [ 'kumamoto', PoiKumamoto],
+  [ 'fukuoka', PoiFukuoka ],
+  [ 'nagasaki', PoiNagasaki ],
+  [ 'saga', PoiSaga ],
+  [ 'ohita', PoiOhita ],
+  [ 'kumamoto', PoiKumamoto ],
   [ 'miyazaki', PoiMiyazaki ],
   [ 'kagoshima', PoiKagoshima ],
   [ 'okinawa', PoiOkinawa ],
+  [ 'fukui', PoiFukui ],
+  [ 'hokkaido', PoiHokkaido ],
 ];
 
 async function busy_lock()
@@ -210,7 +238,6 @@ async function busy_unlock()
   return process.env.MAKE_DATA_BUSY_ENABLE ? redis.del( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY ) : true;
 }
 
-
 // Promise.allは、どれか例外があると残りの実行が不定になるので使わない
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   if ( !config.DEBUG && req.query.token !== process.env.MAKEDATA_TOKEN )
@@ -225,11 +252,10 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
       return mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) );
     } )
     .then( () => {
-      if ( config.DEBUG )
+      if ( to_bool( process.env.MAKE_DATA_ORDERED ) )
       {
         // ひとつひとつ順番にやる
-        let data;
-        let errors;
+        let data, errors;
         execMakeData( CITIES )
           .then( r => {
             errors = r.errors;
@@ -253,8 +279,7 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
       else
       {
         // 全て非同期で一斉にやる
-        const jsons = [];
-        const errors = [];
+        const jsons = [], errors = [];
         let count = 0;
         CITIES.map( city => {
           make_data( city )
@@ -269,15 +294,9 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
                 return;
               Log.info( 'merging data...' )
               const merged = merge_jsons( jsons );
-              if ( errors.length === 0 )
-              {
-                Log.info( 'merged with no errors.' )
-              }
-              else
-              {
-                Log.error( `merged with ${errors.length} ERROR${(errors.length > 1) ? 's':''}:` );
+              Log.info( `merged with ${errors.length} ERROR${(errors.length > 1) ? 's':''}:` );
+              if ( errors.length > 0 )
                 Log.error( errors );
-              }
               write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged )
                 .then( r => busy_unlock() )
                 .then( r => res.send( merged ) )

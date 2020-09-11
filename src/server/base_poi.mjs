@@ -76,6 +76,8 @@ export default class BasePoi
     if ( unpublished.size > 0 )
       map_city_infectors.set( '', unpublished );
 
+    const curdate = new Date();
+    const today = new Date( `${curdate.getFullYear()}-${curdate.getMonth()+1}-${curdate.getDate()}` );
     const spots = Array.from( map_city_infectors.entries() ).map( pair => {
       let subtotal = 0;
       const key = pair[ 0 ];
@@ -89,7 +91,7 @@ export default class BasePoi
           const infectors = pair[ 1 ].get( tm );
           subtotal += infectors;
           return { date: datetostring( tm ), infectors, subtotal }
-        } ).filter( e => e )
+        } ).filter( e => e && (new Date( e.date ).getTime() <= today.getTime()) )
       };
     } );
     Log.info( `parsed ${pref_name} CSV` );

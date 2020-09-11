@@ -135,6 +135,10 @@ export default function makeConfig()
       DATA_URI: 'http://stopcovid19.pref.gunma.jp/csv/01kanja.csv',
       LICENSE: license.MIT
     },
+    HOKKAIDO_CSV: {
+      DATA_URI: 'https://www.harp.lg.jp/opendata/dataset/1369/resource/3132/010006_hokkaido_covid19_patients.csv',
+      LICENSE: license.CC
+    },
     AOMORI_CSV: {
       INDEX_URI: 'https://opendata.pref.aomori.lg.jp/dataset/1531.html',
       LICENSE: license.CC
@@ -167,6 +171,10 @@ export default function makeConfig()
       DATA_URI: 'http://www.pref.toyama.jp/cms_sec/1205/kj00021798.html',
       LICENSE: license.FREE
     },  // URIをスクレイピングで探す
+    FUKUI_CSV: {
+      DATA_URI: 'https://www.pref.fukui.lg.jp/doc/toukei-jouhou/covid-19_d/fil/covid19_patients.csv',
+      LICENSE: license.CC
+    },
     YAMANASHI_XLSX: {
       DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/yousei.xlsx',
       HTML_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/info_coronavirus_prevention.html',
