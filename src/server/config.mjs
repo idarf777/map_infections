@@ -167,6 +167,10 @@ export default function makeConfig()
       DATA_URI: 'http://www.pref.toyama.jp/cms_sec/1205/kj00021798.html',
       LICENSE: license.FREE
     },  // URIをスクレイピングで探す
+    FUKUI_CSV: {
+      DATA_URI: 'https://www.pref.fukui.lg.jp/doc/toukei-jouhou/covid-19_d/fil/covid19_patients.csv',
+      LICENSE: license.CC
+    },
     YAMANASHI_XLSX: {
       DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/yousei.xlsx',
       HTML_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/info_coronavirus_prevention.html',

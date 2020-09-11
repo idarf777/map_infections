@@ -71,6 +71,7 @@ export default class ControlPanel extends PureComponent
             <p><a href="https://creativecommons.org/licenses/by/4.0/deed.ja">大分県のデータセットはCC BY 4.0 で提供されています。©大分県福祉保健部健康づくり支援課</a></p>
             <p><a href="https://creativecommons.org/licenses/by/4.0/deed.ja">沖縄県のデータセットはCC BY 4.0 で提供されています。©CODE for OKINAWA</a></p>
             <p><a href="https://creativecommons.org/licenses/by/4.0/deed.ja">山口県のデータセットはCC BY 4.0 で提供されています。©山口県</a></p>
+            <p><a href="https://creativecommons.org/licenses/by/4.0/deed.ja">福井県のデータセットはCC BY 4.0 で提供されています。©福井県統計情報課</a></p>
             <p>岡山県のデータセットはクリエイティブ・コモンズで提供されています。©岡山県</p>
             <p>長野県のデータセットは、以下の著作物を改変して利用しています。新型コロナウイルス感染症発生状況、長野県、<a href="https://creativecommons.org/licenses/by/4.0/deed.ja">クリエイティブ・コモンズ・ライセンス表示4.0国際</a></p>
             <p>奈良県のデータセットは、以下の著作物を改変して利用しています。奈良県_01新型コロナウイルス陽性感染者_患者リスト、奈良県、<a href="https://creativecommons.org/licenses/by/4.0/deed.ja">クリエイティブ・コモンズ・ライセンス表示4.0国際</a></p>
