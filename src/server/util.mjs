@@ -255,5 +255,5 @@ for ( let i=0x21; i<=0x7e; i++ )
 
 export function sanitize_poi_name( name )
 {
-  return name && name.split( '' ).map( c => mapAlterChars.get( c ) || c ).join( '' );
+  return name && name.replace( /[\s]/g, '' ).split( '' ).map( c => mapAlterChars.get( c ) || c ).join( '' );
 }
