@@ -214,6 +214,11 @@ export default function makeConfig()
       DATA_URI: 'https://raw.githubusercontent.com/codeforosaka/covid19/master/data/data.json',
       LICENSE: license.MIT
     }, // 大阪府はCSV等のデータで提供していない
+    HYOGO_XLS: {
+      DATA_URI: 'https://web.pref.hyogo.lg.jp/kk03/documents/corona_kanjyajyokyo.xlsx',
+      LICENSE: license.FREE
+    },
+    
     // 北陸
     ISHIKAWA_CSV: {
       DATA_URI: 'https://www.pref.ishikawa.lg.jp/kansen/documents/170003_ishikawa_covid19_patients.csv',
