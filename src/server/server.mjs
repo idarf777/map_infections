@@ -15,6 +15,8 @@ import connectRedis from 'connect-redis';
 import { datetostring, to_bool } from "./util.mjs";
 // CSRFは後の課題とする
 
+// 北海道
+import PoiHokkaido from "./poi_hokkaido.mjs";
 // 東北
 import PoiAomori from "./poi_aomori.mjs";
 import PoiAkita from "./poi_akita.mjs";
@@ -220,6 +222,7 @@ const CITIES = [
   [ 'kagoshima', PoiKagoshima ],
   [ 'okinawa', PoiOkinawa ],
   [ 'fukui', PoiFukui ],
+  [ 'hokkaido', PoiHokkaido ],
 ];
 
 async function busy_lock()

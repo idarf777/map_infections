@@ -135,6 +135,10 @@ export default function makeConfig()
       DATA_URI: 'http://stopcovid19.pref.gunma.jp/csv/01kanja.csv',
       LICENSE: license.MIT
     },
+    HOKKAIDO_CSV: {
+      DATA_URI: 'https://www.harp.lg.jp/opendata/dataset/1369/resource/3132/010006_hokkaido_covid19_patients.csv',
+      LICENSE: license.CC
+    },
     AOMORI_CSV: {
       INDEX_URI: 'https://opendata.pref.aomori.lg.jp/dataset/1531.html',
       LICENSE: license.CC
