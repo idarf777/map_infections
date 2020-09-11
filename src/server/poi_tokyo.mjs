@@ -110,11 +110,11 @@ async function load_csv( date, cache_dir )
     const filename = csv_filename( prefix, m );
     const cache = csv_filename( prefix, m, cache_dir );
     const uri = `${config.TOKYO_CSV.DATA_URI}${filename}`;
-    const h = await axios.head( uri, { validateStatus: false } ).catch( () => {} );
+    const h = await axios.head( uri, { validateStatus: false, timeout: config.HTTP_GET_TIMEOUT } ).catch( () => {} );
     if ( h?.status === 200 )
     {
       Log.info( `trying GET ${uri} ...` );
-      const response = await axios.get( uri );
+      const response = await axios.get( uri, { timeout: config.HTTP_GET_TIMEOUT } );
       if ( response )
         Log.info( `status = ${response.status}` );
       if ( response?.data )

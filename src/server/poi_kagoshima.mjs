@@ -5,73 +5,63 @@ const config = global.covid19map.config;
 
 async function parse_html( html )
 {
+  const rootm = html.match( /鹿児島県内での発生状況[\s\S]+?<tbody>[\s\S]+?<\/tr>([\s\S]+?)<\/tbody>/ );
+  if ( !rootm )
+    throw new Error( "no table in kagoshima" );
+  const rows = rootm[ 1 ];
   const csv = [];
-  const re = new RegExp( [
-    ' {12}<tr>\\r\\n',
-    ' {16}<td>(\\d+)<\\/td>\\r\\n',       //].join(''),'g');       // No
-    '([\\s\\S]+?)',
-    ' {16}<td>(〇&nbsp;|&nbsp;|〇)<\\/td>',
-    '[\\s\\S]+?<\\/tr>'].join(''), 'g');  // <tr> - <\tr>
-
-  var mon, day, city;
-  var no = 0, p_no = 0;
+  const re = /[\s\S]*?<tr>[\s\S]*?<td(.*?)>([\s\S]*?)<\/td>[\s\S]*?<td(.*?)>([\s\S]*?)<\/td>[\s\S]*?<td(.*?)>([\s\S]*?)<\/td>[\s\S]*?<\/tr>/g; // セルは最低3つある
+  const prevs = [
+    { rowspan: 0, value: 0 },
+    { rowspan: 0, value: new Date() },
+    { rowspan: 0, value: '' }
+  ];
   while ( true )
   {
-    var m = re.exec( html );
-    const hText = m[2].split(/\r\n/);
-    if( m[2].includes('<p align="center">ー</p>') == false){
-      const date = hText[0].match(/(\d+)月(\d+)日/);
-      if( date != null){
-        mon = date[1];
-        day = date[2];
-        city = hText[1].match(/<td.*?>(.+?)<\/td>/);
-      }else{
-        city = hText[0].match(/<td>(.+?)<\/td>/);
-      }
-      no = m[1];
-    }else{
-        var index;
-        for( index = 0; index< hText.length; ++index){
-          const _no = hText[index].match(/<td>(\d+)<\/td>/);
-          if( _no != null ){
-            no = _no[1];
-            break;
-          }      
-        }
-        if( index >= hText.length){
-          Log.error("???? HTML is wrong at poi_kanagawa.mjs");
-        }
-        const date = hText[++index].match(/(\d+)月(\d+)日/);
-        if( date != null ){
-          mon = date[1];
-          day = date[2];
-          ++index;
-        }
-        city = hText[index].match(/<td>(.+?)<\/td>/);
-        if( city == null ){
-          Log.error("???? can't find city:HTML is wrong at poi_kanagawa.mjs");
-        }
-    }
+    const m = re.exec( rows );
     if ( !m )
       break;
-  
-    if( p_no == 0 ){
-        p_no = no;;
-    }else{
-      if( p_no-1 != no){
-        Log.error( "error " + no ) ;
+    let cur = 1;
+    prevs.forEach( (p, i) => {
+      if ( p.rowspan > 1 )
+      {
+        p.rowspan--;
       }
-      p_no = no;
-    }
-//    if( no == 173){
-//      const x = 1;
-//    }
-    //console.log(no + " " + mon + "月" + day + "日  " + city[1]);
+      else
+      {
+        let token = m[ cur++ ];
+        const ms = token && token.match( /rowspan="(\d+)"/ );
+        if ( ms )
+          p.rowspan = parseInt( ms[ 1 ] );
+        token = m[ cur++ ];
 
-    csv.push( [ new Date( 2020, mon - 1, day ), city[1] ] );
-    if( no <= 1){
-      break;
-    }
+        let mc, val;
+        switch ( i )
+        {
+        case 0:
+          mc = token.match( /(\d+)/ );
+          val = mc && parseInt( mc[ 1 ] );
+          break;
+        case 1:
+          mc = token.match( /((\d+)年)?(\d+)月(\d+)日/ );
+          if ( mc )
+          {
+            const year = mc[ 2 ] ? parseInt( mc[ 2 ] ) : new Date().getFullYear();
+            val = new Date( `${(year > 2000) ? year : (year + 2018)}-${mc[ 3 ]}-${mc[ 4 ]}` );
+          }
+          break;
+        case 2:
+          val = token.replace( /&nbsp;|[\s]/g, '' );
+          break;
+        default:
+          break;
+        }
+        prevs[ i ].value = val || prevs[ i ].value;
+      }
+    } );
+
+    if ( !prevs[ 2 ].value.match( />.*?[ー-－─]/ ) )  // 取り消し線っぽい
+      csv.push( [ prevs[ 1 ].value, prevs[ 2 ].value ] );
   }
   return csv;
 }

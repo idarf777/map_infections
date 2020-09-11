@@ -37,7 +37,7 @@ export default class BasePoi
     const map_poi = await DbPoi.getMap( pref_name );
     alter_citys && alter_citys.forEach( names => map_poi.set( names[ 0 ], map_poi.get( names[ 1 ] ) ) );
     cb_alter_citys && cb_alter_citys( map_poi );
-    const cr = await (cb_load_csv ? cb_load_csv() : axios.create( { 'responseType': 'arraybuffer' } ).get( csv_uri ));
+    const cr = await (cb_load_csv ? cb_load_csv() : axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( csv_uri, { 'axios-retry': { retries: config.HTTP_RETRY } } ));
     const cache_dir = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_CACHE_DIR}/${pref_name}` );
     await mkdirp( cache_dir );
     await fs.writeFile( path.join( cache_dir, 'src' ), cr.data );
@@ -76,6 +76,8 @@ export default class BasePoi
     if ( unpublished.size > 0 )
       map_city_infectors.set( '', unpublished );
 
+    const curdate = new Date();
+    const today = new Date( `${curdate.getFullYear()}-${curdate.getMonth()+1}-${curdate.getDate()}` );
     const spots = Array.from( map_city_infectors.entries() ).map( pair => {
       let subtotal = 0;
       const key = pair[ 0 ];
@@ -89,7 +91,7 @@ export default class BasePoi
           const infectors = pair[ 1 ].get( tm );
           subtotal += infectors;
           return { date: datetostring( tm ), infectors, subtotal }
-        } ).filter( e => e )
+        } ).filter( e => e && (new Date( e.date ).getTime() <= today.getTime()) )
       };
     } );
     Log.info( `parsed ${pref_name} CSV` );

@@ -87,6 +87,8 @@ export default function makeConfig()
     SERVER_AUTHORIZE_URI: `${SERVER_URI_PREFIX}/api/1.0/auth`,
     SERVER_AUTHORIZE_EXPIRE: 1800,  // [second]
 
+    SERVER_REDIS_MAKE_DATA_BUSY_KEY: `${REDIS_ROOT}makedatabusy`,
+    SERVER_MAKE_DATA_BUSY_EXPIRE: 300,  // [second]
     SERVER_REDIS_RESTRICT_KEY: `${REDIS_ROOT}restriction`,
     SERVER_RESTRICT_MAX: 30000,
 
@@ -99,8 +101,12 @@ export default function makeConfig()
 
     CITY_NAME_DATABASE: 'map_infectors_server.sqlite3',
 
+    HTTP_RETRY: 3,
+    HTTP_GET_TIMEOUT: 10000, // [msec]
+    HTTP_POST_TIMEOUT: 5000, // [msec]
+
     TOKYO_CSV: {
-      DATA_URI: 'https://raw.githubusercontent.com/smatsumt/parse-tokyo-covid-report-pdf/master/csv/',
+      DATA_URI: 'https://raw.githubusercontent.com/idarf777/parse-tokyo-covid-report-pdf/master/csv/',
       DATA_BEGIN_AT: new Date( '2020-04-10' ),
       DATA_LACK_COUNT: 3,  // これ以上ファイルが欠けていたら終了とみなす
       LICENSE: license.MIT
@@ -128,6 +134,10 @@ export default function makeConfig()
     GUNMA_CSV: {
       DATA_URI: 'http://stopcovid19.pref.gunma.jp/csv/01kanja.csv',
       LICENSE: license.MIT
+    },
+    HOKKAIDO_CSV: {
+      DATA_URI: 'https://www.harp.lg.jp/opendata/dataset/1369/resource/3132/010006_hokkaido_covid19_patients.csv',
+      LICENSE: license.CC
     },
     AOMORI_CSV: {
       INDEX_URI: 'https://opendata.pref.aomori.lg.jp/dataset/1531.html',
@@ -161,6 +171,10 @@ export default function makeConfig()
       DATA_URI: 'http://www.pref.toyama.jp/cms_sec/1205/kj00021798.html',
       LICENSE: license.FREE
     },  // URIをスクレイピングで探す
+    FUKUI_CSV: {
+      DATA_URI: 'https://www.pref.fukui.lg.jp/doc/toukei-jouhou/covid-19_d/fil/covid19_patients.csv',
+      LICENSE: license.CC
+    },
     YAMANASHI_XLSX: {
       DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/yousei.xlsx',
       HTML_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/info_coronavirus_prevention.html',
