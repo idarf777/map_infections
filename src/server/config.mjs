@@ -115,10 +115,10 @@ export default function makeConfig()
       DATA_URI: 'https://www.pref.kanagawa.jp/osirase/1369/data/csv/patient.csv',
       LICENSE: license.FREE
     },
-    CHIBA_XLS: {
-      DATA_URI: 'https://www.city.chiba.jp/hokenfukushi/iryoeisei/seisaku/covid-19/documents/01patient.xlsx', // 千葉県のデータは居住地なし
+    CHIBA_PDF: {
+      INDEX_URI: 'https://www.pref.chiba.lg.jp/shippei/press/2019/ncov-index.html',
       LICENSE: license.FREE
-    },  // 千葉県は市区町村単位のデータを公開していない
+    },
     SAITAMA_CSV: {
       INDEX_URI: 'https://opendata.pref.saitama.lg.jp/data/dataset/covid19-jokyo',
       LICENSE: license.FREE
