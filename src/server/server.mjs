@@ -236,6 +236,9 @@ const CITIES = [
   [ 'fukui', PoiFukui ],
   [ 'hokkaido', PoiHokkaido ],
 ];
+const AVAILABLE_CITIES = [
+  //'chiba'
+];
 
 async function busy_lock()
 {
@@ -264,11 +267,12 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
       return mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) );
     } )
     .then( () => {
+      const cities = (AVAILABLE_CITIES.length > 0) ? CITIES.filter( c => AVAILABLE_CITIES.some( v => c[ 0 ] === v ) ) : CITIES;
       if ( to_bool( process.env.MAKE_DATA_ORDERED ) )
       {
         // ひとつひとつ順番にやる
         let data, errors;
-        execMakeData( CITIES )
+        execMakeData( cities )
           .then( r => {
             errors = r.errors;
             return merge_jsons( r.jsons );
@@ -293,7 +297,7 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
         // 全て非同期で一斉にやる
         const jsons = [], errors = [];
         let count = 0;
-        CITIES.map( city => {
+        cities.map( city => {
           make_data( city )
             .then( data => jsons.push( data ) )
             .catch( err => {
@@ -302,7 +306,7 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
             } )
             .finally( () => {
               Log.info( `${city[ 0 ]} complete.` );
-              if ( ++count < CITIES.length )
+              if ( ++count < cities.length )
                 return;
               Log.info( 'merging data...' )
               const merged = merge_jsons( jsons );
