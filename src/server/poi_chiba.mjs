@@ -15,7 +15,7 @@ function merge_row( row )
     return row[ 0 ]?.str || '';
   const THRESHOLD_X = 20;
   let xe = row[ 0 ].transform[ 4 ] + row[ 0 ].width;
-  row.map( item => {
+  return row.map( item => {
     let str = '';
     const x = item.transform[ 4 ];
     if ( x - xe >= THRESHOLD_X )
