@@ -225,7 +225,7 @@ export default function makeConfig()
       LICENSE: license.MIT
     }, // 大阪府はCSV等のデータで提供していない
     HYOGO_XLS: {
-      DATA_URI: 'https://web.pref.hyogo.lg.jp/kk03/documents/corona_kanjyajyokyo.xlsx',
+      INDEX_URI: 'https://web.pref.hyogo.lg.jp/kk03/corona_kanjyajyokyo.html',
       LICENSE: license.FREE
     },
     

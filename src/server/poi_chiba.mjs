@@ -7,6 +7,27 @@ import axios from "axios";
 const config = global.covid19map.config;
 const { JSDOM } = jsdom;
 
+function merge_row( row )
+{
+  // 半角数字が別の文字列として記述されているクソPDFなことがある
+  //  => xとwidthで文字列の画面上の長さをとり、どの文字列が繋がっているかを判断する
+  if ( row.length <= 1 )
+    return row[ 0 ]?.str || '';
+  const THRESHOLD_X = 20;
+  let xe = row[ 0 ].transform[ 4 ] + row[ 0 ].width;
+  row.map( item => {
+    let str = '';
+    const x = item.transform[ 4 ];
+    if ( x - xe >= THRESHOLD_X )
+    {
+      // 別の文字列が始まったとみなす
+      str = ' ';
+    }
+    xe = x + item.width;
+    return str.concat( item.str );
+  } ).join( '' );
+}
+
 async function getPdfText( data )
 {
   const pdf = await (await pdfjsLib.getDocument( { data } ).promise);
@@ -19,11 +40,11 @@ async function getPdfText( data )
       const newx = item.transform[ 4 ];
       if ( newx < x )
       {
-        rows.push( row.join( ' ' ) );
+        rows.push( merge_row( row ) );
         row.splice( 0 );
       }
       x = newx;
-      row.push( item.str );
+      row.push( item );
     }
     if ( row.length > 0 )
       rows.push( row.join( ' ' ) );
