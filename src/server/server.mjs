@@ -139,13 +139,12 @@ function merge_jsons( jsons )
   if ( spots.length === 0 )
     throw new Error( 'no data to fit' );
   const summary = jsons.filter( json => json && Object.keys( json ).length > 0 ).map( json => { return { pref_code: json.pref_code, name: json.name, begin_at: json.begin_at, finish_at: json.finish_at, subtotal: progresses[ json.pref_code ] } } ).sort( (a, b) => a.pref_code - b.pref_code );
-  for( let i = 0, curpref = 1; i < summary.length && curpref <= 47; )
+  const suset = new Set();
+  summary.forEach( s => suset.add( s.pref_code ) );
+  for( let curpref = 1; curpref <= 47; curpref++ )
   {
-    const pref = curpref++;
-    if ( summary[ i ].pref_code === pref )
-      i++;
-    else
-      DbPoi.get( pref ).then( row => Log.info( `pref_code = ${pref} (${row.name}) is missing` ) );
+    if ( !suset.has( curpref ) )
+      DbPoi.get( curpref ).then( row => Log.info( `pref_code = ${curpref} (${row.name}) is missing` ) );
   }
   return {
     begin_at: datetostring( Math.min( ...jsons.map( json => json.begin_at && new Date( json.begin_at ).getTime() ).filter( e => e ) ) ),
@@ -155,19 +154,43 @@ function merge_jsons( jsons )
   };
 }
 
+function city_json_path( city )
+{
+  return path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/${city}.json` );
+}
 async function write_city_json( city, json )
 {
-  return fs.writeFile( path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/${city}.json` ), JSON.stringify( json ), 'utf8' );
+  return fs.writeFile( city_json_path( city ), JSON.stringify( json ), 'utf8' );
+}
+async function read_city_json( city )
+{
+  return JSON.parse( await fs.readFile( city_json_path( city ), 'utf8' ) );
 }
 
 async function make_data( city )
 {
-  const pois = await city[ 1 ].load();
-  await write_city_json( city[ 0 ], pois );
-  Log.info( `Data of ${city[ 0 ]} ... ${datetostring( pois.begin_at )} - ${datetostring( pois.finish_at )}`  );
-  return pois;
+  try
+  {
+    const pois = await city[ 1 ].load();
+    await write_city_json( city[ 0 ], pois );
+    Log.info( `Data of ${city[ 0 ]} ... ${datetostring( pois.begin_at )} - ${datetostring( pois.finish_at )}`  );
+    return pois;
+  }
+  catch ( ex )
+  {
+    try
+    {
+      ex.pois = await read_city_json( city[ 0 ] );
+      Log.info( `Data of ${city[ 0 ]} is previous one` );
+    }
+    catch ( ex2 )
+    {
+    }
+    throw ex;
+  }
 }
 
+// ひとつひとつ順番にやる
 async function execMakeData( cities )
 {
   const jsons = new Array( cities.length );
@@ -182,6 +205,7 @@ async function execMakeData( cities )
     {
       Log.error( ex );
       errors.push( `${cities[ i ][ 0 ]}: ${ex.message}` );
+      jsons[ i ] = ex.pois;
     }
   }
   return { jsons: jsons.filter( v => v ), errors };
@@ -284,7 +308,7 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
           .then( r => busy_unlock() )
           .then( r => res.send( data ) )
           .then( r => {
-            Log.info( `MAKE DATA complete with ${errors.length} error(s).` );
+            Log.info( `MAKE DATA complete with ${errors.length} error${(errors.length > 1) ? 's':''}.` );
             ( errors.length > 0 ) && Log.error( errors );
           } )
           .catch( ex => {
@@ -303,6 +327,8 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
             .catch( err => {
               Log.error( err );
               errors.push( `${city[ 0 ]}: ${err.message}` );
+              if ( err.pois )
+                jsons.push( err.pois );
             } )
             .finally( () => {
               Log.info( `${city[ 0 ]} complete.` );
@@ -310,7 +336,7 @@ app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
                 return;
               Log.info( 'merging data...' )
               const merged = merge_jsons( jsons );
-              Log.info( `merged with ${errors.length} ERROR${(errors.length > 1) ? 's':''}:` );
+              Log.info( `merged with ${errors.length} error${(errors.length > 1) ? 's':''}` );
               if ( errors.length > 0 )
                 Log.error( errors );
               write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged )
