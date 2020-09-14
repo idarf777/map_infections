@@ -1,7 +1,11 @@
 import xlsx from 'xlsx';
 import { sanitize_poi_name } from "./util.mjs";
 import BasePoi from "./base_poi.mjs";
+import jsdom from "jsdom";
+import iconv from "iconv-lite";
+import axios from "axios";
 const config = global.covid19map.config;
+const { JSDOM } = jsdom;
 
 const ALTER_CITY_NAMES = 
 [
@@ -22,7 +26,7 @@ const ALTER_CITY_NAMES =
 ];
 async function parse_xlsx( cr )
 {
-  const book = xlsx.read( cr.data, { cellDates: true } );
+  const book = xlsx.read( (await cr).data, { cellDates: true } );
   const worksheet = book.Sheets[ book.SheetNames[ 0 ] ];
   const range = worksheet['!ref'];
   const rows = parseInt( range.match( /^.+:[A-z]+(\d+)$/ )[ 1 ] );
@@ -37,6 +41,27 @@ async function parse_xlsx( cr )
   }
   return csv;
 }
+async function parse_html( html )
+{
+  const dom = new JSDOM( html );
+  let uri = null;
+  for ( const tag of dom.window.document.querySelectorAll( 'a' ) )
+  {
+    if ( tag.textContent.match( /新型コロナウイルスに感染した患者の状況.+?エクセル/ ) )
+    {
+      uri = tag.href;
+      break;
+    }
+  }
+  if ( !uri )
+    throw new Error( "no xlsx link in hyogo" );
+  if ( !uri.match( /^https?:\/\// ) )
+  {
+    const host = config.HYOGO_XLS.INDEX_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+\/)/ )[ 1 ];
+    uri = `${host}${uri}`;
+  }
+  return axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( uri, { 'axios-retry': { retries: config.HTTP_RETRY } } );
+}
 export default class PoiHyogo extends BasePoi
 {
   static async load()
@@ -44,8 +69,8 @@ export default class PoiHyogo extends BasePoi
     return BasePoi.process_csv( {
       pref_name: '兵庫県',
       alter_citys: ALTER_CITY_NAMES,
-      csv_uri: config.HYOGO_XLS.DATA_URI,
-      cb_parse_csv: cr => parse_xlsx( cr ),
+      csv_uri: config.HYOGO_XLS.INDEX_URI,
+      cb_parse_csv: cr => parse_xlsx( parse_html( iconv.decode( cr.data, 'UTF8' ) ) ),
       row_begin: 0,
       min_columns: 2,
       col_date: 0,
