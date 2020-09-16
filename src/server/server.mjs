@@ -138,9 +138,8 @@ function merge_jsons( jsons )
   } );
   if ( spots.length === 0 )
     throw new Error( 'no data to fit' );
-  const summary = jsons.filter( json => json && Object.keys( json ).length > 0 ).map( json => { return { pref_code: json.pref_code, name: json.name, begin_at: json.begin_at, finish_at: json.finish_at, subtotal: progresses[ json.pref_code ] } } ).sort( (a, b) => a.pref_code - b.pref_code );
-  const suset = new Set();
-  summary.forEach( s => suset.add( s.pref_code ) );
+  const summary = jsons.filter( json => json && Object.keys( json ).length > 0 ).map( json => { return { pref_code: json.pref_code, name: json.name, begin_at: json.begin_at, finish_at: json.finish_at, subtotal: progresses[ json.pref_code ] } } );
+  const suset = summary.reduce( ( set, s ) => set.add( s.pref_code ), new Set() );
   for( let curpref = 1; curpref <= 47; curpref++ )
   {
     if ( !suset.has( curpref ) )
@@ -149,8 +148,8 @@ function merge_jsons( jsons )
   return {
     begin_at: datetostring( Math.min( ...jsons.map( json => json.begin_at && new Date( json.begin_at ).getTime() ).filter( e => e ) ) ),
     finish_at: datetostring( Math.max( ...jsons.map( json => json.finish_at && new Date( json.finish_at ).getTime() ).filter( e => e ) ) ),
-    spots,
-    summary
+    spots: spots.sort( (a, b) => a.city_code - b.city_code ),
+    summary: summary.sort( (a, b) => a.pref_code - b.pref_code )
   };
 }
 
@@ -169,46 +168,48 @@ async function read_city_json( city )
 
 async function make_data( city )
 {
-  try
-  {
-    const pois = await city[ 1 ].load();
-    await write_city_json( city[ 0 ], pois );
-    Log.info( `Data of ${city[ 0 ]} ... ${datetostring( pois.begin_at )} - ${datetostring( pois.finish_at )}`  );
-    return pois;
-  }
-  catch ( ex )
-  {
-    try
-    {
-      ex.pois = await read_city_json( city[ 0 ] );
-      Log.info( `Data of ${city[ 0 ]} is previous one` );
-    }
-    catch ( ex2 )
-    {
-    }
+  const trapper = ex => {
+    ex.pois = read_city_json( city[ 0 ] ).then( () => Log.info( `Data of ${city[ 0 ]} is previous one` ) ).catch( ex2 => {} );
     throw ex;
-  }
+  };
+  const pois = await city[ 1 ].load().catch( trapper );
+  await write_city_json( city[ 0 ], pois ).catch( trapper );
+  Log.info( `Data of ${city[ 0 ]} ... ${datetostring( pois.begin_at )} - ${datetostring( pois.finish_at )}`  );
+  return pois;
 }
 
 // ひとつひとつ順番にやる
-async function execMakeData( cities )
+async function execMakeDataSerial( cities )
 {
   const jsons = new Array( cities.length );
   const errors = [];
   for ( let i=0; i<cities.length; i++ )
   {
-    try
-    {
-      jsons[ i ] = await make_data( cities[ i ] );  // mapだとラムダ式が別関数とみなされてawaitがエラーになる
-    }
-    catch ( ex )
-    {
+    jsons[ i ] = await make_data( cities[ i ] ).catch( ex => {
       Log.error( ex );
       errors.push( `${cities[ i ][ 0 ]}: ${ex.message}` );
       jsons[ i ] = ex.pois;
-    }
+    } );
+    Log.info( `${cities[ i ][ 0 ]} complete.` );
   }
   return { jsons: jsons.filter( v => v ), errors };
+}
+
+// 順不同でどんどんやる
+async function execMakeData( cities )
+{
+  const errors = [];
+  const promises = cities.map( async city => {
+    let json;
+    json = await make_data( city ).catch( ex => {
+      Log.error( ex );
+      errors.push( `${city[ 0 ]}: ${ex.message}` );
+      json = ex.pois;
+    } );
+    Log.info( `${city[ 0 ]} complete.` );
+    return json;
+  } );
+  return { jsons: (await Promise.all( promises )).filter( v => v ), errors };
 }
 
 const CITIES = [
@@ -277,85 +278,39 @@ async function busy_unlock()
   return process.env.MAKE_DATA_BUSY_ENABLE ? redis.del( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY ) : true;
 }
 
-// Promise.allは、どれか例外があると残りの実行が不定になるので使わない
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   if ( !config.DEBUG && req.query.token !== process.env.MAKEDATA_TOKEN )
   {
     res.status( 501 ).send( 'bad auth' );
     return;
   }
+  const trapper = ex => {
+    Log.error( ex );
+    res.status( 500 ).send( ex.message )
+  };
+  const begintm = new Date();
   (req.query.unbusy ? busy_unlock() : busy_lock())
-    .then( v => {
+    .then( async v => {
       if ( v )
         throw new Error( 'busy' );
-      return mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) );
-    } )
-    .then( () => {
+      await mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) );
       const cities = (AVAILABLE_CITIES.length > 0) ? CITIES.filter( c => AVAILABLE_CITIES.some( v => c[ 0 ] === v ) ) : CITIES;
-      if ( to_bool( process.env.MAKE_DATA_ORDERED ) )
-      {
-        // ひとつひとつ順番にやる
-        let data, errors;
-        execMakeData( cities )
-          .then( r => {
-            errors = r.errors;
-            return merge_jsons( r.jsons );
-          } )
-          .then( merged => {
-            data = merged;
-            return write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged );
-          } )
-          .then( r => busy_unlock() )
-          .then( r => res.send( data ) )
-          .then( r => {
-            Log.info( `MAKE DATA complete with ${errors.length} error${(errors.length > 1) ? 's':''}.` );
-            ( errors.length > 0 ) && Log.error( errors );
-          } )
-          .catch( ex => {
-            Log.error( ex );
-            res.status( 500 ).send( ex.message )
-          } );
-      }
-      else
-      {
-        // 全て非同期で一斉にやる
-        const jsons = [], errors = [];
-        let count = 0;
-        cities.map( city => {
-          make_data( city )
-            .then( data => jsons.push( data ) )
-            .catch( err => {
-              Log.error( err );
-              errors.push( `${city[ 0 ]}: ${err.message}` );
-              if ( err.pois )
-                jsons.push( err.pois );
-            } )
-            .finally( () => {
-              Log.info( `${city[ 0 ]} complete.` );
-              if ( ++count < cities.length )
-                return;
-              Log.info( 'merging data...' )
-              const merged = merge_jsons( jsons );
-              Log.info( `merged with ${errors.length} error${(errors.length > 1) ? 's':''}` );
-              if ( errors.length > 0 )
-                Log.error( errors );
-              write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged )
-                .then( r => busy_unlock() )
-                .then( r => res.send( merged ) )
-                .then( r => Log.info( 'MAKE DATA complete.' ) )
-                .catch( ex => {
-                  Log.error( ex );
-                  res.status( 500 ).send( ex.message )
-                } );
-            } );
+      ( to_bool( process.env.MAKE_DATA_ORDERED ) ? execMakeDataSerial( cities ) : execMakeData( cities ) )
+        .then( async r => {
+          Log.info( 'merging data...' )
+          const merged = merge_jsons( r.jsons );
+          await write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged );
+          await busy_unlock();
+          res.send( merged );
+          Log.info( `MAKE DATA complete with ${r.errors.length} error${(r.errors.length > 1) ? 's':''} in ${(new Date().getTime() - begintm.getTime())/1000} sec.` );
+          ( r.errors.length > 0 ) && Log.error( r.errors );
         } )
-      }
+        .catch( trapper );
     } )
     .catch( ex => {
       if ( ex.message !== 'busy' )
         redis.del( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY );
-      Log.error( ex );
-      res.status( 500 ).send( ex.message );
+      trapper( ex );
     } )
 })
 
@@ -407,7 +362,7 @@ function sendIndex( req, res )
     return;
   }
   redis.incr( restrictKey() )
-    .then( counter => {
+    .then( async counter => {
       if ( counter > config.SERVER_RESTRICT_MAX  ||  (req.session[ config.COOKIE_EXPIRE_DATE ] || 0) > Date.now() )
       {
         sendIndexHtml( req, res );
@@ -415,14 +370,12 @@ function sendIndex( req, res )
       }
       const date = new Date();
       date.setSeconds( date.getSeconds() + config.SERVER_AUTHORIZE_EXPIRE );
-      axios.post( url, { expires: date.toISOString(), scopes: ["styles:read", "fonts:read"], timeout: config.HTTP_POST_TIMEOUT } )
-        .then( response => {
-          sendIndexHtml( req, res, response.data.token );
-        } )
+      const response = await axios.post( url, { expires: date.toISOString(), scopes: ["styles:read", "fonts:read"], timeout: config.HTTP_POST_TIMEOUT } )
         .catch( err => {
           Log.debug( err );
           res.status( 500 ).send( "MAPBOX NOT AUTHORIZED" );
-        } )
+        } );
+      response && sendIndexHtml( req, res, response.data.token );
     } );
 }
 app.get( `${config.SERVER_URI_PREFIX}/*`, sendIndex );

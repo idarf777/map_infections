@@ -34,21 +34,30 @@ async function getPdfText( data )
   return Promise.all( Array.from( { length: pdf.numPages }, async ( v, i ) => {
     const items = (await (await pdf.getPage( i+1 )).getTextContent()).items;
     const rows = [], row = [];
+    let built = null;
     let x = items[ 0 ]?.transform[ 4 ];
+    let w = items[ 0 ]?.width;
     for ( const item of items )
     {
       const newx = item.transform[ 4 ];
-      if ( newx < x )
+      if ( newx < x + w )
       {
-        rows.push( merge_row( row ) );
+        let str = merge_row( row );
+        if ( built == null && rows.length > 0 && rows[ rows.length-1 ].match( /^新型コロナウイルス感染症患者等の県内発生状況について/ ) )
+        {
+          str = str.replace( /[\s]/g, '' );
+          built = str; // PDFの作成日
+        }
+        rows.push( str );
         row.splice( 0 );
       }
       x = newx;
+      w = item.width;
       row.push( item );
     }
     if ( row.length > 0 )
       rows.push( row.join( ' ' ) );
-    return { text: rows, items };
+    return { text: rows, items, built };
   } ) );
 }
 async function parse_html( html )
@@ -71,14 +80,23 @@ async function parse_html( html )
     uri = `${host}${uri}`;
   }
   const cr = await axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( uri, { 'axios-retry': { retries: config.HTTP_RETRY } } );
-  return (await getPdfText( cr.data )).flatMap( row => row.text ).map( row => {
+  let builtyear = new Date().getFullYear();
+  const rows = await getPdfText( cr.data );
+  const bm = rows.find( row => row.built )?.built.match( /(\d+)年/ );
+  if ( bm )
+  {
+    builtyear = parseInt( bm[ 0 ] );
+    if ( builtyear < 2000 )
+      builtyear += 2018;
+  }
+  return rows.flatMap( row => row.text ).map( row => {
     const col = row.split( ' ' );
     if ( col.length < 6 || !col[ 0 ].match( /^\d+$/ ) )
       return null;
     const dm = col[ 5 ].match( /((\d+)年)?(\d+)月(\d+)日/ );
     if ( !dm )
       return null;
-    let year = dm[ 2 ] ? parseInt( dm[ 2 ] ) : new Date().getFullYear();
+    let year = dm[ 2 ] ? parseInt( dm[ 2 ] ) : builtyear;
     if ( year < 2000 )
       year += 2018; // 令和
     return [ new Date( `${year}-${dm[ 3 ]}-${dm[ 4 ]}` ), col[ 3 ] ];
