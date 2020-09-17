@@ -262,8 +262,8 @@ export default function makeConfig()
     },
 
     // 四国
-    TOKUSHIMA_HTML: {
-      DATA_URI: 'https://www.pref.tokushima.lg.jp/ippannokata/kenko/kansensho/5034012#20',
+    TOKUSHIMA_PDF: {
+      INDEX_URI: 'https://www.pref.tokushima.lg.jp/ippannokata/kenko/kansensho/5034012',
       LICENSE: license.FREE
     },
     KAGAWA_HTML: {
