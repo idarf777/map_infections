@@ -202,7 +202,7 @@ async function parse_html( html, pref_name )
       uri = tag.href;
       pdfFileCounter ++;
       const theFile = path.join( `${cache_dir}/`, uri.split('/').slice(-1)[0] );
-      if( cachedFiles.includes(theFile) == true){
+      if( cachedFiles.includes(theFile) ){
         // theFile が cache に有る時は、何もしない。
         continue;
       }else{
@@ -216,7 +216,7 @@ async function parse_html( html, pref_name )
           { responseType: 'arraybuffer', 
             timeout: config.HTTP_GET_TIMEOUT, 
             headers:{
-              Referer: 'https://www.pref.tokushima.lg.jp/ippannokata/kenko/kansensho/5034012'
+              Referer: config.TOKUSHIMA_PDF.INDEX_URI
             }
           } ).get( uri, { 'axios-retry': { retries: config.HTTP_RETRY } } );
 
@@ -261,6 +261,7 @@ async function parse_html( html, pref_name )
   }
 
   //Log.debug(counter + " " + csv.length);
+  csv.forEach( c => c[ 1 ] = c[ 1 ].replace( /[(（].+?[)）]/g, '' ) );
   return csv;
 }
   // csv_cache を cache に書き込む
@@ -268,8 +269,8 @@ async function parse_html( html, pref_name )
   // await fs.writeFile(csv_cash_file, csv_cache_data);
 
 const ALTER_CITY_NAMES = [
-  ['徳島',　'徳島市'],
-  ['阿南',  '阿南市'],
+  ['徳島', '徳島市'],
+  ['阿南', '阿南市'],
   ['徳島保健所管内', '徳島市'],
   ['阿南保健所管内', '阿南市'],
 ];

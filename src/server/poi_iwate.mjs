@@ -7,7 +7,7 @@ const ALTER_CITY_NAMES = [];
 async function parse_html( html )
 {
   const csv = [];
-  const rootm = html.match( /陽性者に関する情報[\s\S]+?<\/tr>([\s\S]+?)<\/tbody>/ );
+  const rootm = html.match( /に関する情報[\s\S]+?<\/tr>([\s\S]+?)<\/tbody>/ );
   if ( !rootm )
     return csv;
   const rows = rootm[ 1 ];

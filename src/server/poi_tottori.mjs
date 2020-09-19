@@ -71,7 +71,7 @@ async function parse_html( html )
       }
     }
 
-    city = city.replace('&nbsp;', '');
+    city = city.replace( /&nbsp;|[（(].+?[)）]/g, '' );
     // 通し番号の抜けチェック
     if( p_no == 0 ){
       p_no = no;
