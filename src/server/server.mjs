@@ -262,7 +262,7 @@ const CITIES = [
   [ 'hokkaido', PoiHokkaido ],
 ];
 const AVAILABLE_CITIES = [
-  //'chiba'
+  //'tokushima'
 ];
 
 async function busy_lock()
