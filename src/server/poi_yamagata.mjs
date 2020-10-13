@@ -6,7 +6,7 @@ const config = global.covid19map.config;
 async function load_csv()
 {
   const resIndex = await axios.get( config.YAMAGATA_CSV.INDEX_URI, { timeout: config.HTTP_GET_TIMEOUT } );
-  const m = resIndex.data.match( /<a href="([^.]+?\.csv)">陽性患者属性/ );
+  const m = resIndex.data.match( /<a href="([^.]+?\.csv)".+?陽性患者属性/ );
   if ( m == null )
     throw new Error( "no uri on yamagata-pref" );
   let uri = m[ 1 ].trim();

@@ -36,7 +36,11 @@ async function parse_xlsx( cr )
     const cellDate = worksheet[ `C${row}` ];
     const cellCity = worksheet[ `G${row}` ];
     if ( cellDate?.t !== 'd' || cellCity?.t !== 's' )
+    {
+      if ( cellDate?.t === 's' && cellDate.v.match( /欠番/ ) )
+        continue;
       break;
+    }
     csv.push( [ cellDate.v, sanitize_poi_name( cellCity.v ) ] );
   }
   return csv;
