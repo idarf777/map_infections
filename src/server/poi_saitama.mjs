@@ -1,17 +1,17 @@
-import axios from "axios";
 import BasePoi from "./base_poi.mjs";
+import {axios_instance} from "./util.mjs";
 const config = global.covid19map.config;
 
 async function load_csv()
 {
-  const resIndex = await axios.get( config.SAITAMA_CSV.INDEX_URI, { timeout: config.HTTP_GET_TIMEOUT } );
+  const resIndex = await axios_instance().get( config.SAITAMA_CSV.INDEX_URI );
   const lastLinkIndex = resIndex.data.lastIndexOf( '時点の状況です。' );
   if ( lastLinkIndex < 0 )
     throw new Error( "bad html" );
   const m = resIndex.data.substring( lastLinkIndex ).match( /^[\s\S]*?<a href="(https:\/\/opendata[^"]+)"/ );
   if ( !m )
     throw new Error( "bad link" );
-  return axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( m[ 1 ], { 'axios-retry': { retries: config.HTTP_RETRY } } );
+  return axios_instance( { responseType: 'arraybuffer' } ).get( m[ 1 ] );
 }
 export default class PoiSaitama extends BasePoi
 {

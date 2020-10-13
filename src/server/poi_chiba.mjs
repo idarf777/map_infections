@@ -3,7 +3,7 @@ import jsdom from 'jsdom';
 import pdfjsLib from 'pdfjs-dist/es5/build/pdf.js';
 import BasePoi from "./base_poi.mjs";
 import Log from './logger.mjs';
-import axios from "axios";
+import {axios_instance} from "./util.mjs";
 const config = global.covid19map.config;
 const { JSDOM } = jsdom;
 
@@ -79,7 +79,7 @@ async function parse_html( html )
     const host = config.CHIBA_PDF.INDEX_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+\/)/ )[ 1 ];
     uri = `${host}${uri}`;
   }
-  const cr = await axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( uri, { 'axios-retry': { retries: config.HTTP_RETRY } } );
+  const cr = await axios_instance( { responseType: 'arraybuffer' } ).get( uri );
   let builtyear = new Date().getFullYear();
   const rows = await getPdfText( cr.data );
   const bm = rows.find( row => row.built )?.built.match( /(\d+)年/ );

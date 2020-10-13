@@ -1,12 +1,11 @@
 //import agh from 'agh.sprintf';
 import * as React from 'react';
-import axios from 'axios';
 import MapGL, {_MapContext as MapContext, NavigationControl} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import Log from './logger.js';
 import InfectorsLayer from "./infectors_layer.js";
 import ControlPanel from './control-panel.js';
-import { datetostring } from "./server/util.mjs";
+import {axios_instance, datetostring} from "./server/util.mjs";
 import { example_data } from "./example_data.js";
 import loader from "./loader.js";
 import './App.css';
@@ -129,7 +128,7 @@ export default class App extends React.Component
     const host = config.SERVER_HOST || `${window.location.protocol}//${window.location.host}`;
     this.setState(
       (state, prop) => { return { data_api_loaded: DATA_API_STATUS.loading } },
-      () => axios.get( `${host}${config.SERVER_URI}`, { timeout: config.HTTP_GET_TIMEOUT } )
+      () => axios_instance().get( `${host}${config.SERVER_URI}`, { timeout: config.HTTP_GET_TIMEOUT } )
               .then( ( response ) => {
                 //Log.debug( response );
                 this.loadData( response.data );

@@ -1,7 +1,6 @@
 import xlsx from 'xlsx';
-import { sanitize_poi_name } from "./util.mjs";
+import {axios_instance, sanitize_poi_name} from "./util.mjs";
 import BasePoi from "./base_poi.mjs";
-import axios from "axios";
 import iconv from "iconv-lite";
 const config = global.covid19map.config;
 
@@ -66,7 +65,7 @@ for ( const n of ALTER_CITY_NAMES )
 // {
 //   const fromXlsx = await parse_xlsx( cr );
 //   const mindate = ( fromXlsx.length > 0 ) ? fromXlsx[ fromXlsx.length - 1 ][ 0 ] : new Date( 0 );
-//   const crhtml = await axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( config.YAMANASHI_XLSX.HTML_URI, { 'axios-retry': { retries: config.HTTP_RETRY } } );
+//   const crhtml = await axios_instance( { responseType: 'arraybuffer' } ).get( config.YAMANASHI_XLSX.HTML_URI );
 //   return fromXlsx.concat( parse_html( iconv.decode( crhtml.data, 'UTF8' ), mindate ) ).map( v => [ v[ 0 ], mapCityNames.get( v[ 1 ] ) || v[ 1 ] ] );
 // }
 
@@ -82,7 +81,7 @@ async function load_xlsx( data )
     const host = config.YAMANASHI_XLSX.INDEX_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+\/)/ )[ 1 ];
     uri = `${host}${uri}`;
   }
-  return axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( uri, { 'axios-retry': { retries: config.HTTP_RETRY } } );
+  return axios_instance( { responseType: 'arraybuffer' } ).get( uri );
 }
 async function parse_xlsx( promise )
 {

@@ -1,9 +1,8 @@
 import agh from "agh.sprintf";
 import path from 'path';
 import { promises as fs } from "fs";
-import axios from "axios";
 import Log from "./logger.mjs";
-import { parse_csv, datetostring, sanitize_poi_name } from "./util.mjs";
+import {parse_csv, datetostring, sanitize_poi_name, axios_instance} from "./util.mjs";
 import mkdirp from "mkdirp";
 import DbPoi from "./db_poi.mjs";
 const config = global.covid19map.config;
@@ -110,11 +109,11 @@ async function load_csv( date, cache_dir )
     const filename = csv_filename( prefix, m );
     const cache = csv_filename( prefix, m, cache_dir );
     const uri = `${config.TOKYO_CSV.DATA_URI}${filename}`;
-    const h = await axios.head( uri, { validateStatus: false, timeout: config.HTTP_GET_TIMEOUT } ).catch( () => {} );
+    const h = await axios_instance().head( uri, { validateStatus: false } ).catch( () => {} );
     if ( h?.status === 200 )
     {
       Log.info( `trying GET ${uri} ...` );
-      const response = await axios.get( uri, { timeout: config.HTTP_GET_TIMEOUT } );
+      const response = await axios_instance().get( uri );
       if ( response )
         Log.info( `status = ${response.status}` );
       if ( response?.data )

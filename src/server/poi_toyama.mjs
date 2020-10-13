@@ -1,7 +1,6 @@
 import xlsx from 'xlsx';
-import { sanitize_poi_name } from "./util.mjs";
+import {axios_instance, sanitize_poi_name} from "./util.mjs";
 import BasePoi from "./base_poi.mjs";
-import axios from "axios";
 import iconv from "iconv-lite";
 const config = global.covid19map.config;
 
@@ -18,7 +17,7 @@ async function load_xlsx( data )
     const host = config.TOYAMA_HTML.DATA_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+\/)/ )[ 1 ];
     uri = `${host}${uri}`;
   }
-  return axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( uri, { 'axios-retry': { retries: config.HTTP_RETRY } } );
+  return axios_instance( { responseType: 'arraybuffer' } ).get( uri );
 }
 async function parse_xlsx( promise )
 {

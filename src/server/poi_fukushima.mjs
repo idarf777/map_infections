@@ -1,7 +1,4 @@
-import xlsx from 'xlsx';
-import { sanitize_poi_name } from "./util.mjs";
 import BasePoi from "./base_poi.mjs";
-import axios from "axios";
 import iconv from "iconv-lite";
 const config = global.covid19map.config;
 const ALTER_CITY_NAMES = [['県南', '白河市']];

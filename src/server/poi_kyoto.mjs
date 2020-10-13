@@ -1,7 +1,7 @@
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
-import axios from "axios";
 import Log from "./logger.mjs";
+import {axios_instance} from "./util.mjs";
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [['乙訓保健所管内', '長岡京市'], ['乙訓管内', '長岡京市'], ['山城管内', '宇治市'], ['丹後管内', '京丹後市'], ['南丹管内', '亀岡市'], ['中丹管内', '福知山市']];
@@ -38,7 +38,7 @@ async function parse_both( cr )
 {
   const fromJson = await parse_json( cr );
   const mindate = ( fromJson.length > 0 ) ? fromJson[ fromJson.length - 1 ][ 0 ] : new Date( 0 );
-  const crhtml = await axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( config.KYOTO_JSON.HTML_URI, { 'axios-retry': { retries: config.HTTP_RETRY } } );
+  const crhtml = await axios_instance( { responseType: 'arraybuffer' } ).get( config.KYOTO_JSON.HTML_URI );
   return fromJson.concat( parse_html( iconv.decode( crhtml.data, 'UTF8' ), mindate ) ).map( v => [ v[ 0 ], mapCityNames.get( v[ 1 ] ) || v[ 1 ] ] );
 }
 export default class PoiKyoto extends BasePoi

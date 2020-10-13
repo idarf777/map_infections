@@ -1,8 +1,8 @@
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
-import axios from "axios";
 import encoding from 'encoding-japanese';
 import Log from './logger.mjs';
+import {axios_instance} from "./util.mjs";
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
@@ -29,7 +29,7 @@ async function parse_html( html )
       //console.log(js_url);
 
     /* デバッグ用　参考のため残しておく
-      await axios({
+      await axios_instance({
         method       : 'GET',
         url          : js_url,
         responseType : 'arrayBuffer'
@@ -39,7 +39,7 @@ async function parse_html( html )
         console.log(response);
       });
       */
-      const t_js = await (axios.create({ responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( js_url, { 'axios-retry': { retries: config.HTTP_RETRY } } ));
+      const t_js = await axios_instance( { responseType: 'arraybuffer' } ).get( js_url );
       const detected = encoding.detect(t_js.data);
       const tJs = iconv.decode( t_js.data, detected ) 
 

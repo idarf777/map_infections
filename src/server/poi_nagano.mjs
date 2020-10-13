@@ -1,19 +1,19 @@
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
-import axios from "axios";
+import {axios_instance} from "./util.mjs";
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [['北信保健所管内', '長野市'], ['長野市保健所管内', '長野市']];
 async function load_csv()
 {
-  const rh = await axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( config.NAGANO_HTML.DATA_URI, { 'axios-retry': { retries: config.HTTP_RETRY } } );
+  const rh = await axios_instance( { responseType: 'arraybuffer' } ).get( config.NAGANO_HTML.DATA_URI );
   const html = iconv.decode( rh.data, 'UTF8' );
   const m = html.match( /<a href="(.+?)">\s*発生状況\s*（CSV：.+?<\/a>/ );
   if ( !m )
     throw new Error( "no nagano link" );
   const href = m[ 1 ];
   const prefix = config.NAGANO_HTML.DATA_URI.match( /^(http.?:\/\/.+?)\/[^.]+\.html$/ )[ 1 ];
-  return axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( `${prefix}/${href}`, { 'axios-retry': { retries: config.HTTP_RETRY } } );
+  return axios_instance( { responseType: 'arraybuffer' } ).get( `${prefix}/${href}` );
 }
 export default class PoiNagano extends BasePoi
 {

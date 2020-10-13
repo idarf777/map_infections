@@ -1,5 +1,7 @@
 import agh from 'agh.sprintf';
 import csv from "csv";
+import * as rax from 'retry-axios';
+import axios from "axios";
 
 export function round_8( v )
 {
@@ -256,4 +258,19 @@ for ( let i=0x21; i<=0x7e; i++ )
 export function sanitize_poi_name( name )
 {
   return name && name.replace( /[\s]/g, '' ).split( '' ).map( c => mapAlterChars.get( c ) || c ).join( '' );
+}
+
+export function axios_instance( options )
+{
+  const instance = axios.create( options );
+  instance.defaults = {
+    raxConfig: {
+      instance,
+      retry: 3,
+      retryDelay: 5000,
+      statusCodesToRetry: [[100, 199], [429, 429], [500, 599]],
+    }
+  }
+  const interceptorId = rax.default.attach( instance );
+  return instance;
 }

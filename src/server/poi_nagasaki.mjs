@@ -1,8 +1,7 @@
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
 import encoding from 'encoding-japanese';
-import axios from "axios";
-import {parse_csv} from "./util.mjs";
+import {axios_instance, parse_csv} from "./util.mjs";
 
 const config = global.covid19map.config;
 
@@ -13,7 +12,7 @@ async function parse_html_then_get_csv( html ){
   const hText = iconv.decode(html, detected);
   const re = /[\r\n|\r|\n] +?<li>[\r\n|\r|\n] +?<a class=\"btn btn-primary resource-url-analytics resource-type-None\" href=\"(.+?)\"/;  
   const csv_url = re.exec(hText);
-  const csv_rd = await (axios.create( {responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT} ).get(csv_url[1], { 'axios-retry': { retries: config.HTTP_RETRY } }) );
+  const csv_rd = await (axios_instance( {responseType: 'arraybuffer'} ).get(csv_url[1]));
   const detected_1 = encoding.detect(csv_rd.data);
   return await parse_csv( iconv.decode(csv_rd.data, detected_1) );
 }

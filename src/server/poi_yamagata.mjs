@@ -1,12 +1,12 @@
-import axios from "axios";
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
+import {axios_instance} from "./util.mjs";
 const config = global.covid19map.config;
 
 async function load_csv()
 {
-  const resIndex = await axios.get( config.YAMAGATA_CSV.INDEX_URI, { timeout: config.HTTP_GET_TIMEOUT } );
-  const m = resIndex.data.match( /<a href="([^.]+?\.csv)">陽性患者属性/ );
+  const resIndex = await axios_instance().get( config.YAMAGATA_CSV.INDEX_URI );
+  const m = resIndex.data.match( /<a href="([^.]+?\.csv)".+?陽性患者属性/ );
   if ( m == null )
     throw new Error( "no uri on yamagata-pref" );
   let uri = m[ 1 ].trim();
@@ -15,7 +15,7 @@ async function load_csv()
     const host = config.YAMAGATA_CSV.INDEX_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+\/)/ )[ 1 ];
     uri = `${host}${uri}`;
   }
-  return axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( uri, { 'axios-retry': { retries: config.HTTP_RETRY } } );
+  return axios_instance( { responseType: 'arraybuffer' } ).get( uri );
 }
 export default class PoiYamagata extends BasePoi
 {
