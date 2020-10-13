@@ -1,6 +1,6 @@
-import axios from "axios";
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
+import {axios_instance} from "./util.mjs";
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
@@ -11,7 +11,7 @@ const ALTER_CITY_NAMES = [
 ];
 async function load_csv()
 {
-  const resIndex = await axios.get( config.AOMORI_CSV.INDEX_URI, { timeout: config.HTTP_GET_TIMEOUT } );
+  const resIndex = await axios_instance().get( config.AOMORI_CSV.INDEX_URI );
   const m = resIndex.data.match( /陽性患者関係\.csv[\s\S]+?<a .*?class="download".*?href="([^.]+?\.csv)"/ );
   if ( m == null )
     throw new Error( "no uri on aomori-pref" );
@@ -21,7 +21,7 @@ async function load_csv()
     const host = config.AOMORI_CSV.INDEX_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+\/)/ )[ 1 ];
     uri = `${host}${uri}`;
   }
-  return axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( uri, { 'axios-retry': { retries: config.HTTP_RETRY } } );
+  return axios_instance( { responseType: 'arraybuffer' } ).get( uri );
 }
 export default class PoiAomori extends BasePoi
 {

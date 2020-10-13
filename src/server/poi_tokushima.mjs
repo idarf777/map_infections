@@ -3,13 +3,13 @@ import jsdom from 'jsdom';
 import pdfjsLib from 'pdfjs-dist/es5/build/pdf.js';
 import BasePoi from "./base_poi.mjs";
 import Log from './logger.mjs';
-import axios from "axios";
-const config = global.covid19map.config;
-const { JSDOM } = jsdom;
-
 import { promises as fs } from "fs";
 import path from "path";
 import { LOGLEVEL } from "./config.mjs";
+import {axios_instance} from "./util.mjs";
+
+const config = global.covid19map.config;
+const { JSDOM } = jsdom;
 
 
 async function getPdfText( data )
@@ -212,13 +212,12 @@ async function parse_html( html, pref_name )
           const host = config.TOKUSHIMA_PDF.INDEX_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+\/)/ )[ 1 ];
           uri = `${host}${uri}`;
         }
-        const cr = await axios.create( 
+        const cr = await axios_instance(
           { responseType: 'arraybuffer', 
-            timeout: config.HTTP_GET_TIMEOUT, 
             headers:{
               Referer: config.TOKUSHIMA_PDF.INDEX_URI
             }
-          } ).get( uri, { 'axios-retry': { retries: config.HTTP_RETRY } } );
+          } ).get( uri );
 
         pdfFileCounter ++;
         await fs.writeFile( theFile, cr.data);

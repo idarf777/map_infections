@@ -1,9 +1,8 @@
 import xlsx from 'xlsx';
-import { sanitize_poi_name } from "./util.mjs";
+import {axios_instance, sanitize_poi_name} from "./util.mjs";
 import BasePoi from "./base_poi.mjs";
 import jsdom from "jsdom";
 import iconv from "iconv-lite";
-import axios from "axios";
 const config = global.covid19map.config;
 const { JSDOM } = jsdom;
 
@@ -64,7 +63,7 @@ async function parse_html( html )
     const host = config.HYOGO_XLS.INDEX_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+\/)/ )[ 1 ];
     uri = `${host}${uri}`;
   }
-  return axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( uri, { 'axios-retry': { retries: config.HTTP_RETRY } } );
+  return axios_instance( { responseType: 'arraybuffer' } ).get( uri );
 }
 export default class PoiHyogo extends BasePoi
 {

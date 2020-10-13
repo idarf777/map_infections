@@ -1,6 +1,5 @@
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
-import axios from "axios";
 import Log from "./logger.mjs";
 const config = global.covid19map.config;
 

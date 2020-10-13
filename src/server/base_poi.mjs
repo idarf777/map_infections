@@ -1,8 +1,7 @@
 import Log from "./logger.mjs";
-import {datetostring, parse_csv, sanitize_poi_name} from "./util.mjs";
+import {datetostring, parse_csv, sanitize_poi_name, axios_instance} from "./util.mjs";
 import DbPoi from "./db_poi.mjs";
 import iconv from "iconv-lite";
-import axios from "axios";
 import mkdirp from "mkdirp";
 import encoding from 'encoding-japanese';
 import path from "path";
@@ -37,7 +36,7 @@ export default class BasePoi
     const map_poi = await DbPoi.getMap( pref_name );
     alter_citys && alter_citys.forEach( names => map_poi.set( names[ 0 ], map_poi.get( names[ 1 ] ) ) );
     cb_alter_citys && cb_alter_citys( map_poi );
-    const cr = await (cb_load_csv ? cb_load_csv() : axios.create( { responseType: 'arraybuffer', timeout: config.HTTP_GET_TIMEOUT } ).get( csv_uri, { 'axios-retry': { retries: config.HTTP_RETRY } } ));
+    const cr = await (cb_load_csv ? cb_load_csv() : axios_instance( { responseType: 'arraybuffer' } ).get( csv_uri ));
     const cache_dir = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_CACHE_DIR}/${pref_name}` );
     await mkdirp( cache_dir );
     await fs.writeFile( path.join( cache_dir, 'src' ), cr.data );

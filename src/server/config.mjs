@@ -101,10 +101,6 @@ export default function makeConfig()
 
     CITY_NAME_DATABASE: 'map_infectors_server.sqlite3',
 
-    HTTP_RETRY: 3,
-    HTTP_GET_TIMEOUT: 10000, // [msec]
-    HTTP_POST_TIMEOUT: 5000, // [msec]
-
     TOKYO_CSV: {
       DATA_URI: 'https://raw.githubusercontent.com/idarf777/parse-tokyo-covid-report-pdf/master/csv/',
       DATA_BEGIN_AT: new Date( '2020-04-10' ),

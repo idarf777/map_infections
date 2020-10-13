@@ -7,13 +7,11 @@ import { promises as fs } from "fs";
 import path from 'path';
 import helmet from 'helmet';
 import Redis from 'ioredis';
-import axios from 'axios';
-import axiosRetry from 'axios-retry';
 import crypto from 'crypto';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
-import { datetostring, to_bool } from "./util.mjs";
+import { datetostring, to_bool, axios_instance } from "./util.mjs";
 // CSRFは後の課題とする
 
 // 北海道
@@ -76,7 +74,6 @@ import PoiOkinawa from "./poi_okinawa.mjs";
 
 
 //import { example_data } from '../example_data.js';
-axiosRetry( axios, { retries: config.HTTP_RETRY } );
 const COOKIE_OPTIONS = Object.freeze( { maxAge: config.COOKIE_EXPIRE*1000, path: config.SERVER_URI_PREFIX } );
 const RedisStore = connectRedis( session );
 const redis = new Redis();
@@ -262,7 +259,7 @@ const CITIES = [
   [ 'hokkaido', PoiHokkaido ],
 ];
 const AVAILABLE_CITIES = [
-  //'hyogo'
+  //'hokkaido'
 ];
 
 async function busy_lock()
@@ -370,7 +367,7 @@ function sendIndex( req, res )
       }
       const date = new Date();
       date.setSeconds( date.getSeconds() + config.SERVER_AUTHORIZE_EXPIRE );
-      const response = await axios.post( url, { expires: date.toISOString(), scopes: ["styles:read", "fonts:read"], timeout: config.HTTP_POST_TIMEOUT } )
+      const response = await axios_instance().post( url, { expires: date.toISOString(), scopes: ["styles:read", "fonts:read"], timeout: config.HTTP_POST_TIMEOUT } )
         .catch( err => {
           Log.debug( err );
           res.status( 500 ).send( "MAPBOX NOT AUTHORIZED" );
