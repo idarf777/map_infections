@@ -71,7 +71,7 @@ export default function makeConfig()
     ANIMATION_TIME_RESOLUTION: 100, // [msec]
     ANIMATION_SPEED: 500, // [msec] msec/day
     TOOLTIPS_CURSOR_OFFSET: 20,
-    ANIMATION_BEGIN_AT: new Date( '2020-04-10' ),
+    ANIMATION_BEGIN_AT: 30, // [day] 現在から遡る日数
 
     COOKIE_MAP_TOKEN: 'mbt',
     COOKIE_EXPIRE_DATE: 'edt',

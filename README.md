@@ -179,6 +179,8 @@ Settings - debuggingのデバッグ用ポートとChrome拡張機能Jetbrains ID
 
 ## デプロイ方法
 
+### APIサーバ
+
 ステージング環境 /usr/share/nginx/nodeapp/staging/map_infections にファイルを配置し、テストする。
 
 ```
@@ -196,4 +198,15 @@ sudo systemctl restart covid19map_server
 sudo curl localhost:3001/staging/covid19map/api/1.0/make_data?token=xxxxxx > /dev/null
 tail -n 1000 /var/log/covid19map_server/node_server.log
 ```
+
+### reactクライアント
+
+.env.productionをstaging用に編集し、`npm run build`して、dist/*をステージング環境 /usr/share/nginx/nodeapp/staging/map_infections/dist に配置する。
+動作前には
+```
+sudo systemctl restart nginx
+```
+とする。
+
+テストしてうまくいくようなら、.env.productionを本番用に編集し、`npm run build`して、dist/*を本番環境 /usr/share/nginx/nodeapp/map_infections/dist に配置してからまたnginxをrestartする。
 

@@ -122,6 +122,27 @@ body {
   zIndex: 1;
 }
 
+.chart-panel {
+  position: absolute;
+  bottom: 2em;
+  right: 0;
+  max-width: 400pt;
+  background: #fff;
+  box-shadow: 0 0.1em 0.2em rgba(0,0,0,0.3);
+  padding: 1em 2em;
+  margin: 8pt;
+  font-size: 11pt;
+  line-height: 2;
+  color: #6b6b76;
+  overflow: auto;
+}
+
+.chart-title {
+  text-align: center;
+  font-size: 14pt;
+  font-weight: bold;
+}
+
 .tooltip {
   position: absolute;
   zIndex: 1;
@@ -239,3 +260,4 @@ table tr:nth-child(odd){
   padding: 0.3em;
   font-size: 16pt;
 }
+

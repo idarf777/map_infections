@@ -251,7 +251,7 @@ const ALTER_CHARS = [
 ];
 const mapAlterChars = new Map();
 for ( const c of ALTER_CHARS )
-  mapAlterChars.set( c[ 0 ], c[ 1 ] );  // 部首文字を通常漢字で置き換える
+  mapAlterChars.set( c[ 0 ], c[ 1 ] );  // 部首文字を通常漢字で置き換えるa
 for ( let i=0x21; i<=0x7e; i++ )
   mapAlterChars.set( String.fromCharCode( i ), String.fromCharCode( i+0xfee0 ) ); // 半角記号英数字を全角にする
 

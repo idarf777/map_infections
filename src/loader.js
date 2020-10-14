@@ -7,7 +7,7 @@ export default function Loader( json )
   const bgn = new Date( data.begin_at );
   const fin = new Date( data.finish_at );
   let curspot = 1;
-  for ( let spot of data.spots )
+  for ( const spot of data.spots )
   {
     if ( (spot.data?.length || 0) === 0 )
       continue;
@@ -36,5 +36,8 @@ export default function Loader( json )
     src_subtotals.set( curspot, ts );
     curspot++;
   }
-  return { begin_at: bgn, finish_at: fin, num_days: ((src_values.size === 0) ? 0 : src_values.entries().next().value[ 1 ].length), places: src_places, values: src_values, subtotals: src_subtotals, summary: data.summary };
+  const map_summary = new Map();
+  for ( const sm of data.summary )
+    map_summary.set( sm.pref_code, sm );
+  return { begin_at: bgn, finish_at: fin, num_days: ((src_values.size === 0) ? 0 : src_values.entries().next().value[ 1 ].length), places: src_places, values: src_values, subtotals: src_subtotals, summary: data.summary, map_summary };
 }

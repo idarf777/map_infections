@@ -5,6 +5,7 @@ import DeckGL from '@deck.gl/react';
 import Log from './logger.js';
 import InfectorsLayer from "./infectors_layer.js";
 import ControlPanel from './control-panel.js';
+import ChartPanel from "./chart-panel.js";
 import {axios_instance, datetostring} from "./server/util.mjs";
 import { example_data } from "./example_data.js";
 import loader from "./loader.js";
@@ -64,6 +65,16 @@ export default class App extends React.Component
     }
     this.setState( newstate );
   }
+  _onClick = info => {
+    //Log.info( info );
+    if ( !this.state.hoveredIds )
+      return;
+    const citycd = this.state.srcdata.places.get( this.state.hoveredIds[ 0 ] ).city_code;
+    const prefcd = (citycd > 1000) ? Math.floor(citycd / 1000) : citycd;
+    const summary = this.state.srcdata.map_summary.get( prefcd );
+    if ( summary )
+      this.setState( { selectedSummary: summary } );
+  }
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
     data: this.state?.data || [],
@@ -107,7 +118,11 @@ export default class App extends React.Component
 
   animationStartDay()
   {
-    return (this.state?.srcdata && Math.floor( (config.ANIMATION_BEGIN_AT.getTime() - this.state.srcdata.begin_at.getTime())/(24*60*60*1000) )) || 0;
+    if ( !this.state?.srcdata )
+      return 0;
+    const bgn = new Date();
+    bgn.setDate( bgn.getDate() - config.ANIMATION_BEGIN_AT );
+    return Math.max( 0, Math.floor( (bgn.getTime() - this.state.srcdata.begin_at.getTime())/(24*60*60*1000) ) );
   }
   loadData( data )
   {
@@ -242,6 +257,7 @@ export default class App extends React.Component
         controller={true}
         ContextProvider={MapContext.Provider}
         layers={[ this.state.layer_histogram ]}
+        onClick={this._onClick}
       >
         <MapGL
           mapStyle={config.MAP_STYLE}
@@ -252,6 +268,7 @@ export default class App extends React.Component
           <NavigationControl />
         </div>
         <ControlPanel containerComponent={this.props.containerComponent} apimsg={this.state.data_api_loaded} srcdata={this.state.srcdata} />
+        <ChartPanel containerComponent={this.props.containerComponent} summary={this.state.selectedSummary} current_day={datetostring( this.state.begin_date.getTime(), this.state.current_day )} />
         <div className="map-overlay top">
           <div className="map-overlay-inner">
             <div className="date">
