@@ -177,4 +177,23 @@ server {
 WebStrom 2020.2だとなぜかうまくいかないので、Chromeから直接アタッチする。
 Settings - debuggingのデバッグ用ポートとChrome拡張機能Jetbrains IDE supportのポートを合わせておき、Chromeの拡張機能ボタンJetbrains IDE supportから、Inspect in WebStormを実行する。
 
+## デプロイ方法
+
+ステージング環境 /usr/share/nginx/nodeapp/staging/map_infections にファイルを配置し、テストする。
+
+```
+sudo systemctl restart covid19map_server_staging
+sudo curl localhost:3002/staging/covid19map/api/1.0/make_data?token=xxxxxx > /dev/null
+tail -n 1000 /var/log/covid19map_server_staging/node_server.log
+```
+
+成功したら、本番環境 /usr/share/nginx/nodeapp/map_infections にrsyncで反映する。
+
+```
+cd /usr/share/nginx/nodeapp/staging/map_infections
+sudo rsync -av ./src/ ../../map_infections/src/
+sudo systemctl restart covid19map_server
+sudo curl localhost:3001/staging/covid19map/api/1.0/make_data?token=xxxxxx > /dev/null
+tail -n 1000 /var/log/covid19map_server/node_server.log
+```
 

@@ -23,7 +23,7 @@ async function parse_html( html )
 //const re_for_js =/\"居住地\":\"(.+?)\"/g;
 //  const re_for_js =/\"居住地\":\"(.+?)\".+?\"date\":\"/g;
 //const re_for_js =/\"居住地\":\"(.+?)\".+?\"date\":\"(\d+)-/g;
-  const re_for_js =/\"居住地\":\"(.+?)\".+?\"date\":\"(\d+)-(\d+)-(\d+)\"/g;
+  const re_for_js =/"居住地":"(.+?)".+?"date":"(\d+)-(\d+)-(\d+)"/g;
 
   const csv = [];
   while(true){
@@ -67,8 +67,7 @@ async function parse_html( html )
         const city = mm[ 1 ];
         no++;
         //console.log(no + ":" + year + " " + mon + " " + day + " " + city );
-      
-        csv.push( [ new Date( year, mon - 1, day ), city ] );
+        csv.push( [ new Date( year, mon - 1, day ), city.replace( /^島根県/, '' ) ] );
       }
     }else{
       Log.error( "???? error : cant find patients data on js src.");

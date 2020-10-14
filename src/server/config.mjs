@@ -114,7 +114,7 @@ export default function makeConfig()
     CHIBA_PDF: {
       INDEX_URI: 'https://www.pref.chiba.lg.jp/shippei/press/2019/ncov-index.html',
       LICENSE: license.FREE
-    },
+    },  // PDFリンクをスクレイピングで探す
     SAITAMA_CSV: {
       INDEX_URI: 'https://opendata.pref.saitama.lg.jp/data/dataset/covid19-jokyo',
       LICENSE: license.FREE

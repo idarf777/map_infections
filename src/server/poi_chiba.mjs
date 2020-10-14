@@ -99,7 +99,8 @@ async function parse_html( html )
     let year = dm[ 2 ] ? parseInt( dm[ 2 ] ) : builtyear;
     if ( year < 2000 )
       year += 2018; // 令和
-    return [ new Date( `${year}-${dm[ 3 ]}-${dm[ 4 ]}` ), col[ 3 ] ];
+    const cm = col[ 3 ].match( /(.+?市(.+?区)?)/ );
+    return [ new Date( `${year}-${dm[ 3 ]}-${dm[ 4 ]}` ), cm ? cm[ 1 ] : col[ 3 ] ];
   } ).filter( v => v );
 }
 export default class PoiChiba extends BasePoi

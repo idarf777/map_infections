@@ -10,7 +10,7 @@ function parse_html( cr )
   const csv = [];
   for ( const block of rootm[ 1 ].match( /<tr.*?>[\s\S]+?<\/tr>/g ) )
   {
-    //                             通し番号                                           日付                                   居住地
+    //                             通し番号                                           日付                                                居住地
     const m = block.match( /^<tr[\s\S]+?<td.*?>[\s\S]*?<\/td>[\s\S]*?<td.*?>[\s\S]*?((\d+)年)?(\d+)月(\d+)日[\s\S]*?<\/td>[\s\S]*?<td.*?>([\s\S]*?)<\/td>/ );
     if ( !m )
       continue;
@@ -18,7 +18,7 @@ function parse_html( cr )
     const city = (cm && cm[ 1 ]) || m[ 5 ];
     const year = (m[ 2 ] && parseInt( m[ 2 ] )) || new Date().getFullYear();
     const d = new Date( year + ((year < 2000) ? 2018 : 0), parseInt( m[ 3 ] ) - 1, parseInt( m[ 4 ] ) );
-    csv.push( [ d, city.trim() ] );
+    csv.push( [ d, city.trim().replace( /<.+?>/g, '' ) ] );
   }
   return csv.sort( (a, b) => a[ 0 ].getTime() - b[ 0 ].getTime() );
 }
