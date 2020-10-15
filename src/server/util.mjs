@@ -271,6 +271,6 @@ export function axios_instance( options )
       statusCodesToRetry: [[100, 199], [429, 429], [500, 599]],
     }
   }
-  const interceptorId = rax.default.attach( instance );
+  rax.default.attach( instance );
   return instance;
 }

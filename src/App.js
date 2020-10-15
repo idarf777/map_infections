@@ -66,15 +66,22 @@ export default class App extends React.Component
     this.setState( newstate );
   }
   _onClick = info => {
-    //Log.info( info );
-    if ( !this.state.hoveredIds )
+    if ( this.state.childClicked && (Date.now() - this.state.childClicked.getTime()) <= config.MAP_CLICK_PROPAGATION_TIME )
       return;
-    const citycd = this.state.srcdata.places.get( this.state.hoveredIds[ 0 ] ).city_code;
-    const prefcd = (citycd > 1000) ? Math.floor(citycd / 1000) : citycd;
+    let prefcd = 0;
+    if ( this.state.hoveredIds )
+    {
+      const citycd = this.state.srcdata.places.get( this.state.hoveredIds[ 0 ] ).city_code;
+      prefcd = (citycd > 1000) ? Math.floor(citycd / 1000) : citycd;
+    }
     const summary = this.state.srcdata.map_summary.get( prefcd );
     if ( summary )
       this.setState( { selectedSummary: summary } );
   }
+  _onClickOnChild = e => {
+    this.setState( { childClicked: new Date() } );
+  }
+
   createLayer = ( count ) => new InfectorsLayer({
     id: `3dgram${count}`,
     data: this.state?.data || [],
@@ -242,12 +249,22 @@ export default class App extends React.Component
       () => cb && cb()
     );
   }
-  onClickStart = () => this.state.timer_id ? this.stopAnimation() : this.startAnimation();
-  onClickReset = () => {
+  onClickStart = e => {
+    e.stopPropagation();
+    this.state.timer_id ? this.stopAnimation() : this.startAnimation();
+    return false;
+  }
+  onClickReset = e => {
+    e.stopPropagation();
     this.stopAnimation();
     this.doAnimation( this.animationStartDay() );
+    return false;
   }
-  onDateChanged = ( ev ) => this.stopAnimation( () => ev?.target?.value && this.doAnimation( parseInt( ev.target.value ) ) );
+  onDateChanged = e => {
+    e.stopPropagation();
+    this.stopAnimation( () => e?.target?.value && this.doAnimation( parseInt( e.target.value ) ) );
+    return false;
+  }
 
   render() {
     return (
@@ -267,8 +284,8 @@ export default class App extends React.Component
         <div className="navigation-control">
           <NavigationControl />
         </div>
-        <ControlPanel containerComponent={this.props.containerComponent} apimsg={this.state.data_api_loaded} srcdata={this.state.srcdata} />
-        <ChartPanel containerComponent={this.props.containerComponent} summary={this.state.selectedSummary} current_day={datetostring( this.state.begin_date.getTime(), this.state.current_day )} />
+        <ControlPanel containerComponent={this.props.containerComponent} apimsg={this.state.data_api_loaded} srcdata={this.state.srcdata} onClickRelay={this._onClickOnChild} />
+        <ChartPanel containerComponent={this.props.containerComponent} summary={this.state.selectedSummary} current_day={datetostring( this.state.begin_date.getTime(), this.state.current_day )} onClickRelay={this._onClickOnChild} />
         <div className="map-overlay top">
           <div className="map-overlay-inner">
             <div className="date">

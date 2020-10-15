@@ -72,6 +72,7 @@ export default function makeConfig()
     ANIMATION_SPEED: 500, // [msec] msec/day
     TOOLTIPS_CURSOR_OFFSET: 20,
     ANIMATION_BEGIN_AT: 30, // [day] 現在から遡る日数
+    MAP_CLICK_PROPAGATION_TIME: 500, // [msec] 子コンポーネントをクリックしてからDeckコンポーネントのonClickが発火するまでがこの時間以下なら無視する (e.stopPropagation()が効かない)
 
     COOKIE_MAP_TOKEN: 'mbt',
     COOKIE_EXPIRE_DATE: 'edt',
