@@ -69,7 +69,11 @@ const cityname_tokyo = [
   ['御蔵島', '御蔵島村'],
   ['八丈', '八丈町'],
   ['青ケ島', '青ケ島村'],
-  ['小笠原', '小笠原村']
+  ['小笠原', '小笠原村'],
+  ['都外', '都外'],
+  ['都外※', '都外'],
+  ['調査中', '調査中'],
+  ['調査中※', '調査中'],
 ];
 const map_cityname = new Map();
 for ( const names of cityname_tokyo )
@@ -152,6 +156,7 @@ export default class PoiTokyo
       const csv = await load_csv( date, cache_dir ).catch( ex => Log.error( ex ) );
       if ( !csv )
       {
+        Log.info( `${datetostring( date )} CSV lacks` );
         lacks++;
         continue;
       }
@@ -191,17 +196,17 @@ export default class PoiTokyo
         if ( !map_city_infectors.has( name ) )
         {
           const poi = map_poi.get( name );
-          map_city_infectors.set( name, { city_code: poi.city_cd, geopos: poi.geopos(), name: `東京都${name}`, data: [] } );
+          map_city_infectors.set( name, { city_code: poi?.city_cd, geopos: poi?.geopos(), name: `東京都${name}`, data: [] } );
         }
         const vals = map_city_infectors.get( name ).data;
         const m = d[ 1 ].match( /(\d+)/ );
         const subtotal = parseInt( (m && m[ 1 ]) || '0' );
         const prev_subtotal = (vals.length > 0) ? vals[ vals.length - 1 ].subtotal : subtotal;  // 初日の新規感染者はデータがない=0人
-        vals.push( { date: datetostring( date ), infectors: Math.max( 0, subtotal - prev_subtotal ), subtotal: subtotal } );
+        vals.push( { date: datetostring( date ), infectors: Math.max( (name === '調査中') ? (-Number.MAX_VALUE) : 0, subtotal - prev_subtotal ), subtotal: subtotal } );  // 調査中の値のみ減ることが許される
       }
     }
-    for ( const spot of map_city_infectors.values() )
-      spot.data = spot.data.filter( d => d.infectors > 0 );
+    //for ( const spot of map_city_infectors.values() )
+    //  spot.data = spot.data.filter( d => d.infectors > 0 );
 
     Log.info( 'parsed tokyo CSV' );
     return {
@@ -209,7 +214,7 @@ export default class PoiTokyo
       name: '東京都',
       begin_at: datetostring( timestamps[ 0 ] ),
       finish_at: datetostring( timestamps[ timestamps.length - 1 ] ),
-      spots: Array.from( map_city_infectors.values() ).filter( spot => spot.data.reduce( (sum, v) => sum + v.infectors, 0 ) > 0 )
+      spots: Array.from( map_city_infectors.values() )//.filter( spot => spot.data.reduce( (sum, v) => sum + v.infectors, 0 ) > 0 )
     };
   }
 }

@@ -71,7 +71,8 @@ export default function makeConfig()
     ANIMATION_TIME_RESOLUTION: 100, // [msec]
     ANIMATION_SPEED: 500, // [msec] msec/day
     TOOLTIPS_CURSOR_OFFSET: 20,
-    ANIMATION_BEGIN_AT: new Date( '2020-04-10' ),
+    ANIMATION_BEGIN_AT: 30, // [day] 現在から遡る日数
+    MAP_CLICK_PROPAGATION_TIME: 500, // [msec] 子コンポーネントをクリックしてからDeckコンポーネントのonClickが発火するまでがこの時間以下なら無視する (e.stopPropagation()が効かない)
 
     COOKIE_MAP_TOKEN: 'mbt',
     COOKIE_EXPIRE_DATE: 'edt',
@@ -114,7 +115,7 @@ export default function makeConfig()
     CHIBA_PDF: {
       INDEX_URI: 'https://www.pref.chiba.lg.jp/shippei/press/2019/ncov-index.html',
       LICENSE: license.FREE
-    },
+    },  // PDFリンクをスクレイピングで探す
     SAITAMA_CSV: {
       INDEX_URI: 'https://opendata.pref.saitama.lg.jp/data/dataset/covid19-jokyo',
       LICENSE: license.FREE
@@ -196,9 +197,9 @@ export default function makeConfig()
       LICENSE: license.CC
     },
     WAKAYAMA_CSV: {
-      DATA_URI: 'https://raw.githubusercontent.com/wakayama-pref-org/covid19/master/csv/kansensuii.csv',
+      INDEX_URI: 'https://stopcovid19.wakayama.jp/',
       LICENSE: license.CC
-    },
+    }, // スクレイピングでJSのURLを拾う
     GIFU_CSV: {
       DATA_URI: 'https://gifu-opendata.pref.gifu.lg.jp/dataset/4661bf9d-6f75-43fb-9d59-f02eb84bb6e3/resource/9c35ee55-a140-4cd8-a266-a74edf60aa80/download/210005_gifu_covid19_patients.csv',
       LICENSE: license.CC

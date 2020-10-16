@@ -35,7 +35,7 @@ async function parse_html( html )
       year += 2018; // 令和
     const am = mr[ 3 ].match( /[:：]([^)）]+)/ );
     const city = am ? am[ 1 ] : mr[ 3 ];
-    csv.push( [ new Date( year, parseInt( dm[ 3 ] ) - 1, parseInt( dm[ 4 ] ) ), city ] );
+    csv.push( [ new Date( year, parseInt( dm[ 3 ] ) - 1, parseInt( dm[ 4 ] ) ), city.replace( /[(（].+?[)）]/g, '' ) ] );
   }
   return csv.sort( (a, b) => a[ 0 ].getTime() - b[ 0 ].getTime() );
 }

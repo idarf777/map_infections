@@ -88,7 +88,7 @@ async function parse_html( html )
 
     //console.log( no + ":" + mon + " " + day + " " + city);
     while(true){
-      csv.push( [ new Date( 2020, mon - 1, day ), city ] );
+      csv.push( [ new Date( 2020, mon - 1, day ), city.replace( /[\s]/g, '' ).replace( /[(（].+$/, '' ) ] );
       if( no == to_no){
         break;
       }else{
