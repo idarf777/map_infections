@@ -152,6 +152,7 @@ export default class PoiTokyo
       const csv = await load_csv( date, cache_dir ).catch( ex => Log.error( ex ) );
       if ( !csv )
       {
+        Log.info( `${datetostring( date )} CSV lacks` );
         lacks++;
         continue;
       }
