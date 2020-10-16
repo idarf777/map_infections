@@ -40,7 +40,7 @@ export default class ChartPanel extends PureComponent
       <div className="chart-panel">
         <div className="right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowPanel}>{this._buttonText()}</button></div></div>
         <div className={ this.SHOW_HIDE_STYLES[ (this.props.summary && this.state.chart_view) || 0 ] }>
-          <div className="chart-title">{this.props.summary?.name}</div>
+          <div className="chart-title">Newly Infecteds of {this.props.summary?.name}</div>
           <div className="chart-area">
             <ResponsiveContainer>
               <AreaChart data={data} >

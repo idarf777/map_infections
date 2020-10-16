@@ -117,10 +117,10 @@ function merge_jsons( jsons )
       json.finish_at = null;
       return;
     }
-    spots = spots.concat( curspots );
+    spots = spots.concat( curspots.filter( spot => !['東京都調査中', '東京都都外'].includes( spot.name ) ) ); // 表示からは都外、調査中を除外
     // 都道府県単位の推移を計算する
     const map_ifc = new Map();
-    curspots.forEach( spot => spot.data.forEach( d => map_ifc.set( d.date, (map_ifc.get( d.date ) || 0) + d.infectors ) ) );  // 同日の新規感染者数の合計
+    curspots.forEach( spot => spot.data.forEach( d => map_ifc.set( d.date, Math.max( 0, (map_ifc.get( d.date ) || 0) + d.infectors ) ) ) );   // 同日の新規感染者数の合計
     const sm = [];
     let st = 0;
     for ( const date = new Date( json.begin_at ), enddate = new Date( json.finish_at ); date.getTime() <= enddate.getTime(); date.setDate( date.getDate() + 1 ) )
@@ -259,7 +259,7 @@ const CITIES = [
   [ 'hokkaido', PoiHokkaido ],
 ];
 const AVAILABLE_CITIES = [
-  'wakayama'
+  //'tokyo'
 ];
 
 async function busy_lock()
