@@ -187,9 +187,12 @@ export default class App extends React.Component
     if ( !this.state.timer_id || !this.state.srcdata || this.state.current_day >= this.state.srcdata.num_days - 1 )
       return;
     const etm = Date.now() - this.state.timer_start_time; // [msec]
-    const eday = Math.min( Math.floor( etm / config.ANIMATION_SPEED ), this.state.srcdata.num_days - 1 );  // [day]
-    const emod = (eday >= this.state.srcdata.num_days - 1) ? 0 : ((etm - eday * config.ANIMATION_SPEED) / config.ANIMATION_SPEED);
-    this.doAnimation( eday, emod );
+    const eday = Math.floor( etm / config.ANIMATION_SPEED );  // [day]
+    const maxday = this.state.srcdata.num_days - 1;
+    const is_exceeded = eday >= maxday;
+    this.doAnimation( Math.min( eday, maxday ), is_exceeded ? 0 : ((etm - eday * config.ANIMATION_SPEED) / config.ANIMATION_SPEED) );
+    if ( is_exceeded )
+      this.stopAnimation();
   };
 
   onDebug01 = () =>
@@ -234,7 +237,7 @@ export default class App extends React.Component
     const dnow = new Date( Date.now() );
     dnow.setMilliseconds( dnow.getMilliseconds() - beginday*config.ANIMATION_SPEED );
     this.setState(
-      (state, props) => { return { timer_id: tid, timer_start_time: dnow.getTime(), start_button_text: PLAYBUTTON_TEXT.stop, current_day: beginday } },
+      (state, props) => { return { timer_id: tid, timer_start_time: dnow.getTime(), start_button_text: PLAYBUTTON_TEXT.stop, current_day: beginday, chart_day: beginday } },
       () => cb && cb()
     );
   }
@@ -262,7 +265,11 @@ export default class App extends React.Component
   }
   onDateChanged = e => {
     e.stopPropagation();
-    this.stopAnimation( () => e?.target?.value && this.doAnimation( parseInt( e.target.value ) ) );
+    const day = e?.target?.value && parseInt( e.target.value );
+    this.stopAnimation( () => day && this.setState(
+      (state, props) => { return { chart_day: day }; },
+      () => this.doAnimation( day ) )
+    );
     return false;
   }
 
@@ -285,7 +292,7 @@ export default class App extends React.Component
           <NavigationControl />
         </div>
         <ControlPanel containerComponent={this.props.containerComponent} apimsg={this.state.data_api_loaded} srcdata={this.state.srcdata} onClickRelay={this._onClickOnChild} />
-        <ChartPanel containerComponent={this.props.containerComponent} summary={this.state.selectedSummary} current_day={datetostring( this.state.begin_date.getTime(), this.state.current_day )} onClickRelay={this._onClickOnChild} />
+        <ChartPanel containerComponent={this.props.containerComponent} summary={this.state.selectedSummary} start_day={datetostring( this.state.begin_date.getTime(), this.state.chart_day || this.state.current_day )} current_day={this.state.timer_id && datetostring( this.state.begin_date.getTime(), this.state.current_day )} onClickRelay={this._onClickOnChild} />
         <div className="map-overlay top">
           <div className="map-overlay-inner">
             <div className="date">

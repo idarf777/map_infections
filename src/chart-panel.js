@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {PureComponent} from 'react';
 //import { datetostring } from "./server/util.mjs";
-//import Log from './logger.js';
+import Log from './logger.js';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, Label
 } from 'recharts';
 
 export default class ChartPanel extends PureComponent
@@ -26,16 +26,18 @@ export default class ChartPanel extends PureComponent
   };
 
   render() {
+    const mapData = new Map();
     const data = [];
-    const cur = new Date( this.props.current_day );
+    const cur = new Date( this.props.start_day );
     for ( const sm of this.props.summary?.subtotal || [] )
     {
       const rowdate = new Date( sm.date );
       if ( cur.getTime() > rowdate.getTime() )
         continue;
       data.push( { name: sm.date, infectors: sm.infectors } );
+      mapData.set( sm.date, sm.infectors );
     }
-
+    const curval = mapData.get( this.props.current_day ) || 0;
     return (
       <div className="chart-panel">
         <div className="right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowPanel}>{this._buttonText()}</button></div></div>
@@ -44,11 +46,19 @@ export default class ChartPanel extends PureComponent
           <div className="chart-area">
             <ResponsiveContainer>
               <AreaChart data={data} >
+                <defs>
+                  <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#004040" stopOpacity={0.5}/>
+                    <stop offset="95%" stopColor="#008080" stopOpacity={0.5}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Area type="monotone" dataKey="infectors" stackId="1" stroke="#8884d8" fill="#8884d8" />
+                <Area type="monotone" dataKey="infectors" stackId="1" stroke="#606080" fill="url(#colorUv)" />
+                { this.props.current_day && (<ReferenceLine x={this.props.current_day} stroke="green" />) }
+                { this.props.current_day && (<ReferenceDot x={this.props.current_day} y={curval} r={5} stroke="green" ><Label position="right" value={curval}/></ReferenceDot>) }
               </AreaChart>
             </ResponsiveContainer>
           </div>
