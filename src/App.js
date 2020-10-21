@@ -1,7 +1,8 @@
 //import agh from 'agh.sprintf';
 import * as React from 'react';
-import MapGL, {_MapContext as MapContext, NavigationControl} from 'react-map-gl';
+import MapGL, {_MapContext as MapContext, NavigationControl, setRTLTextPlugin} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
+import MapboxLanguage from '@mapbox/mapbox-gl-language';
 import Log from './logger.js';
 import InfectorsLayer from "./infectors_layer.js";
 import ControlPanel from './control-panel.js';
@@ -66,7 +67,7 @@ export default class App extends React.Component
     this.setState( newstate );
   }
   _onClick = info => {
-    if ( this.state.childClicked && (Date.now() - this.state.childClicked.getTime()) <= config.MAP_CLICK_PROPAGATION_TIME )
+    if ( !this.state.srcdata || (this.state.childClicked && (Date.now() - this.state.childClicked.getTime()) <= config.MAP_CLICK_PROPAGATION_TIME) )
       return;
     let prefcd = 0;
     if ( this.state.hoveredIds )
@@ -171,10 +172,33 @@ export default class App extends React.Component
     );
   }
 
+  changeMapLocale( locale )
+  {
+    const map = this.mapRef?.getMap();
+    if ( !map )
+      return;
+    this.setState(
+      (state, props) => {
+        //if ( state.mapbox_language )
+        //  map.removeControl( state.mapbox_language );
+        return { mapbox_language: new MapboxLanguage( locale ? { defaultLanguage: locale } : {} ) }
+      },
+      () => {
+        map.addControl( this.state.mapbox_language );
+        map.setLayoutProperty( 'country-label-lg', 'text-field', ['get', `name${ locale ? ('_'+locale) : ''}`] )
+      }
+    );
+  }
+
   _onLoadMap = ev => {
-    Log.debug(ev.target);
-    const map = ev.target;
-    map.setLayoutProperty('country-label', 'text-field', ['get','name_ja']);
+    setRTLTextPlugin(
+      // find out the latest version at https://www.npmjs.com/package/@mapbox/mapbox-gl-rtl-text
+      'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js',
+      null,
+      // lazy: only load when the map first encounters Hebrew or Arabic text
+      true
+    );
+    this.changeMapLocale();
   };
 
   _onViewStateChange = ({viewState}) => {
@@ -286,7 +310,8 @@ export default class App extends React.Component
         <MapGL
           mapStyle={config.MAP_STYLE}
           mapboxApiAccessToken={this.props.accessToken}
-          ref={map => {this.mapRef = map}}
+          ref={map => { if ( map ) this.mapRef = map }}
+          onLoad={this._onLoadMap}
         />
         <div className="navigation-control">
           <NavigationControl />

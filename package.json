@@ -13,6 +13,7 @@
     "@deck.gl/layers": "^8.1.8",
     "@deck.gl/mapbox": "^8.1.8",
     "@deck.gl/react": "^8.1.8",
+    "@mapbox/mapbox-gl-language": "^0.10.1",
     "@svgr/webpack": "4.3.3",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
