@@ -51,7 +51,7 @@ export default function makeConfig()
     ROOT_DIRECTORY: appRoot.path,  // Reactでは使えない
     MAX_INFECTORS: 100,
     MAX_INFECTORS_COLOR: 70,
-    MAP_STYLE: 'mapbox://styles/mapbox/light-v10',
+    MAP_STYLE: 'mapbox://styles/mapbox/light-v9',
     MAP_ZOOM: 6.5,
     MAP_PITCH: 40,  // [degree]
     MAP_BEARING: 0,
@@ -73,6 +73,7 @@ export default function makeConfig()
     TOOLTIPS_CURSOR_OFFSET: 20,
     ANIMATION_BEGIN_AT: 30, // [day] 現在から遡る日数
     MAP_CLICK_PROPAGATION_TIME: 500, // [msec] 子コンポーネントをクリックしてからDeckコンポーネントのonClickが発火するまでがこの時間以下なら無視する (e.stopPropagation()が効かない)
+    MAP_PREFECTURE_ACTIVE_COLOR: [ 200, 100, 240 ],
 
     COOKIE_MAP_TOKEN: 'mbt',
     COOKIE_EXPIRE_DATE: 'edt',
