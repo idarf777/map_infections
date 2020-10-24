@@ -288,7 +288,7 @@ export async function loadGeoJson()
       data: (await axios_instance().get( `${process.env.PUBLIC_URL}/prefs/${pref_name}.geojson?_=${Date.now()}` )).data,
       pickable: true,
       filled: true,
-      getFillColor: [200, 100, 240, 0],
+      getFillColor: d => [200, 100, 240, 0], // とりあえず決めてるだけ
       //onClick: ev => {},
     };
   } ) );

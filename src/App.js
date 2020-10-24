@@ -187,7 +187,8 @@ export default class App extends React.Component
           ...geojson,
           getFillColor: d => {
             const color = config.MAP_PREFECTURE_ACTIVE_COLOR.slice();
-            color.push( ( this.state.pref_active === geojson.prefcd ) ? 255 : 0 );
+            if ( this.state.pref_active !== geojson.prefcd )
+              color[ 3 ] = 0;
             return color;
           },
           updateTriggers: { getFillColor: [ this.state.pref_active ] },
