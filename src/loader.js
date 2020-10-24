@@ -1,4 +1,4 @@
-import {datetostring} from "./server/util.mjs";
+import {axios_instance, datetostring} from "./server/util.mjs";
 //import Log from "./logger.js";
 
 export default function Loader( json )
@@ -81,3 +81,4 @@ export default function Loader( json )
   map_summary.set( 0, { pref_code: 0, name: '全国', begin_at: data.begin_at, finish_at: data.finish_at, subtotal: wsm } );
   return { begin_at: bgn, finish_at: fin, num_days: ((src_values.size === 0) ? 0 : src_values.entries().next().value[ 1 ].length), places: src_places, values: src_values, subtotals: src_subtotals, summary: data.summary, map_summary };
 }
+

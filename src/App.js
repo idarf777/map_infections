@@ -7,13 +7,14 @@ import Log from './logger.js';
 import InfectorsLayer from "./infectors_layer.js";
 import ControlPanel from './control-panel.js';
 import ChartPanel from "./chart-panel.js";
-import {axios_instance, datetostring} from "./server/util.mjs";
+import {axios_instance, datetostring, loadGeoJson} from "./server/util.mjs";
 import { example_data } from "./example_data.js";
 import loader from "./loader.js";
 import './App.css';
 import ToolTip from "./tool_tip.js";
 import {colorrange, merge_object} from "./server/util.mjs";
 import makeConfig from "./server/config.mjs";
+import {GeoJsonLayer} from "@deck.gl/layers";
 
 const config = makeConfig();
 window.covid19map = { config: config };
@@ -28,6 +29,29 @@ export default class App extends React.Component
     // I'm using this ref to access methods on the DeckGL class
     this.mapRef = React.createRef();
   }
+
+  state = {
+    viewState: {
+      latitude: config.MAP_CENTER[ 1 ],
+      longitude: config.MAP_CENTER[ 0 ],
+      zoom: config.MAP_ZOOM,
+      bearing: config.MAP_BEARING,
+      pitch: config.MAP_PITCH
+    },
+    layer_histogram_count: 0,
+    layers: [],
+    pref_geojsons: [],
+    pref_active: null,
+    begin_date: new Date(),
+    finish_date: new Date(),
+    max_day: 1,
+    current_day: 0,
+    timer_id: null,
+    start_button_text: PLAYBUTTON_TEXT.start,
+    data_api_loaded: DATA_API_STATUS.unloaded,
+    inf_a: [],  // 感染者数 (アニメーション用)
+    inf: []     // 感染者数
+  };
 
   _getElevationValue = ( d, opt ) => {
     const id = (typeof d === 'number') ? d : (d[ 0 ][ 0 ]);
@@ -68,7 +92,7 @@ export default class App extends React.Component
   }
   _onClick = info => {
     if ( !this.state.srcdata || (this.state.childClicked && (Date.now() - this.state.childClicked.getTime()) <= config.MAP_CLICK_PROPAGATION_TIME) )
-      return;
+      return; // DECK.GLは通常のmapbox-gl-jsイベントのように伝播しないので、クリック時刻で判断する
     let prefcd = 0;
     if ( this.state.hoveredIds )
     {
@@ -77,52 +101,40 @@ export default class App extends React.Component
     }
     const summary = this.state.srcdata.map_summary.get( prefcd );
     if ( summary )
-      this.setState( { selectedSummary: summary } );
+      this.redrawLayer( { selectedSummary: summary, pref_active: (prefcd > 0) && prefcd } );
   }
   _onClickOnChild = e => {
     this.setState( { childClicked: new Date() } );
   }
+  _onClickOnGeojson = e => {
+    const summary = this.state.srcdata.map_summary.get( e.layer.props.prefcd );
+    const sel = summary && { selectedSummary: summary };
+    this.redrawLayer( { ...(sel || {}), childClicked: new Date(), pref_active: e.layer.props.prefcd } )
+  }
 
-  createLayer = ( count ) => new InfectorsLayer({
-    id: `3dgram${count}`,
-    data: this.state?.data || [],
-    coverage: config.MAP_COVERAGE,
-    getColorValue: this._getColorValue,
-    getElevationValue: this._getElevationValue,
-    elevationScale: 1.0,
-    elevationDomain: [0, config.MAX_INFECTORS], // 棒の高さについて、この幅で入力値を正規化する デフォルトでは各マスに入る行の密度(points.length)となる
-    elevationRange: [0, config.MAP_ELEVATION],  // 入力値をelevationDomainで正規化したあと、この幅で高さを決める
-    colorDomain: [0, config.MAX_INFECTORS_COLOR],  // 棒の色について、この幅で入力値を正規化する
-    colorRange: colorrange( config.MAP_COLORRANGE ),
-    extruded: true,
-    getPosition: d => this.state.srcdata && this.state.srcdata.places.get( d[ 0 ] )?.geopos,
-    opacity: 1.0,
-    pickable: true,
-    radius: config.MAP_POI_RADIUS,
-    upperPercentile: config.MAP_UPPERPERCENTILE,
-    onHover: this._setHoveredObject
-  });
-
-  state = {
-    viewState: {
-      latitude: config.MAP_CENTER[ 1 ],
-      longitude: config.MAP_CENTER[ 0 ],
-      zoom: config.MAP_ZOOM,
-      bearing: config.MAP_BEARING,
-      pitch: config.MAP_PITCH
-    },
-    layer_count: 0,
-    layer_histogram: this.createLayer( 0 ),
-    begin_date: new Date(),
-    finish_date: new Date(),
-    max_day: 1,
-    current_day: 0,
-    timer_id: null,
-    start_button_text: PLAYBUTTON_TEXT.start,
-    data_api_loaded: DATA_API_STATUS.unloaded,
-    inf_a: [],  // 感染者数 (アニメーション用)
-    inf: []     // 感染者数
-  };
+  createLayer()
+  {
+    return new InfectorsLayer({
+      id: 'infectors_histogram',
+      data: this.state?.data || [],
+      coverage: config.MAP_COVERAGE,
+      getColorValue: this._getColorValue,
+      getElevationValue: this._getElevationValue,
+      elevationScale: 1.0,
+      elevationDomain: [0, config.MAX_INFECTORS], // 棒の高さについて、この幅で入力値を正規化する デフォルトでは各マスに入る行の密度(points.length)となる
+      elevationRange: [0, config.MAP_ELEVATION],  // 入力値をelevationDomainで正規化したあと、この幅で高さを決める
+      colorDomain: [0, config.MAX_INFECTORS_COLOR],  // 棒の色について、この幅で入力値を正規化する
+      colorRange: colorrange( config.MAP_COLORRANGE ),
+      extruded: true,
+      getPosition: d => this.state.srcdata && this.state.srcdata.places.get( d[ 0 ] )?.geopos,
+      opacity: 1.0,
+      pickable: true,
+      radius: config.MAP_POI_RADIUS,
+      upperPercentile: config.MAP_UPPERPERCENTILE,
+      onHover: this._setHoveredObject,
+      updateTriggers: { getElevationValue: [ this.state.layer_histogram_count ], getColorValue: [ this.state.layer_histogram_count ] }  // これを指定しない場合はIDを都度振り替える
+    });
+  }
 
   animationStartDay()
   {
@@ -138,7 +150,10 @@ export default class App extends React.Component
     const src_ids = Array.from( srcdata.places.keys() );
     this.setState(
       (state, prop) => { return { srcdata: srcdata, src_ids: src_ids, data: src_ids.map( k => [ k ] ) || [], data_api_loaded: DATA_API_STATUS.loading } },
-      () => this.redrawLayer( { data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days, current_day: this.animationStartDay() } )
+      () => this.redrawLayer( {
+        data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days, current_day: this.animationStartDay(),
+        layers_histogram: [ this.createLayer() ]
+      } )
     );
   }
   componentDidMount()
@@ -165,16 +180,33 @@ export default class App extends React.Component
 
   redrawLayer( state_after )
   {
-    // レイヤーのIDを変えて再設定する
     this.setState(
-      (state, props) => { return { ...(state_after || {}), layer_count: state.layer_count ^ 1 } },
-      () => this.setState( { layer_histogram: this.createLayer( this.state.layer_count ) } )
+      (state, props) => { return { ...(state_after || {}), layer_histogram_count: state.layer_histogram_count ^ 1 } },
+      () => {
+        const layers = this.state.pref_geojsons.map( geojson => new GeoJsonLayer( {
+          ...geojson,
+          getFillColor: d => {
+            const color = config.MAP_PREFECTURE_ACTIVE_COLOR.slice();
+            color.push( ( this.state.pref_active === geojson.prefcd ) ? 255 : 0 );
+            return color;
+          },
+          updateTriggers: { getFillColor: [ this.state.pref_active ] },
+          onClick: this._onClickOnGeojson
+        } ) );
+        layers.push( this.createLayer() );
+        this.setState( { layers } )
+      }
     );
+  }
+
+  getMap()
+  {
+    return this.mapRef?.getMap();
   }
 
   changeMapLocale( locale )
   {
-    const map = this.mapRef?.getMap();
+    const map = this.getMap();
     if ( !map )
       return;
     this.setState(
@@ -199,6 +231,7 @@ export default class App extends React.Component
       true
     );
     this.changeMapLocale();
+    loadGeoJson().then( hashes => this.redrawLayer( { pref_geojsons: hashes } ) );
   };
 
   _onViewStateChange = ({viewState}) => {
@@ -304,7 +337,7 @@ export default class App extends React.Component
         onViewStateChange={this._onViewStateChange}
         controller={true}
         ContextProvider={MapContext.Provider}
-        layers={[ this.state.layer_histogram ]}
+        layers={this.state.layers}
         onClick={this._onClick}
       >
         <MapGL
