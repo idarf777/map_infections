@@ -7,7 +7,12 @@ import Log from './logger.js';
 import InfectorsLayer from "./infectors_layer.js";
 import ControlPanel from './control-panel.js';
 import ChartPanel from "./chart-panel.js";
-import {axios_instance, datetostring, loadGeoJson} from "./server/util.mjs";
+import {
+  axios_instance,
+  datetostring,
+  get_user_locale_prefix,
+  load_geojson
+} from "./server/util.mjs";
 import { example_data } from "./example_data.js";
 import loader from "./loader.js";
 import './App.css';
@@ -101,15 +106,25 @@ export default class App extends React.Component
     }
     const summary = this.state.srcdata.map_summary.get( prefcd );
     if ( summary )
-      this.redrawLayer( { selectedSummary: summary, pref_active: (prefcd > 0) && prefcd } );
+      this.redrawLayer( { selectedSummary: { ...summary, name: this.summaryName( prefcd ) || summary.name }, pref_active: (prefcd > 0) && prefcd } );
   }
   _onClickOnChild = e => {
     this.setState( { childClicked: new Date() } );
   }
   _onClickOnGeojson = e => {
-    const summary = this.state.srcdata.map_summary.get( e.layer.props.prefcd );
-    const sel = summary && { selectedSummary: summary };
-    this.redrawLayer( { ...(sel || {}), childClicked: new Date(), pref_active: e.layer.props.prefcd } )
+    const prefcd = e.layer.props.prefcd;
+    const summary = this.state.srcdata.map_summary.get( prefcd );
+    const sel = summary && { selectedSummary: { ...summary, name: this.summaryName( prefcd ) || summary.name } };
+    this.redrawLayer( { ...(sel || {}), childClicked: new Date(), pref_active: prefcd } )
+  }
+
+  summaryName( prefcd )
+  {
+    const locale = get_user_locale_prefix();
+    if ( prefcd === 0 )
+      return config.MAP_SUMMARY_JAPAN_NAME[ locale ] || config.MAP_SUMMARY_JAPAN_NAME[ config.MAP_SUMMARY_LOCALE_FALLBACK ];
+    const p = this.state.pref_geojsons?.find( v => v.prefcd === prefcd )?.data.features[ 0 ].properties;
+    return p && (p[ `name_${locale}` ] || p[ `name_${config.MAP_SUMMARY_LOCALE_FALLBACK}` ]);
   }
 
   createLayer()
@@ -232,7 +247,7 @@ export default class App extends React.Component
       true
     );
     this.changeMapLocale();
-    loadGeoJson().then( hashes => this.redrawLayer( { pref_geojsons: hashes } ) );
+    load_geojson().then(hashes => this.redrawLayer( { pref_geojsons: hashes } ) );
   };
 
   _onViewStateChange = ({viewState}) => {
