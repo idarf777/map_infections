@@ -1,7 +1,17 @@
-import {axios_instance, datetostring} from "./server/util.mjs";
-//import Log from "./logger.js";
+import {axios_instance, datetostring, get_user_locale_prefix} from "./server/util.mjs";
+import Log from "./logger.js";
 
-export default function Loader( json )
+function summaryName( pref_code, geojsons )
+{
+  const config = window.covid19map.config;
+  const locale = get_user_locale_prefix();
+  if ( pref_code === 0 )
+    return config.MAP_SUMMARY_JAPAN_NAME[ locale ] || config.MAP_SUMMARY_JAPAN_NAME[ config.MAP_SUMMARY_LOCALE_FALLBACK ];
+  const p = geojsons?.find( v => v.pref_code === pref_code )?.data.features[ 0 ].properties;
+  return p && (p[ `name_${locale}` ] || p[ `name_${config.MAP_SUMMARY_LOCALE_FALLBACK}` ]);
+}
+
+export default function Loader( json, geojsons )
 {
   const src_places = new Map();
   const src_values = new Map();
@@ -50,7 +60,7 @@ export default function Loader( json )
       pref_summary.set( s.date, s );  // 日付 - 感染者数のMap
       whole_summary.set( s.date, s.infectors + (whole_summary.get( s.date ) || 0) );
     }
-    map_summary.set( sm.pref_code, { ...sm, map: pref_summary } );
+    map_summary.set( sm.pref_code, { ...sm, name: summaryName( sm.pref_code, geojsons ), map: pref_summary } );
   }
   // 全国と都道府県のsummaryについて、空いている日付のところをinfectors=0として埋める
   const wsm = [];
@@ -77,8 +87,11 @@ export default function Loader( json )
     wst += cursm;
     wsm.push( { date: ds, infectors: cursm, subtotal: wst } );
   }
+  const japan_summary = new Map();
+  for ( const s of wsm )
+    japan_summary.set( s.date, s );
   map_summary.forEach( ( v, pref_code ) => v.subtotal = smPref.get( pref_code ) );
-  map_summary.set( 0, { pref_code: 0, name: '全国', begin_at: data.begin_at, finish_at: data.finish_at, subtotal: wsm } );
+  map_summary.set( 0, { pref_code: 0, name: summaryName( 0, geojsons ), begin_at: data.begin_at, finish_at: data.finish_at, subtotal: wsm, map: japan_summary } );
   return { begin_at: bgn, finish_at: fin, num_days: ((src_values.size === 0) ? 0 : src_values.entries().next().value[ 1 ].length), places: src_places, values: src_values, subtotals: src_subtotals, summary: data.summary, map_summary };
 }
 

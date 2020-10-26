@@ -98,33 +98,23 @@ export default class App extends React.Component
   _onClick = info => {
     if ( !this.state.srcdata || (this.state.childClicked && (Date.now() - this.state.childClicked.getTime()) <= config.MAP_CLICK_PROPAGATION_TIME) )
       return; // DECK.GLは通常のmapbox-gl-jsイベントのように伝播しないので、クリック時刻で判断する
-    let prefcd = 0;
+    let pref_code = 0;
     if ( this.state.hoveredIds )
     {
       const citycd = this.state.srcdata.places.get( this.state.hoveredIds[ 0 ] ).city_code;
-      prefcd = (citycd > 1000) ? Math.floor(citycd / 1000) : citycd;
+      pref_code = (citycd > 1000) ? Math.floor(citycd / 1000) : citycd;
     }
-    const summary = this.state.srcdata.map_summary.get( prefcd );
+    const summary = this.state.srcdata.map_summary.get( pref_code );
     if ( summary )
-      this.redrawLayer( { selectedSummary: { ...summary, name: this.summaryName( prefcd ) || summary.name }, pref_active: (prefcd > 0) && prefcd } );
+      this.redrawLayer( { selectedSummary: summary, pref_active: (pref_code > 0) && pref_code } );
   }
   _onClickOnChild = e => {
     this.setState( { childClicked: new Date() } );
   }
   _onClickOnGeojson = e => {
-    const prefcd = e.layer.props.prefcd;
-    const summary = this.state.srcdata.map_summary.get( prefcd );
-    const sel = summary && { selectedSummary: { ...summary, name: this.summaryName( prefcd ) || summary.name } };
-    this.redrawLayer( { ...(sel || {}), childClicked: new Date(), pref_active: prefcd } )
-  }
-
-  summaryName( prefcd )
-  {
-    const locale = get_user_locale_prefix();
-    if ( prefcd === 0 )
-      return config.MAP_SUMMARY_JAPAN_NAME[ locale ] || config.MAP_SUMMARY_JAPAN_NAME[ config.MAP_SUMMARY_LOCALE_FALLBACK ];
-    const p = this.state.pref_geojsons?.find( v => v.prefcd === prefcd )?.data.features[ 0 ].properties;
-    return p && (p[ `name_${locale}` ] || p[ `name_${config.MAP_SUMMARY_LOCALE_FALLBACK}` ]);
+    const pref_code = e.layer.props.pref_code;
+    const summary = this.state.srcdata.map_summary.get( pref_code );
+    this.redrawLayer( { ...((summary && { selectedSummary: summary }) || {}), childClicked: new Date(), pref_active: pref_code } )
   }
 
   createLayer()
@@ -159,37 +149,27 @@ export default class App extends React.Component
     bgn.setDate( bgn.getDate() - config.ANIMATION_BEGIN_AT );
     return Math.max( 0, Math.floor( (bgn.getTime() - this.state.srcdata.begin_at.getTime())/(24*60*60*1000) ) );
   }
-  loadData( data )
+  async loadData( data )
   {
-    const srcdata = loader( data );
+    const geojsons = await load_geojson();
+    const srcdata = loader( data, geojsons );
     const src_ids = Array.from( srcdata.places.keys() );
     this.setState(
-      (state, prop) => { return { srcdata: srcdata, src_ids: src_ids, data: src_ids.map( k => [ k ] ) || [], data_api_loaded: DATA_API_STATUS.loading } },
-      () => this.redrawLayer( {
-        data_api_loaded: DATA_API_STATUS.loaded, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days, current_day: this.animationStartDay(),
-        layers_histogram: [ this.createLayer() ]
-      } )
+      (state, prop) => { return { pref_geojsons: geojsons, srcdata: srcdata, src_ids: src_ids, data: src_ids.map( k => [ k ] ) || [] } },
+      () => this.redrawLayer( { begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days, current_day: this.animationStartDay() } )
     );
   }
   componentDidMount()
   {
-    if ( config.STANDALONE )
-    {
-      this.loadData( example_data );
-      return;
-    }
     const host = config.SERVER_HOST || `${window.location.protocol}//${window.location.host}`;
     this.setState(
       (state, prop) => { return { data_api_loaded: DATA_API_STATUS.loading } },
-      () => axios_instance().get( `${host}${config.SERVER_URI}`, { timeout: config.HTTP_GET_TIMEOUT } )
-              .then( ( response ) => {
-                //Log.debug( response );
-                this.loadData( response.data );
-              } )
-              .catch( ( ex ) => {
-                Log.error( ex );
-                this.setState( { data_api_loaded: DATA_API_STATUS.error } );
-              } )
+      () => (config.STANDALONE ? this.loadData( example_data ) : axios_instance().get( `${host}${config.SERVER_URI}` ).then( response => this.loadData( response.data ) ))
+          .then( () => this.setState( { data_api_loaded: DATA_API_STATUS.loaded } ) )
+          .catch( ( ex ) => {
+            Log.error( ex );
+            this.setState( { data_api_loaded: DATA_API_STATUS.error } );
+          } )
     );
   }
 
@@ -202,7 +182,7 @@ export default class App extends React.Component
           ...geojson,
           getFillColor: d => {
             const color = config.MAP_PREFECTURE_ACTIVE_COLOR.slice();
-            if ( this.state.pref_active !== geojson.prefcd )
+            if ( this.state.pref_active !== geojson.pref_code )
               color[ 3 ] = 0;
             return color;
           },
@@ -247,7 +227,6 @@ export default class App extends React.Component
       true
     );
     this.changeMapLocale();
-    load_geojson().then(hashes => this.redrawLayer( { pref_geojsons: hashes } ) );
   };
 
   _onViewStateChange = ({viewState}) => {
@@ -366,7 +345,7 @@ export default class App extends React.Component
           <NavigationControl />
         </div>
         <ControlPanel containerComponent={this.props.containerComponent} apimsg={this.state.data_api_loaded} srcdata={this.state.srcdata} onClickRelay={this._onClickOnChild} />
-        <ChartPanel containerComponent={this.props.containerComponent} summary={this.state.selectedSummary} start_day={datetostring( this.state.begin_date.getTime(), this.state.chart_day || this.state.current_day )} current_day={this.state.timer_id && datetostring( this.state.begin_date.getTime(), this.state.current_day )} onClickRelay={this._onClickOnChild} />
+        <ChartPanel containerComponent={this.props.containerComponent} summary={this.state.selectedSummary} summary_whole={this.state.srcdata?.map_summary.get( 0 )} start_day={datetostring( this.state.begin_date.getTime(), this.state.chart_day || this.state.current_day )} current_day={this.state.timer_id && datetostring( this.state.begin_date.getTime(), this.state.current_day )} onClickRelay={this._onClickOnChild} />
         <div className="map-overlay top">
           <div className="map-overlay-inner">
             <div className="date">
