@@ -11,12 +11,14 @@ export default class ControlPanel extends PureComponent
   };
   SHOW_HIDE_STYLES = [ "hidden", "show" ];
   _onClickShowDescription = e => {
-    this.setState( { description_view: this.state.description_view ^ 1 } );
     e.stopPropagation();
+    this.setState( { description_view: this.state.description_view ^ 1 } );
+    this.props.onClickRelay( e );
   }
   _onClickShowLicense = e => {
-    this.setState( { license_view: this.state.license_view ^ 1 } );
     e.stopPropagation();
+    this.setState( { license_view: this.state.license_view ^ 1 } );
+    this.props.onClickRelay( e );
   }
 
   render() {

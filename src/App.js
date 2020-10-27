@@ -307,12 +307,14 @@ export default class App extends React.Component
   onClickStart = e => {
     e.stopPropagation();
     this.state.timer_id ? this.stopAnimation() : this.startAnimation();
+    this._onClickOnChild( e );
     return false;
   }
   onClickReset = e => {
     e.stopPropagation();
     this.stopAnimation();
     this.doAnimation( this.animationStartDay() );
+    this._onClickOnChild( e );
     return false;
   }
   onDateChanged = e => {
@@ -322,6 +324,7 @@ export default class App extends React.Component
       (state, props) => { return { chart_day: day }; },
       () => this.doAnimation( day ) )
     );
+    this._onClickOnChild( e );
     return false;
   }
 

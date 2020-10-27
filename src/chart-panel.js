@@ -35,8 +35,8 @@ export default class ChartPanel extends PureComponent
     return active && (
       <div className="custom-tooltip">
         <p className="label">{label}</p>
-        <p className="desc">{`${this.props.summary?.name} : ${(payload[ 0 ]).value}`}</p>
         { (payload.length > 1) && (<p className="desc">{`${this.props.summary_whole?.name} : ${payload[ 0 ].value + payload[ 1 ].value}`}</p>) }
+        <p className="desc">{`${this.props.summary?.name} : ${(payload[ 0 ]).value}`}</p>
       </div>
     );
   };
@@ -86,7 +86,7 @@ export default class ChartPanel extends PureComponent
                 <Area type="monotone" dataKey="pref" stackId="1" stroke="#606080" fill="url(#colorUv)" />
                 { is_whole_active && (<Area type="monotone" dataKey="whole" stackId="1" stroke="#806060" fill="url(#colorUvWhole)" />) }
                 { this.props.current_day && (<ReferenceLine x={this.props.current_day} stroke="green" />) }
-                { this.props.current_day && curval && is_whole_active && (<ReferenceDot x={this.props.current_day} y={curval.whole} r={5} stroke="blue" ><Label position="right" value={curval.whole}/></ReferenceDot>) }
+                { this.props.current_day && curval && is_whole_active && (<ReferenceDot x={this.props.current_day} y={curval.whole + curval.pref} r={5} stroke="blue" ><Label position="right" value={curval.whole + curval.pref}/></ReferenceDot>) }
                 { this.props.current_day && curval && (<ReferenceDot x={this.props.current_day} y={curval.pref} r={5} stroke="green" ><Label position="right" value={curval.pref}/></ReferenceDot>) }
               </AreaChart>
             </ResponsiveContainer>
