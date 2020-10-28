@@ -20,33 +20,37 @@ export default class ControlPanel extends PureComponent
     this.setState( { license_view: this.state.license_view ^ 1 } );
     this.props.onClickRelay( e );
   }
+  _onClickNull = e => {
+    e.stopPropagation();
+    this.props.onClickRelay( e );
+  };
 
   render() {
     return (
-      <div className="control-panel">
-        <div className="right"><h3>{this.props.apimsg}</h3></div>
-        <div className="right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowDescription}>ABOUT DATA...</button></div></div>
+      <div className="control-panel" onClick={this._onClickNull}>
+        <div className="text-right"><h3>{this.props.apimsg}</h3></div>
+        <div className="text-right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowDescription}>ABOUT DATA...</button></div></div>
         <div className={ this.SHOW_HIDE_STYLES[ this.state.description_view ] }>
-          <div className="scrollabletextbox">
+          <div className="scrollable-textbox">
             <table>
               <thead>
-                <tr><th>prefecture</th><th>first</th><th>last</th></tr>
+                <tr><th>place</th><th>first</th><th>last</th></tr>
               </thead>
               <tbody>
               {
-                this.props.srcdata && this.props.srcdata.summary.concat( Array.from( this.props.srcdata.places.values() ) ).sort( (a, b) => (a.city_code || a.pref_code) - (b.city_code || b.pref_code) )
-                  .map( (v, i) => {
-                    return <tr key={i}><td>{v.name}</td><td>{datetostring(v.begin_at)}</td><td>{datetostring(v.finish_at)}</td></tr>
-                  } )
+                this.props.srcdata && this.props.srcdata.summary.concat( this.props.srcdata.places ).sort( (a, b) => (a.city_code || a.pref_code) - (b.city_code || b.pref_code) )
+                  .map( (v, i) => (
+                    <tr key={i}><td>{v.name}</td><td>{datetostring(v.begin_at)}</td><td>{datetostring(v.finish_at)}</td></tr>
+                  ) )
               }
               </tbody>
             </table>
           </div>
         </div>
 
-        <div className="right"><button className="btn-square-small" onClick={this._onClickShowLicense}>LICENSE...</button></div>
+        <div className="text-right"><button className="btn-square-small" onClick={this._onClickShowLicense}>LICENSE...</button></div>
         <div className={ this.SHOW_HIDE_STYLES[ this.state.license_view ] }>
-          <div className="scrollabletextbox">
+          <div className="scrollable-textbox">
             <div className="pre">
               MIT License<br/>
                 <br/>
@@ -113,7 +117,7 @@ export default class ControlPanel extends PureComponent
 */}
         </div>
 
-        <div className="right">
+        <div className="text-right">
           <div className="sns-text">
             SHARE:
           </div>

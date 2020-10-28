@@ -33,6 +33,17 @@ export default class App extends React.Component
     super(props);
     // I'm using this ref to access methods on the DeckGL class
     this.mapRef = React.createRef();
+    this._onDebug01 = this.onDebug01.bind( this );
+    this._onDebug02 = this.onDebug02.bind( this );
+    this._onClickStart = this.onClickStart.bind( this );
+    this._onClickReset = this.onClickReset.bind( this );
+    this._onClickOnChild = this.onClickOnChild.bind( this );
+    this._onClickMap = this.onClickMap.bind( this );
+    this._onClickNull = this.onClickNull.bind( this );
+    this._onLoadMap = this.onLoadMap.bind( this );
+    this._onViewStateChange = this.onViewStateChange.bind( this );
+    this._onInterval = this.onInterval.bind( this );
+    this._onDateChanged = this.onDateChanged.bind( this );
   }
 
   state = {
@@ -58,7 +69,8 @@ export default class App extends React.Component
     inf: []     // 感染者数
   };
 
-  _getElevationValue = ( d, opt ) => {
+  getElevationValue( d, opt )
+  {
     const id = (typeof d === 'number') ? d : (d[ 0 ][ 0 ]);
     const zoom = this.state.viewState?.zoom || config.MAP_ZOOM;
     // zoom=7で1.0 11で0.1
@@ -66,8 +78,9 @@ export default class App extends React.Component
     const coef = Math.pow( 10, (4 - (c - 7))/4.0 );
     return (this.state && (opt?.is_real ? this.state.inf[ id ] : coef*Math.min( this.state.inf_a[ id ], config.MAX_INFECTORS ) )) || 0;
   };
-  _getColorValue = d => {
-    let v = this._getElevationValue( d, { is_real: true }  );
+  getColorValue( d )
+  {
+    let v = this.getElevationValue( d, { is_real: true }  );
     if ( v !== 0 )
     {
       v = Math.min( (v + config.MAX_INFECTORS*0.1) / config.MAX_INFECTORS, 1.0 ); // ちょっとオフセットをつけて放物線でとる
@@ -76,10 +89,14 @@ export default class App extends React.Component
     }
     return Math.min( v, config.MAX_INFECTORS_COLOR );
   }
-  _setHoveredDescription = ids => ids.map( id => `${this.state.srcdata.places.get( id ).name} : ${this._getElevationValue( id, { is_real: true } )}`  )
-  _setHoveredObject = info => {
+  setHoveredDescription( ids )
+  {
+    return ids.map( id => `${this.state.srcdata.places[ id ].name} : ${this.getElevationValue( id, { is_real: true } )}`  );
+  }
+  setHoveredObject( info, e )
+  {
     const newstate = {};
-    if ( !info.object || !this.state.srcdata?.places?.has( info.object.points[ 0 ][ 0 ] ) )
+    if ( !info.object || !this.state.srcdata?.places[ info.object.points[ 0 ][ 0 ] ] )
     {
       newstate.hoveredIds = null;
     }
@@ -88,55 +105,70 @@ export default class App extends React.Component
       const ids = info.object.points.map( p => p[ 0 ] );
       merge_object( newstate, {
         hoveredIds: ids,
-        hoveredValue: this._setHoveredDescription( ids ),
+        hoveredValue: this.setHoveredDescription( ids ),
         pointerX: info.x + config.TOOLTIPS_CURSOR_OFFSET,
         pointerY: info.y
       } );
     }
     this.setState( newstate );
   }
-  _onClick = info => {
-    if ( !this.state.srcdata || (this.state.childClicked && (Date.now() - this.state.childClicked.getTime()) <= config.MAP_CLICK_PROPAGATION_TIME) )
-      return; // DECK.GLは通常のmapbox-gl-jsイベントのように伝播しないので、クリック時刻で判断する
+  is_click_invalid()
+  {
+    // DECK.GLは通常のmapbox-gl-jsイベントのように伝播しないので、クリック時刻で判断する
+    return this.state.childClicked && (Date.now() - this.state.childClicked.getTime()) <= config.MAP_CLICK_PROPAGATION_TIME;
+  }
+  onClickMap( info )
+  {
+    if ( !this.state.srcdata || this.is_click_invalid() )
+      return;
     let pref_code = 0;
     if ( this.state.hoveredIds )
     {
-      const citycd = this.state.srcdata.places.get( this.state.hoveredIds[ 0 ] ).city_code;
+      const citycd = this.state.srcdata.places[ this.state.hoveredIds[ 0 ] ].city_code;
       pref_code = (citycd > 1000) ? Math.floor(citycd / 1000) : citycd;
     }
     const summary = this.state.srcdata.map_summary.get( pref_code );
     if ( summary )
       this.redrawLayer( { selectedSummary: summary, pref_active: (pref_code > 0) && pref_code } );
   }
-  _onClickOnChild = e => {
+  onClickOnChild( e )
+  {
     this.setState( { childClicked: new Date() } );
   }
-  _onClickOnGeojson = e => {
+  onClickOnGeojson( e )
+  {
+    if ( !e || this.is_click_invalid() )
+      return;
     const pref_code = e.layer.props.pref_code;
     const summary = this.state.srcdata.map_summary.get( pref_code );
     this.redrawLayer( { ...((summary && { selectedSummary: summary }) || {}), childClicked: new Date(), pref_active: pref_code } )
   }
+  onClickNull( e )
+  {
+    e.stopPropagation();
+    this.onClickOnChild( e );
+  };
 
   createLayer()
   {
     return new InfectorsLayer({
       id: 'infectors_histogram',
-      data: this.state?.data || [],
+      data: this.state?.src_ids || [],
       coverage: config.MAP_COVERAGE,
-      getColorValue: this._getColorValue,
-      getElevationValue: this._getElevationValue,
+      getColorValue: d => this.getColorValue( d ),
+      getElevationValue: d => this.getElevationValue( d ),
       elevationScale: 1.0,
       elevationDomain: [0, config.MAX_INFECTORS], // 棒の高さについて、この幅で入力値を正規化する デフォルトでは各マスに入る行の密度(points.length)となる
       elevationRange: [0, config.MAP_ELEVATION],  // 入力値をelevationDomainで正規化したあと、この幅で高さを決める
       colorDomain: [0, config.MAX_INFECTORS_COLOR],  // 棒の色について、この幅で入力値を正規化する
       colorRange: colorrange( config.MAP_COLORRANGE ),
       extruded: true,
-      getPosition: d => this.state.srcdata && this.state.srcdata.places.get( d[ 0 ] )?.geopos,
+      getPosition: d => this.state.srcdata && this.state.srcdata.places[ d[ 0 ] ]?.geopos,
       opacity: 1.0,
       pickable: true,
       radius: config.MAP_POI_RADIUS,
       upperPercentile: config.MAP_UPPERPERCENTILE,
-      onHover: this._setHoveredObject,
+      onHover: (info, e) => this.setHoveredObject( info, e ),
       updateTriggers: { getElevationValue: [ this.state.layer_histogram_count ], getColorValue: [ this.state.layer_histogram_count ] }  // これを指定しない場合はIDを都度振り替える
     });
   }
@@ -151,11 +183,11 @@ export default class App extends React.Component
   }
   async loadData( data )
   {
-    const geojsons = await load_geojson();
-    const srcdata = loader( data, geojsons );
-    const src_ids = Array.from( srcdata.places.keys() );
+    const pref_geojsons = await load_geojson();
+    const srcdata = loader( data, pref_geojsons );
+    const src_ids = srcdata.places.map( (v, i) => v.geopos && [ i ] ).filter( v => v ); // 位置情報がないPOI(東京都調査中、東京都都外)はヒストグラムを表示しない
     this.setState(
-      (state, prop) => { return { pref_geojsons: geojsons, srcdata: srcdata, src_ids: src_ids, data: src_ids.map( k => [ k ] ) || [] } },
+      (state, prop) => { return { pref_geojsons, srcdata, src_ids } },
       () => this.redrawLayer( { begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days, current_day: this.animationStartDay() } )
     );
   }
@@ -187,7 +219,7 @@ export default class App extends React.Component
             return color;
           },
           updateTriggers: { getFillColor: [ this.state.pref_active ] },
-          onClick: this._onClickOnGeojson
+          onClick: e => this.onClickOnGeojson( e )
         } ) );
         layers.push( this.createLayer() );
         this.setState( { layers } )
@@ -218,7 +250,8 @@ export default class App extends React.Component
     );
   }
 
-  _onLoadMap = ev => {
+  onLoadMap( e )
+  {
     setRTLTextPlugin(
       // find out the latest version at https://www.npmjs.com/package/@mapbox/mapbox-gl-rtl-text
       'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js',
@@ -227,14 +260,16 @@ export default class App extends React.Component
       true
     );
     this.changeMapLocale();
-  };
+  }
 
-  _onViewStateChange = ({viewState}) => {
+  onViewStateChange( { viewState } )
+  {
     Log.debug( viewState );
     this.setState( {viewState} );
-  };
+  }
 
-  _onInterval = () => {
+  onInterval()
+  {
     //Log.debug( `timer awaken` );
     if ( !this.state.timer_id || !this.state.srcdata || this.state.current_day >= this.state.srcdata.num_days - 1 )
       return;
@@ -245,38 +280,39 @@ export default class App extends React.Component
     this.doAnimation( Math.min( eday, maxday ), is_exceeded ? 0 : ((etm - eday * config.ANIMATION_SPEED) / config.ANIMATION_SPEED) );
     if ( is_exceeded )
       this.stopAnimation();
-  };
+  }
 
-  onDebug01 = () =>
+  onDebug01()
   {
-    this.redrawLayer( { inf_1: this.state.inf_1 ? 100 : (this.state.inf_1 * 0.5) } );
-  };
-  onDebug02 = () =>
+    Log.debug( this.state );
+  }
+  onDebug02()
   {
     Log.debug( 'onDebug02' );
-  };
+  }
 
   doAnimation( day, ratio )
   {
     if ( !this.state.srcdata )
       return;
-    const nextstate = { inf: [].concat( this.state.inf ), inf_a: [].concat( this.state.inf_a ) };
+    const nextstate = { inf: this.state.inf.slice(), inf_a: this.state.inf_a.slice() };
     let isUpdateHovered = false;
-    this.state.src_ids.forEach( id => {
-      const vals = this.state.srcdata.values.get( id );
+    this.state.src_ids.forEach( ida => {
+      const idx = ida[ 0 ];
+      const vals = this.state.srcdata.infectors[ idx ];
       let curval = vals[ day ];
-      nextstate.inf[ id ] = curval;
-      isUpdateHovered |= this.state.hoveredIds?.includes( id );
+      nextstate.inf[ idx ] = curval;
+      isUpdateHovered |= this.state.hoveredIds?.includes( idx );
       if ( day < this.state.srcdata.num_days - 1 )
       {
         const d = vals[ day + 1 ] - curval;
         const r = ratio && (( d >= 0 ) ? (1.0 - (1.0 - ratio)**3) : (ratio**3));
         curval += d * (r || 0);
       }
-      nextstate.inf_a[ id ] = curval;
+      nextstate.inf_a[ idx ] = curval;
     } );
     if ( isUpdateHovered )
-      nextstate.hoveredValue = this._setHoveredDescription( this.state.hoveredIds );
+      nextstate.hoveredValue = this.setHoveredDescription( this.state.hoveredIds );
     this.redrawLayer( { ...nextstate, current_day: day } );
   }
   startAnimation( cb )
@@ -304,20 +340,23 @@ export default class App extends React.Component
       () => cb && cb()
     );
   }
-  onClickStart = e => {
+  onClickStart( e )
+  {
     e.stopPropagation();
     this.state.timer_id ? this.stopAnimation() : this.startAnimation();
     this._onClickOnChild( e );
     return false;
   }
-  onClickReset = e => {
+  onClickReset( e )
+  {
     e.stopPropagation();
     this.stopAnimation();
     this.doAnimation( this.animationStartDay() );
     this._onClickOnChild( e );
     return false;
   }
-  onDateChanged = e => {
+  onDateChanged( e )
+  {
     e.stopPropagation();
     const day = e?.target?.value && parseInt( e.target.value );
     this.stopAnimation( () => day && this.setState(
@@ -336,7 +375,7 @@ export default class App extends React.Component
         controller={true}
         ContextProvider={MapContext.Provider}
         layers={this.state.layers}
-        onClick={this._onClick}
+        onClick={this._onClickMap}
       >
         <MapGL
           mapStyle={config.MAP_STYLE}
@@ -348,13 +387,20 @@ export default class App extends React.Component
           <NavigationControl />
         </div>
         <ControlPanel containerComponent={this.props.containerComponent} apimsg={this.state.data_api_loaded} srcdata={this.state.srcdata} onClickRelay={this._onClickOnChild} />
-        <ChartPanel containerComponent={this.props.containerComponent} summary={this.state.selectedSummary} summary_whole={this.state.srcdata?.map_summary.get( 0 )} start_day={datetostring( this.state.begin_date.getTime(), this.state.chart_day || this.state.current_day )} current_day={this.state.timer_id && datetostring( this.state.begin_date.getTime(), this.state.current_day )} onClickRelay={this._onClickOnChild} />
-        <div className="map-overlay top">
+        <ChartPanel containerComponent={this.props.containerComponent}
+                    srcdata={this.state.srcdata}
+                    summary={this.state.selectedSummary}
+                    summary_whole={this.state.srcdata?.map_summary.get( 0 )}
+                    start_date={datetostring( this.state.begin_date.getTime(), this.state.chart_day || this.state.current_day )}
+                    current_date={datetostring( this.state.begin_date.getTime(), this.state.current_day )}
+                    current_day={this.state.current_day}
+                    onClickRelay={this._onClickOnChild} />
+        <div className="map-overlay top" onClick={this._onClickNull}>
           <div className="map-overlay-inner">
             <div className="date">
               <label id="current_date">{ datetostring( this.state.begin_date.getTime(), this.state.current_day ) }</label>
             </div>
-            <input id="slider_date" type="range" min="0" max={this.state.max_day - 1} step="1" value={this.state.current_day} onChange={this.onDateChanged} />
+            <input id="slider_date" type="range" min="0" max={this.state.max_day - 1} step="1" value={this.state.current_day} onChange={this._onDateChanged} />
             <div style={{float: "left"}}>{datetostring(this.state.begin_date.getTime())}</div>
             <div style={{float: "right"}}>{datetostring(this.state.finish_date.getTime())}</div>
             <div><br/></div>
@@ -369,29 +415,20 @@ export default class App extends React.Component
             <div><br/></div>
           </div>
           <div className="map-overlay-inner">
-{/*
-            <fieldset>
-              <label>Select layer</label>
-              <select id="layer" name="layer">
-                <option value="water">Water</option>
-                <option value="building">Buildings</option>
-              </select>
-            </fieldset>
-*/}
             <fieldset>
               <div id="swatches">
-{/*
-                <div className="blue">
-                  <button id="blue_button" onClick={this.onDebug01} />
-                </div>
-                <div className="green">
-                  <button id="green_button" onClick={this.onDebug02} />
-                </div>
-*/}
-                <button className="btn-square" onClick={this.onClickStart}>{this.state.start_button_text}</button>
-                <button className="btn-square" onClick={this.onClickReset}>RESET</button>
+                <button className="btn-square" onClick={this._onClickStart}>{this.state.start_button_text}</button>
+                <button className="btn-square" onClick={this._onClickReset}>RESET</button>
               </div>
             </fieldset>
+            { config.DEBUG && (
+              <fieldset>
+                <div id="swatches">
+                  <button className="btn-square" onClick={this._onDebug01}>DEBUG1</button>
+                  <button className="btn-square" onClick={this._onDebug02}>DEBUG2</button>
+                </div>
+              </fieldset>
+            ) }
           </div>
         </div>
         <ToolTip containerComponent={this.props.containerComponent} visible={this.state.hoveredIds != null} sx={this.state.pointerX} sy={this.state.pointerY} descriptions={this.state.hoveredValue}/>

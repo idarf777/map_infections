@@ -28,7 +28,7 @@ export default class PoiShizuoka extends BasePoi
       alter_citys: ALTER_CITY_NAMES,
       csv_uri: config.SHIZUOKA_CSV.DATA_URI,
       csv_encoding: 'CP932',
-      cb_city: row => mapCityNames.get( row[ 6 ] ) || row[ 6 ] || '',
+      cb_city: row => mapCityNames.get( row[ 6 ] ) || row[ 6 ] || '非公表',
       row_begin: 1,
       min_columns: 7,
       col_date: 4

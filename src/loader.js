@@ -6,20 +6,20 @@ function summaryName( pref_code, geojsons )
   const config = window.covid19map.config;
   const locale = get_user_locale_prefix();
   if ( pref_code === 0 )
-    return config.MAP_SUMMARY_JAPAN_NAME[ locale ] || config.MAP_SUMMARY_JAPAN_NAME[ config.MAP_SUMMARY_LOCALE_FALLBACK ];
+    return config.MAP_SUMMARY_NATIONWIDE_NAME[ locale ] || config.MAP_SUMMARY_NATIONWIDE_NAME[ config.MAP_SUMMARY_LOCALE_FALLBACK ];
   const p = geojsons?.find( v => v.pref_code === pref_code )?.data.features[ 0 ].properties;
   return p && (p[ `name_${locale}` ] || p[ `name_${config.MAP_SUMMARY_LOCALE_FALLBACK}` ]);
 }
 
 export default function Loader( json, geojsons )
 {
-  const src_places = new Map();
-  const src_values = new Map();
-  const src_subtotals = new Map();
+  const src_places = [];    // city_codeと都市名
+  const src_infectors = []; // 日ごとの感染者数
+  const src_subtotals = []; // 日ごとの累計感染者数
+  const src_map_pref_places = new Map();  // pref_code - 配列(src_places/src_infectors/src_subtotalsのインデックス) のマップ
   const data = (typeof json === 'string') ? JSON.parse( json ) : json;
   const bgn = new Date( data.begin_at );
   const fin = new Date( data.finish_at );
-  let curspot = 1;
   for ( const spot of data.spots )
   {
     if ( (spot.data?.length || 0) === 0 )
@@ -44,11 +44,17 @@ export default function Loader( json, geojsons )
       vs.push( infectors );
       ts.push( subtotal );
     }
-    src_places.set( curspot, { city_code: spot.city_code, geopos: spot.geopos, name: spot.name, begin_at: new Date( spot.data[ 0 ].date ), finish_at: new Date( spot.data[ spot.data.length-1 ].date ) } );
-    src_values.set( curspot, vs );
-    src_subtotals.set( curspot, ts );
-    curspot++;
+    src_places.push( { city_code: spot.city_code, geopos: spot.geopos, name: spot.name, begin_at: new Date( spot.data[ 0 ].date ), finish_at: new Date( spot.data[ spot.data.length-1 ].date ) } );
+    src_infectors.push( vs );
+    src_subtotals.push( ts );
+
+    const pref_code = Math.floor( spot.city_code/1000 );
+    const pref_places = src_map_pref_places.get( pref_code ) || [];
+    if ( pref_places.length === 0 )
+      src_map_pref_places.set( pref_code, pref_places );
+    pref_places.push( src_places.length - 1 );
   }
+
   // 全国版のsummaryをつくる
   const map_summary = new Map();
   const whole_summary = new Map();
@@ -92,6 +98,6 @@ export default function Loader( json, geojsons )
     japan_summary.set( s.date, s );
   map_summary.forEach( ( v, pref_code ) => v.subtotal = smPref.get( pref_code ) );
   map_summary.set( 0, { pref_code: 0, name: summaryName( 0, geojsons ), begin_at: data.begin_at, finish_at: data.finish_at, subtotal: wsm, map: japan_summary } );
-  return { begin_at: bgn, finish_at: fin, num_days: ((src_values.size === 0) ? 0 : src_values.entries().next().value[ 1 ].length), places: src_places, values: src_values, subtotals: src_subtotals, summary: data.summary, map_summary };
+  return { begin_at: bgn, finish_at: fin, num_days: src_infectors[ 0 ]?.length || 0, places: src_places, map_pref_places: src_map_pref_places, infectors: src_infectors, subtotals: src_subtotals, summary: data.summary, map_summary };
 }
 

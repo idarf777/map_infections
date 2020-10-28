@@ -80,7 +80,7 @@ export default class BasePoi
     const spots = Array.from( map_city_infectors.entries() ).map( pair => {
       let subtotal = 0;
       const key = pair[ 0 ];
-      const name = (cb_name && cb_name( key )) || (pref_name +  ((key === '') ? '(生活地:非公表)' : (set_irregular.has( key ) && `(生活地:${key})` ) || key) );
+      const name = (cb_name && cb_name( key )) || (pref_name +  ((!key || key === '') ? '(生活地:非公表)' : (set_irregular.has( key ) && `(生活地:${key})` ) || key) );
       const poi = map_poi.get( pair[ 0 ] );
       return {
         city_code: poi.city_cd * ((poi.city_cd < 1000) ? 1000 : 1),

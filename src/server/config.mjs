@@ -74,7 +74,7 @@ export default function makeConfig()
     ANIMATION_BEGIN_AT: 30, // [day] 現在から遡る日数
     MAP_CLICK_PROPAGATION_TIME: 500, // [msec] 子コンポーネントをクリックしてからDeckコンポーネントのonClickが発火するまでがこの時間以下なら無視する (e.stopPropagation()が効かない)
     MAP_PREFECTURE_ACTIVE_COLOR: [ 200, 100, 240, 128 ],
-    MAP_SUMMARY_JAPAN_NAME: { ja: '全国', zh: '全國', en: 'the whole country', ko: '전국' },
+    MAP_SUMMARY_NATIONWIDE_NAME: { ja: '全国', zh: '全國', en: 'nationwide', ko: '전국' },
     MAP_SUMMARY_LOCALE_FALLBACK: 'en',
 
     COOKIE_MAP_TOKEN: 'mbt',
