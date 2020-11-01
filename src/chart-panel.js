@@ -1,10 +1,12 @@
 import * as React from 'react';
+import { BrowserRouter, Route } from 'react-router-dom';
 import {PureComponent} from 'react';
 import { datetostring } from "./server/util.mjs";
 import Log from './logger.js';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, Label
 } from 'recharts';
+import GridView from "./grid-view";
 
 export default class ChartPanel extends PureComponent
 {
@@ -58,7 +60,7 @@ export default class ChartPanel extends PureComponent
   {
     return Math.round( (new Date( curdate ).getTime() - this.props.srcdata.begin_at.getTime()) / (24*60*60*1000) ); // データ開始日からの日数
   }
-  renderTable()
+  makeTable()
   {
     const curdate = this.display_date();
     return curdate && this.props.srcdata && ((this.props.summary?.pref_code || 0) > 0) &&
@@ -69,7 +71,7 @@ export default class ChartPanel extends PureComponent
         const c = ccf( a[ 2 ] ) - ccf( b[ 2 ] );  // city_codeの昇順でソート
         return (c === 0) ? (a[ 0 ] > b[ 0 ]) : c;
       } )
-      .map( (v, i) => (<tr key={i}><td>{ v[ 0 ] }</td><td>{ v[ 1 ].toString() }</td></tr>) );
+      .map( v => { return { place: v[ 0 ], infectors: v[ 1 ].toString() } } );
   }
 
   render()
@@ -91,7 +93,7 @@ export default class ChartPanel extends PureComponent
         mapData.set( d, h );
       }
     }
-    const curval = mapData.get( this.props.current_date );
+    const curval = this.props.current_date && mapData.get( this.props.current_date );
     const is_local_pref = this.props.summary?.pref_code !== 0;
     const is_whole_active = is_local_pref  && this.state.chart_include_whole;
     return (
@@ -99,6 +101,11 @@ export default class ChartPanel extends PureComponent
         <div className="text-right">
           <div className="blue">
             <button className="btn-square-small" onClick={this._onClickShowPanel}>{this._buttonText()}</button>
+          </div>
+        </div>
+        <div className="chart-button-right">
+          <div className="green">
+            <button className="btn-square-small" onClick={this._onDebugChart01}>VIEW FULL CHART</button>
           </div>
         </div>
         { window.covid19map.config.DEBUG && (
@@ -114,19 +121,7 @@ export default class ChartPanel extends PureComponent
                 <div className="chart-title">
                   {this.display_date()}
                 </div>
-                <div className="scrollable-textbox">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>place</th>
-                        <th>infectors</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      { this.renderTable() }
-                    </tbody>
-                  </table>
-                </div>
+                <GridView header={['place', 'infectors']} data={this.makeTable()} data_key_column={'place'} />
               </div>
             ) }
           </div>
@@ -152,9 +147,9 @@ export default class ChartPanel extends PureComponent
                   <Tooltip content={<this._CustomTooltip />} />
                   <Area type="monotone" dataKey="pref" stackId="1" stroke="#606080" fill="url(#colorUv)" />
                   { is_whole_active && (<Area type="monotone" dataKey="whole" stackId="1" stroke="#806060" fill="url(#colorUvWhole)" />) }
-                  { this.props.current_date && (<ReferenceLine x={this.props.current_date} stroke="green" />) }
-                  { this.props.current_date && curval && is_whole_active && (<ReferenceDot x={this.props.current_date} y={curval.whole + curval.pref} r={5} stroke="blue" ><Label position="right" value={curval.whole + curval.pref}/></ReferenceDot>) }
-                  { this.props.current_date && curval && (<ReferenceDot x={this.props.current_date} y={curval.pref} r={5} stroke="green" ><Label position="right" value={curval.pref}/></ReferenceDot>) }
+                  { this.props.in_animation && curval && (<ReferenceLine x={this.props.current_date} stroke="green" />) }
+                  { this.props.in_animation && curval && is_whole_active && (<ReferenceDot x={this.props.current_date} y={curval.whole + curval.pref} r={5} stroke="blue" ><Label position="right" value={curval.whole + curval.pref}/></ReferenceDot>) }
+                  { this.props.in_animation && curval && (<ReferenceDot x={this.props.current_date} y={curval.pref} r={5} stroke="green" ><Label position="right" value={curval.pref}/></ReferenceDot>) }
                 </AreaChart>
               </ResponsiveContainer>
             </div>
