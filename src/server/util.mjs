@@ -303,3 +303,11 @@ export function get_user_locale_prefix()
 {
   return get_user_locale().split( /[-_]/ )[ 0 ];
 }
+
+export function reverse_hash( h, is_key_numeric )
+{
+  return Object.keys( h ).reduce( (r, k) => {
+    r[ h[ k ] ] = is_key_numeric ? parseInt( k ) : k;
+    return r;
+  }, {} );
+}

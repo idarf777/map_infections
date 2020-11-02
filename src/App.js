@@ -8,7 +8,7 @@ const App = () => {
     <div>
       <BrowserRouter>
         <div>
-          <Route path={["/", "/index.html"]} exact component={PageMap} />
+          <Route path={["/", "/index.html"]} exact component={ process.env.REACT_APP_INDEX_PAGE_CHART ? PageChart : PageMap} />
           <Route path="/chart" exact component={PageChart} />
         </div>
       </BrowserRouter>
