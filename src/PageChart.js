@@ -26,6 +26,7 @@ const config = makeConfig();
 window.covid19map = { config: config };
 
 const DATA_API_STATUS = { unloaded: 'DATA UNLOAD', loading: 'LOADING DATA...', loaded: 'DATA LOADED', error: 'ERROR' };
+const SHOW_HIDE_STYLES = [ "hidden", "show" ];
 
 export default class PageChart extends React.Component
 {
@@ -39,12 +40,18 @@ export default class PageChart extends React.Component
     current_day: 0,
     data_api_loaded: DATA_API_STATUS.unloaded,
     pref_checked: new Set(),
+    pref_color: new Map(),
   };
-  static PREFECTURE_NAMES = reverse_hash( PREFECTURE_CODES );
 
-  constructor(props) {
+  constructor(props)
+  {
     super(props);
     // I'm using this ref to access methods on the DeckGL class
+  }
+
+  hsl_color( pref )
+  {
+    return `hsl(${(47*(PREFECTURE_CODES[ pref ] || 0)) % 360},80%,40%)`;
   }
 
   async loadData( data )
@@ -58,7 +65,7 @@ export default class PageChart extends React.Component
   {
     const host = config.SERVER_HOST || `${window.location.protocol}//${window.location.host}`;
     this.setState(
-      (state, prop) => { return { data_api_loaded: DATA_API_STATUS.loading } },
+      (state, prop) => { return { data_api_loaded: DATA_API_STATUS.loading, pref_checked: this.state.pref_checked.add( 'whole' ) } },
       () => (config.STANDALONE ? this.loadData( example_data ) : axios_instance().get( `${host}${config.SERVER_URI}` ).then( response => this.loadData( response.data ) ))
           .then( () => this.setState( { data_api_loaded: DATA_API_STATUS.loaded } ) )
           .catch( ( ex ) => {
@@ -76,8 +83,8 @@ export default class PageChart extends React.Component
   }
 
   _CustomTooltip = ({ active, payload, label }) => {
-    const whole = payload.find( v => v.name === 'whole' );
-    return (label && active && (
+    const whole = payload?.find( v => v.name === 'whole' );
+    return (label && active && payload && (
       <div className="custom-tooltip">
         <p className="label">{label}</p>
         { whole && (<p className="desc">{`${this.state.srcdata?.map_summary.get( 0 ).name} : ${whole.value}`}</p>) }
@@ -98,12 +105,11 @@ export default class PageChart extends React.Component
       for ( const cur = new Date( this.state.srcdata.begin_at ); ; cur.setDate( cur.getDate() + 1 ) )
       {
         const d = datetostring( cur );
-        const whole = summary_whole.map.get( d )?.infectors; // 全国版は、最新日付までの全ての日付についてデータがあるはず
-        if ( whole == null )
+        if ( !summary_whole.map.has( d ) ) // 全国版は、最新日付までの全ての日付についてデータがあるはず
           break;
-        const h = { name: d, whole };
+        const h = { name: d };
         for ( const pref of this.state.pref_checked.keys() )
-          h[ pref ] = summary.get( PREFECTURE_CODES[ pref ] ).map.get( d )?.infectors || 0;
+          h[ pref ] = summary.get( PREFECTURE_CODES[ pref ] || 0 ).map.get( d )?.infectors || 0;
         data.push( h );
         mapData.set( d, h );
       }
@@ -116,7 +122,7 @@ export default class PageChart extends React.Component
           <div className="pane-child-left">
             <div className="list-prefectures">
               <ul>
-                {Object.keys( PREFECTURE_CODES ).map( pref => (
+                {[ 'whole' ].concat( Object.keys( PREFECTURE_CODES ) ).map( pref => (
                   <li key={pref}>
                     <div className="inline-box-container">
                       <div className="checkboxArea inline-box">
@@ -124,7 +130,11 @@ export default class PageChart extends React.Component
                         <label htmlFor={`check_${pref}`}><span></span></label>
                       </div>
                       <div className="inline-box-low">
-                        <a href="#" name={pref} onClick={this._onClickPrefName}>{this.state.srcdata?.map_summary.get( PREFECTURE_CODES[ pref ] ).name || ''}</a>
+                        <a href="#" name={pref} onClick={this._onClickPrefName}>{ this.state.srcdata?.map_summary.get( PREFECTURE_CODES[ pref ] || 0 ).name || ''}</a>
+                      </div>
+                      <div className={SHOW_HIDE_STYLES[ this.state.pref_checked.has( pref ) ? 1 : 0 ]}>
+                        <div className="inline-box-palette" style={`background-color: ${this.hsl_color( pref )}`}>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -136,18 +146,11 @@ export default class PageChart extends React.Component
             <div className="chart-box">
               <ResponsiveContainer>
                 <LineChart data={data} >
-                  <defs>
-                    <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#004040" stopOpacity={0.5}/>
-                      <stop offset="95%" stopColor="#00a0a0" stopOpacity={0.5}/>
-                    </linearGradient>
-                  </defs>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip content={<this._CustomTooltip />} />
-                  <Line type="monotone" dataKey="whole" dot={false} />
-                  { Array.from( this.state.pref_checked.keys() ).map( pref => (<Line type="monotone" dataKey={pref} dot={false} />) ) }
+                  { Array.from( this.state.pref_checked.keys() ).map( pref => (<Line type="monotone" key={pref} dataKey={pref} dot={false} stroke={this.hsl_color( pref )} />) ) }
                 </LineChart>
               </ResponsiveContainer>
             </div>

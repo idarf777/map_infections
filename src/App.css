@@ -495,7 +495,7 @@ body {
 }
 
 .list-prefectures {
-  width: 110pt;
+  width: 120pt;
   padding: 0;
   background-color: #eeeeff;
   border:solid 1px #6666ff;
@@ -527,6 +527,13 @@ body {
   float: left;
   margin-right: 5pt;
   margin-top: 3pt;
+}
+.inline-box-palette {
+  float: left;
+  margin-top: 3pt;
+  width: 10pt;
+  height: 16pt;
+  background-color: blue;
 }
 .pane-root {
   display: flex;
