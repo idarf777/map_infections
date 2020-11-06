@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { BrowserRouter, Route } from 'react-router-dom';
+import {withRouter} from 'react-router-dom';
 import {PureComponent} from 'react';
 import { datetostring } from "./server/util.mjs";
 import Log from './logger.js';
@@ -8,7 +8,7 @@ import {
 } from 'recharts';
 import GridView from "./grid-view";
 
-export default class ChartPanel extends PureComponent
+class ChartPanel extends PureComponent
 {
   state = {
     chart_view: false,
@@ -22,6 +22,11 @@ export default class ChartPanel extends PureComponent
     e.stopPropagation();
     if ( this.props.summary )
       this.setState( { chart_view: !this.state.chart_view } );
+    this.props.onClickRelay( e );
+  };
+  _onClickViewFullChart = e => {
+    e.stopPropagation();
+    this.props.history.push( '/chart' );
     this.props.onClickRelay( e );
   };
   _onClickCheckWhole = e => {
@@ -105,7 +110,7 @@ export default class ChartPanel extends PureComponent
         </div>
         <div className="chart-button-right">
           <div className="green">
-            <button className="btn-square-small" onClick={this._onDebugChart01}>VIEW FULL CHART</button>
+            <button className="btn-square-small" onClick={this._onClickViewFullChart}>VIEW FULL CHART</button>
           </div>
         </div>
         { window.covid19map.config.DEBUG && (
@@ -178,3 +183,4 @@ export default class ChartPanel extends PureComponent
   }
 }
 
+export default withRouter( ChartPanel );

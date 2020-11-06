@@ -13,16 +13,16 @@ export default class GridView extends PureComponent
           <thead>
             <tr>
             {
-              this.props.header?.map( v => (<th>{ v }</th>) )
+              this.props.header?.map( v => (<th key={v}>{ v }</th>) )
             }
             </tr>
           </thead>
           <tbody>
           {
             this.props.data.map( (vs, i) => (
-              <tr key={vs[ this.props.data_key_column ]}>
+              <tr key={`${vs[ this.props.data_key_column ]}_${i}`}>
               {
-                (this.props.data_keys || this.props.header).map( k => (<td>{ k.endsWith( '_at' ) ? datetostring( vs[ k ] ) : vs[ k ] }</td>) )
+                (this.props.data_keys || this.props.header).map( k => (<td key={k}>{ k.endsWith( '_at' ) ? datetostring( vs[ k ] ) : vs[ k ] }</td>) )
               }
               </tr>
             ) )

@@ -311,3 +311,11 @@ export function reverse_hash( h, is_key_numeric )
     return r;
   }, {} );
 }
+
+export function count_days( from, to )
+{
+  let c = 0;
+  for ( const d1=new Date( from ), d2=new Date( to ); d1.getTime() < d2.getTime(); d1.setDate( d1.getDate() + 1 ) )
+    c++;
+  return c + 1;
+}

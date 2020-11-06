@@ -1,5 +1,5 @@
-//import agh from 'agh.sprintf';
 import * as React from 'react';
+import { withRouter } from 'react-router-dom';
 import MapGL, {_MapContext as MapContext, NavigationControl, setRTLTextPlugin} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import MapboxLanguage from '@mapbox/mapbox-gl-language';
@@ -27,7 +27,7 @@ window.covid19map = { config: config };
 const PLAYBUTTON_TEXT = { start: 'START', stop: 'STOP' };
 const DATA_API_STATUS = { unloaded: 'DATA UNLOAD', loading: 'LOADING DATA...', loaded: 'DATA LOADED', error: 'ERROR' };
 
-export default class PageMap extends React.Component
+class PageMap extends React.Component
 {
   constructor(props) {
     super(props);
@@ -379,7 +379,7 @@ export default class PageMap extends React.Component
       >
         <MapGL
           mapStyle={config.MAP_STYLE}
-          mapboxApiAccessToken={this.props.accessToken}
+          mapboxApiAccessToken={process.env.REACT_APP_MapboxAccessToken || window.parsed_cookies.get( config.COOKIE_MAP_TOKEN )}
           ref={map => { if ( map ) this.mapRef = map }}
           onLoad={this._onLoadMap}
         />
@@ -438,3 +438,4 @@ export default class PageMap extends React.Component
   }
 }
 
+export default withRouter( PageMap );
