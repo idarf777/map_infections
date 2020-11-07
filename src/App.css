@@ -358,7 +358,7 @@ body {
 }
 
 .recharts-tooltip-wrapper .custom-tooltip {
-  max-width: 100pt;
+  max-width: 120pt;
   margin: 0;
   font-size: 12pt;
   line-height: 18pt;
@@ -378,6 +378,13 @@ body {
 .recharts-tooltip-wrapper .custom-tooltip .desc {
   margin: 0;
   color: #101010
+}
+
+.recharts-tooltip-wrapper .custom-tooltip .desc-small {
+  margin: 0;
+  color: #101010;
+  font-size: 10pt;
+  line-height: 12pt;
 }
 
 .recharts-tooltip-wrapper .custom-tooltip .intro {
@@ -597,4 +604,12 @@ body {
   bottom: 0;
   right: 0;
   padding: 10px;  /* rechartがpxでしかmarginを指定できないので、やむなくpx */
+  width: 60pt;
+}
+.pane-child-right .chart-option-right {
+  position: absolute;
+  bottom: 0;
+  right: 100pt;
+  padding: 10px;  /* rechartがpxでしかmarginを指定できないので、やむなくpx */
+  width: 140pt;
 }

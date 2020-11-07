@@ -76,6 +76,8 @@ export default function makeConfig()
     MAP_PREFECTURE_ACTIVE_COLOR: [ 200, 100, 240, 128 ],
     MAP_SUMMARY_NATIONWIDE_NAME: { ja: '全国', zh: '全國', en: 'nationwide', ko: '전국' },
     MAP_SUMMARY_LOCALE_FALLBACK: 'en',
+    MAP_CHART_AVERAGE_DAYS: 10,  // 移動平均の日数 [day] 奇数であること
+    MAP_CHART_AVERAGE_NAME: { ja: '平均', zh: '平均', en: 'average', ko: '평균' },
 
     COOKIE_MAP_TOKEN: 'mbt',
     COOKIE_EXPIRE_DATE: 'edt',

@@ -1,4 +1,4 @@
-//import agh from 'agh.sprintf';
+import agh from 'agh.sprintf';
 import * as React from 'react';
 import { withRouter } from 'react-router-dom';
 import Log from './logger.js';
@@ -31,6 +31,8 @@ const DATA_API_STATUS = { unloaded: 'DATA UNLOAD', loading: 'LOADING DATA...', l
 const SHOW_HIDE_STYLES = [ "hidden", "show" ];
 const WHOLE_JAPAN_KEY = 'whole';
 const ALL_PREF_KEY = 'all';
+const EX_PREFECTURE_CODES = { ...PREFECTURE_CODES };
+EX_PREFECTURE_CODES[ WHOLE_JAPAN_KEY ] = 0;
 
 class PageChart extends React.Component
 {
@@ -46,6 +48,7 @@ class PageChart extends React.Component
     data_api_loaded: DATA_API_STATUS.unloaded,
     pref_checked: new Set(),
     pref_color: new Map(),
+    display_avarage: true,
   };
 
   constructor(props)
@@ -54,10 +57,19 @@ class PageChart extends React.Component
     // I'm using this ref to access methods on the DeckGL class
   }
 
-  hsl_color( pref )
+  hsl_color( pref, alpha )
   {
     const H_PERIOD = 69;
-    return `hsl(${(H_PERIOD*(PREFECTURE_CODES[ pref ] || 0)) % 360},80%,40%)`;
+    return agh.sprintf( 'hsl(%d,80%%,40%%,%f)', (H_PERIOD*EX_PREFECTURE_CODES[ pref ]) % 360, alpha || 1 );
+  }
+  hsl_color_dark( pref )
+  {
+    const H_PERIOD = 69;
+    return `hsl(${(H_PERIOD*EX_PREFECTURE_CODES[ pref ]) % 360},70%,30%)`;
+  }
+  avarageName()
+  {
+    return config.MAP_CHART_AVERAGE_NAME[ get_user_locale_prefix() ] || config.MAP_CHART_AVERAGE_NAME[ config.MAP_SUMMARY_LOCALE_FALLBACK ];
   }
 
   async loadData( data )
@@ -83,12 +95,13 @@ class PageChart extends React.Component
   }
 
   _onClickPrefName = ev => {
+    ev.preventDefault();
     ev.stopPropagation();
     const s = new Set( this.state.pref_checked );
     const allpref = Object.keys( PREFECTURE_CODES )
     const is_all_on = () => s.size >= allpref.length + (s.has( WHOLE_JAPAN_KEY ) ? 1 : 0) + (s.has( ALL_PREF_KEY ) ? 1 : 0);
     const pref = ev.target.name;
-    if ( pref === 'all' )
+    if ( pref === ALL_PREF_KEY )
     {
       const all = is_all_on();
       [ ALL_PREF_KEY ].concat( allpref ).forEach( subpref => all ? s.delete( subpref ) : s.add( subpref ) );
@@ -101,13 +114,24 @@ class PageChart extends React.Component
     this.setState( { pref_checked: s } );
   }
 
+  _onChangeDrawAvg = ev => {
+    ev.stopPropagation();
+    this.setState( { display_avarage: !this.state.display_avarage } );
+  }
+
   _CustomTooltip = ({ active, payload, label }) => {
-    const whole = payload?.find( v => v.name === WHOLE_JAPAN_KEY );
     return (label && active && payload && (
       <div className="custom-tooltip">
         <p className="label">{label}</p>
-        { whole && (<p className="desc">{`${this.state.srcdata?.map_summary.get( 0 ).name} : ${whole.value}`}</p>) }
-        { payload.map( v => (PREFECTURE_CODES[ v.name ] || null) && (<p className="desc">{`${this.state.srcdata?.map_summary.get( PREFECTURE_CODES[ v.name ] ).name} : ${v.value}`}</p>) ) }
+        {
+          payload.map( v => {
+              const ns = v.name.split( '_' );
+              const pref_code = EX_PREFECTURE_CODES[ ns[ 0 ] ];
+              return { pref_code: pref_code + (ns[ 1 ] ? 10000 : 0), tag: (<p className="desc-small" key={v.name}>{`${this.state.srcdata?.map_summary.get( pref_code )?.name}${ns[ 1 ] ? `(${this.avarageName()})`:''} : ${agh.sprintf( ns[ 1 ] ? "%.1f" : "%d", v.value )}`}</p>) };
+            } )
+            .sort( (a, b) => a.pref_code - b.pref_code )
+            .map( v => (v.pref_code != null) && v.tag )
+        }
       </div>
     )) || null;
   };
@@ -137,9 +161,25 @@ class PageChart extends React.Component
           break;
         const h = { name: d };
         for ( const pref of this.state.pref_checked.keys() )
-          h[ pref ] = summary.get( PREFECTURE_CODES[ pref ] || 0 ).map.get( d )?.infectors || 0;
+        {
+          if ( pref !== ALL_PREF_KEY )
+            h[ pref ] = summary.get( EX_PREFECTURE_CODES[ pref ] ).map.get( d )?.infectors || 0;
+        }
         data.push( h );
         mapData.set( d, h );
+      }
+      if ( this.state.display_avarage )
+      {
+        // 移動平均を計算する
+        const avw = Math.floor( config.MAP_CHART_AVERAGE_DAYS / 2 );
+        for ( let i=0; i<data.length; i++ )
+        {
+          const sliced = data.slice( Math.max( 0, i - avw ), i + avw + 1 );
+          if ( sliced.length === 0 )
+            continue;
+          for ( const pref of this.state.pref_checked.keys() )
+            data[ i ][ `${pref}_avg` ] = sliced.reduce( (acc, cur) => acc + cur[ pref ], 0 ) / sliced.length;
+        }
       }
     }
 
@@ -171,7 +211,7 @@ class PageChart extends React.Component
             }
             <div className="list-prefectures">
               <ul>
-                {[ WHOLE_JAPAN_KEY, ALL_PREF_KEY ].concat( Object.keys( PREFECTURE_CODES ) ).map( pref => (
+                { [ WHOLE_JAPAN_KEY, ALL_PREF_KEY ].concat( Object.keys( PREFECTURE_CODES ) ).map( pref => (
                   <li key={pref}>
                     <div className="inline-box-container">
                       <div className="checkboxArea inline-box">
@@ -179,7 +219,7 @@ class PageChart extends React.Component
                         <label htmlFor={`check_${pref}`}><span></span></label>
                       </div>
                       <div className="inline-box-low">
-                        <a href="javascript:void(0);" name={pref} onClick={this._onClickPrefName}>{ ((pref !== 'all') && this.state.srcdata?.map_summary.get( PREFECTURE_CODES[ pref ] || 0 )?.name) || ''}</a>
+                        <a href="#" name={pref} onClick={this._onClickPrefName}>{ ((pref !== ALL_PREF_KEY) && this.state.srcdata?.map_summary.get( EX_PREFECTURE_CODES[ pref ] )?.name) || ''}</a>
                       </div>
                       {(pref !== ALL_PREF_KEY) && (<div className={SHOW_HIDE_STYLES[ this.state.pref_checked.has( pref ) ? 1 : 0 ]}>
                         <div className="inline-box-palette" style={{backgroundColor: this.hsl_color( pref )}}>
@@ -199,7 +239,8 @@ class PageChart extends React.Component
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip content={<this._CustomTooltip />} />
-                  { Array.from( this.state.pref_checked.keys() ).map( pref => (<Line type="monotone" key={pref} dataKey={pref} dot={false} stroke={this.hsl_color( pref )} />) ) }
+                  { Array.from( this.state.pref_checked.keys() ).map( pref => (<Line type="monotone" key={pref} dataKey={pref} dot={false} stroke={this.hsl_color( pref, this.state.display_avarage ? 0.3 : 1 )} />) ) }
+                  { this.state.display_avarage && Array.from( this.state.pref_checked.keys() ).map( pref => (<Line type="monotone" key={`${pref}_avg`} dataKey={`${pref}_avg`} dot={false} stroke={this.hsl_color_dark( pref )} />) ) }
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -207,6 +248,12 @@ class PageChart extends React.Component
               <div className="green">
                 <Link to="/map"><button className="btn-square-small">VIEW MAP</button></Link>
               </div>
+            </div>
+            <div className="chart-option-right">
+              <label>
+                <input type="checkbox" className="checkbox-input" checked={this.state.display_avarage} onChange={this._onChangeDrawAvg} />
+                <span className="checkbox-parts">{`Draw ${config.MAP_CHART_AVERAGE_DAYS} days Average`}</span>
+              </label>
             </div>
           </div>
         </div>

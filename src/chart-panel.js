@@ -90,7 +90,7 @@ class ChartPanel extends PureComponent
       {
         const d = datetostring( cur );
         const pref = this.props.summary.map.get( d )?.infectors || 0;
-        const whole = this.props.summary_whole.map.get( d )?.infectors; // 全国版は、最新日付までの全ての日付についてデータがあるはず
+        const whole = this.props.summary_whole.map.get( d )?.infectors || 0; // 全国版は、最新日付までの全ての日付についてデータがあるはず
         if ( whole == null )
           break;
         const h = { name: d, pref, whole: whole - pref };
