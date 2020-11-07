@@ -179,7 +179,7 @@ class PageChart extends React.Component
                         <label htmlFor={`check_${pref}`}><span></span></label>
                       </div>
                       <div className="inline-box-low">
-                        <a href="#" name={pref} onClick={this._onClickPrefName}>{ ((pref !== 'all') && this.state.srcdata?.map_summary.get( PREFECTURE_CODES[ pref ] || 0 )?.name) || ''}</a>
+                        <a href="javascript:void(0);" name={pref} onClick={this._onClickPrefName}>{ ((pref !== 'all') && this.state.srcdata?.map_summary.get( PREFECTURE_CODES[ pref ] || 0 )?.name) || ''}</a>
                       </div>
                       {(pref !== ALL_PREF_KEY) && (<div className={SHOW_HIDE_STYLES[ this.state.pref_checked.has( pref ) ? 1 : 0 ]}>
                         <div className="inline-box-palette" style={{backgroundColor: this.hsl_color( pref )}}>

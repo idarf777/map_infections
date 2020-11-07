@@ -252,13 +252,20 @@ class PageMap extends React.Component
 
   onLoadMap( e )
   {
-    setRTLTextPlugin(
-      // find out the latest version at https://www.npmjs.com/package/@mapbox/mapbox-gl-rtl-text
-      'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js',
-      null,
-      // lazy: only load when the map first encounters Hebrew or Arabic text
-      true
-    );
+    try
+    {
+      // HashRouterで遷移するとなぜかmultiple loadでエラーになる
+      setRTLTextPlugin(
+        // find out the latest version at https://www.npmjs.com/package/@mapbox/mapbox-gl-rtl-text
+        'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js',
+        null,
+        // lazy: only load when the map first encounters Hebrew or Arabic text
+        true
+      );
+    }
+    catch
+    {
+    }
     this.changeMapLocale();
   }
 
