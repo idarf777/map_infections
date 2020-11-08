@@ -95,16 +95,18 @@ class PageChart extends React.Component
   }
 
   _onClickPrefName = ev => {
-    ev.preventDefault();
+    if ( ev.type === "click" )
+      ev.preventDefault();  // <a href="#">をクリックしたとき何も起こらないようにする
     ev.stopPropagation();
     const s = new Set( this.state.pref_checked );
     const allpref = Object.keys( PREFECTURE_CODES )
-    const is_all_on = () => s.size >= allpref.length + (s.has( WHOLE_JAPAN_KEY ) ? 1 : 0) + (s.has( ALL_PREF_KEY ) ? 1 : 0);
+    const is_any_on = () => (s.size - (s.has( WHOLE_JAPAN_KEY ) ? 1 : 0) - (s.has( ALL_PREF_KEY ) ? 1 : 0)) > 0;
+    const is_all_on = () => (allpref.length + (s.has( WHOLE_JAPAN_KEY ) ? 1 : 0) + (s.has( ALL_PREF_KEY ) ? 1 : 0)) <= s.size;
     const pref = ev.target.name;
     if ( pref === ALL_PREF_KEY )
     {
-      const all = is_all_on();
-      [ ALL_PREF_KEY ].concat( allpref ).forEach( subpref => all ? s.delete( subpref ) : s.add( subpref ) );
+      const b = is_any_on();
+      [ ALL_PREF_KEY ].concat( allpref ).forEach( subpref => b ? s.delete( subpref ) : s.add( subpref ) );
     }
     else
     {
@@ -123,22 +125,18 @@ class PageChart extends React.Component
     return (label && active && payload && (
       <div className="custom-tooltip">
         <p className="label">{label}</p>
-        {
-          payload.map( v => {
+        { payload.map( v => {
               const ns = v.name.split( '_' );
               const pref_code = EX_PREFECTURE_CODES[ ns[ 0 ] ];
               return { pref_code: pref_code + (ns[ 1 ] ? 10000 : 0), tag: (<p className="desc-small" key={v.name}>{`${this.state.srcdata?.map_summary.get( pref_code )?.name}${ns[ 1 ] ? `(${this.avarageName()})`:''} : ${agh.sprintf( ns[ 1 ] ? "%.1f" : "%d", v.value )}`}</p>) };
             } )
             .sort( (a, b) => a.pref_code - b.pref_code )
-            .map( v => (v.pref_code != null) && v.tag )
-        }
+            .map( v => (v.pref_code != null) && v.tag ) }
       </div>
     )) || null;
   };
 
-  _onChangeSlider = (ev, num) => {
-    this.setState( { from_day: num[ 0 ], to_day: num[ 1 ] } );
-  };
+  _onChangeSlider = (ev, num) => this.setState( { from_day: num[ 0 ], to_day: num[ 1 ] } );
   _sliderLabel = num => datetostring( this.state.begin_date, num );
 
   render()
