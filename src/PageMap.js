@@ -11,7 +11,8 @@ import {
   axios_instance,
   datetostring,
   get_user_locale_prefix,
-  load_geojson
+  load_geojson,
+  setStateAsync
 } from "./server/util.mjs";
 import { example_data } from "./example_data.js";
 import loader from "./loader.js";
@@ -25,7 +26,7 @@ const config = makeConfig();
 window.covid19map = { config: config };
 
 const PLAYBUTTON_TEXT = { start: 'START', stop: 'STOP' };
-const DATA_API_STATUS = { unloaded: 'DATA UNLOAD', loading: 'LOADING DATA...', loaded: 'DATA LOADED', error: 'ERROR' };
+const DATA_API_STATUS = { unloaded: 'DATA UNLOAD', downloading: 'DOWNLOADING DATA...', downloading_geometry: 'DOWNLOADING GEOMETRY...', loading_geometry: 'LOADING GEOMETRY...', loading: 'LOADING DATA...', loaded: 'DATA LOADED', error: 'ERROR' };
 
 class PageMap extends React.Component
 {
@@ -181,28 +182,32 @@ class PageMap extends React.Component
     bgn.setDate( bgn.getDate() - config.ANIMATION_BEGIN_AT );
     return Math.max( 0, Math.floor( (bgn.getTime() - this.state.srcdata.begin_at.getTime())/(24*60*60*1000) ) );
   }
-  async loadData( data )
+  async downloadData()
   {
-    const pref_geojsons = await load_geojson();
+    const setApiStatus = async status => setStateAsync( this, { data_api_loaded: status } );
+    await setApiStatus( DATA_API_STATUS.downloading );
+    const host = config.SERVER_HOST || `${window.location.protocol}//${window.location.host}`;
+    const data = config.STANDALONE ? example_data : (await axios_instance().get( `${host}${config.SERVER_URI}` )).data;
+    await setApiStatus( DATA_API_STATUS.downloading_geometry );
+    const geojson = (await axios_instance().get( `${process.env.PUBLIC_URL}/japan_tiny.geojson` )).data;  // 緯度経度は小数点以下6桁でも十分
+    await setApiStatus( DATA_API_STATUS.loading_geometry );
+    const pref_geojsons = await load_geojson( geojson );
+    await setApiStatus( DATA_API_STATUS.loading );
     const srcdata = loader( data, pref_geojsons );
     const src_ids = srcdata.places.map( (v, i) => v.geopos && [ i ] ).filter( v => v ); // 位置情報がないPOI(東京都調査中、東京都都外)はヒストグラムを表示しない
-    this.setState(
-      (state, prop) => { return { pref_geojsons, srcdata, src_ids } },
-      () => this.redrawLayer( { begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day: srcdata.num_days, current_day: this.animationStartDay() } )
-    );
+    await setStateAsync( this, { pref_geojsons, srcdata, src_ids } );
   }
   componentDidMount()
   {
-    const host = config.SERVER_HOST || `${window.location.protocol}//${window.location.host}`;
-    this.setState(
-      (state, prop) => { return { data_api_loaded: DATA_API_STATUS.loading } },
-      () => (config.STANDALONE ? this.loadData( example_data ) : axios_instance().get( `${host}${config.SERVER_URI}` ).then( response => this.loadData( response.data ) ))
-          .then( () => this.setState( { data_api_loaded: DATA_API_STATUS.loaded } ) )
-          .catch( ( ex ) => {
-            Log.error( ex );
-            this.setState( { data_api_loaded: DATA_API_STATUS.error } );
-          } )
-    );
+    this.downloadData()
+      .then( () => {
+        this.setState( { data_api_loaded: DATA_API_STATUS.loaded } );
+        this.redrawLayer( { begin_date: this.state.srcdata.begin_at, finish_date: this.state.srcdata.finish_at, max_day: this.state.srcdata.num_days, current_day: this.animationStartDay() } );
+      } )
+      .catch( ex => {
+        Log.error( ex );
+        this.setState( { data_api_loaded: DATA_API_STATUS.error } );
+      } )
   }
 
   redrawLayer( state_after )

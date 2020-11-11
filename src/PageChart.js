@@ -6,7 +6,9 @@ import {
   axios_instance, count_days,
   datetostring,
   get_user_locale_prefix,
-  load_geojson, PREFECTURE_CODES, reverse_hash
+  load_geojson,
+  PREFECTURE_CODES,
+  setStateAsync
 } from "./server/util.mjs";
 import { example_data } from "./example_data.js";
 import loader from "./loader.js";
@@ -15,12 +17,12 @@ import Slider from '@material-ui/core/Slider';
 import makeConfig from "./server/config.mjs";
 import {
   LineChart,
-  CartesianGrid, Label, ReferenceDot,
-  ReferenceLine,
+  CartesianGrid,
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis, Line, AreaChart
+  YAxis,
+  Line
 } from "recharts";
 import {Link} from "react-router-dom";
 
@@ -72,30 +74,35 @@ class PageChart extends React.Component
     return config.MAP_CHART_AVERAGE_NAME[ get_user_locale_prefix() ] || config.MAP_CHART_AVERAGE_NAME[ config.MAP_SUMMARY_LOCALE_FALLBACK ];
   }
 
-  async loadData( data )
+  async downloadData()
   {
-    const pref_geojsons = await load_geojson();
+    const setApiStatus = async status => setStateAsync( this, { data_api_loaded: status } );
+    await setStateAsync( this, { pref_checked: this.state.pref_checked.add( WHOLE_JAPAN_KEY ) } );
+    await setApiStatus( DATA_API_STATUS.downloading );
+    const host = config.SERVER_HOST || `${window.location.protocol}//${window.location.host}`;
+    const data = config.STANDALONE ? example_data : (await axios_instance().get( `${host}${config.SERVER_URI}` )).data;
+    await setApiStatus( DATA_API_STATUS.downloading_geometry );
+    const geojson = (await axios_instance().get( `${process.env.PUBLIC_URL}/japan_nogeo.geojson` )).data;  // 緯度経度なし
+    await setApiStatus( DATA_API_STATUS.loading_geometry );
+    const pref_geojsons = await load_geojson( geojson );
+    await setApiStatus( DATA_API_STATUS.loading );
     const srcdata = loader( data, pref_geojsons );
     const src_ids = srcdata.places.map( (v, i) => v.geopos && [ i ] ).filter( v => v ); // 位置情報がないPOI(東京都調査中、東京都都外)はヒストグラムを表示しない
     const max_day = count_days( srcdata.begin_at, srcdata.finish_at );
-    this.setState( { pref_geojsons, srcdata, src_ids, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day, from_day: 0, to_day: max_day-1 } );
+    return setStateAsync( this, { pref_geojsons, srcdata, src_ids, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day, from_day: 0, to_day: max_day-1 } );
   }
   componentDidMount()
   {
-    const host = config.SERVER_HOST || `${window.location.protocol}//${window.location.host}`;
-    this.setState(
-      (state, prop) => { return { data_api_loaded: DATA_API_STATUS.loading, pref_checked: this.state.pref_checked.add( WHOLE_JAPAN_KEY ) } },
-      () => (config.STANDALONE ? this.loadData( example_data ) : axios_instance().get( `${host}${config.SERVER_URI}` ).then( response => this.loadData( response.data ) ))
-          .then( () => this.setState( { data_api_loaded: DATA_API_STATUS.loaded } ) )
-          .catch( ( ex ) => {
-            Log.error( ex );
-            this.setState( { data_api_loaded: DATA_API_STATUS.error } );
-          } )
-    );
+    this.downloadData()
+      .then( () => this.setState( { data_api_loaded: DATA_API_STATUS.loaded } ) )
+      .catch( ex => {
+        Log.error( ex );
+        this.setState( { data_api_loaded: DATA_API_STATUS.error } );
+      } )
   }
 
   _onClickPrefName = ev => {
-    if ( ev.type === "click" )
+    if ( ev.target.href )
       ev.preventDefault();  // <a href="#">をクリックしたとき何も起こらないようにする
     ev.stopPropagation();
     const s = new Set( this.state.pref_checked );
@@ -131,7 +138,7 @@ class PageChart extends React.Component
               return { pref_code: pref_code + (ns[ 1 ] ? 10000 : 0), tag: (<p className="desc-small" key={v.name}>{`${this.state.srcdata?.map_summary.get( pref_code )?.name}${ns[ 1 ] ? `(${this.avarageName()})`:''} : ${agh.sprintf( ns[ 1 ] ? "%.1f" : "%d", v.value )}`}</p>) };
             } )
             .sort( (a, b) => a.pref_code - b.pref_code )
-            .map( v => (v.pref_code != null) && v.tag ) }
+            .map( v => v.tag ) }
       </div>
     )) || null;
   };

@@ -1,4 +1,9 @@
-import {axios_instance, datetostring, get_user_locale_prefix} from "./server/util.mjs";
+import {
+  axios_instance,
+  datetostring,
+  get_user_locale_prefix,
+  PREFECTURE_CODES
+} from "./server/util.mjs";
 import Log from "./logger.js";
 
 function summaryName( pref_code, geojsons )
@@ -58,8 +63,9 @@ export default function Loader( json, geojsons )
   // 全国版のsummaryをつくる
   const map_summary = new Map();
   const whole_summary = new Map();
-  for ( const sm of data.summary )
-  { // sm ... 都道府県のsummary
+  for ( const pref_code of Object.values( PREFECTURE_CODES ) )
+  {
+    const sm = data.summary.find( s => s.pref_code === pref_code ) || { pref_code, subtotal: [] }; // 都道府県のsummary
     const pref_summary = new Map();
     for ( const s of sm.subtotal )
     {

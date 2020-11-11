@@ -278,10 +278,10 @@ export function axios_instance( options )
 export const PREFECTURE_CODES = {
   hokkaido:1,aomori:2,iwate:3,miyagi:4,akita:5,yamagata:6,fukushima:7,ibaraki:8,tochigi:9,gunma:10,saitama:11,chiba:12,tokyo:13,kanagawa:14,niigata:15,toyama:16,ishikawa:17,fukui:18,yamanashi:19,nagano:20,gifu:21,shizuoka:22,aichi:23,mie:24,shiga:25,kyoto:26,osaka:27,hyogo:28,nara:29,wakayama:30,tottori:31,shimane:32,okayama:33,hiroshima:34,yamaguchi:35,tokushima:36,kagawa:37,ehime:38,kochi:39,fukuoka:40,saga:41,nagasaki:42,kumamoto:43,oita:44,miyazaki:45,kagoshima:46,okinawa:47
 };
-export async function load_geojson()
+export async function load_geojson( geojson )
 {
   // 都道府県ごとに分割する
-  return (await axios_instance().get( `${process.env.PUBLIC_URL}/japan.geojson` )).data.features.map( feature => {
+  return geojson.features.map( feature => {
     feature.properties.name = feature.properties.name.replace( /[Ōō]/g, 'o' ).toLowerCase();
     return {
       id: `layer-pref-${feature.properties.name}`,
@@ -319,3 +319,9 @@ export function count_days( from, to )
     c++;
   return c + 1;
 }
+
+export function setStateAsync( component, newstate )
+{
+  return new Promise( resolve => component.setState( (state, prop) => newstate, () => resolve( true ) ) );
+}
+
