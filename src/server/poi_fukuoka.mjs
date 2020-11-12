@@ -4,6 +4,7 @@ const config = global.covid19map.config;
 const ALTER_CITY_NAMES = [
   ['福岡市内', '福岡市'],
   ['久留米市内', '久留米市'],
+  ['小倉北区', '北九州市'],
   ['糟屋郡', '粕屋町' ],
   ['京都郡', '苅田町' ],
   ['八女郡', '広川町' ],

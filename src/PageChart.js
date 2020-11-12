@@ -35,6 +35,7 @@ const WHOLE_JAPAN_KEY = 'whole';
 const ALL_PREF_KEY = 'all';
 const EX_PREFECTURE_CODES = { ...PREFECTURE_CODES };
 EX_PREFECTURE_CODES[ WHOLE_JAPAN_KEY ] = 0;
+const CHART_LINE_RAW_ALPHA = 0.3; // 移動平均表示時の生値のα値
 
 class PageChart extends React.Component
 {
@@ -101,6 +102,11 @@ class PageChart extends React.Component
       } )
   }
 
+  chartLineColor( pref, is_avg )
+  {
+    return this.state.display_avarage ? (is_avg? this.hsl_color_dark( pref ) : this.hsl_color( pref, CHART_LINE_RAW_ALPHA )) : this.hsl_color( pref );
+  }
+
   _onClickPrefName = ev => {
     if ( ev.target.href )
       ev.preventDefault();  // <a href="#">をクリックしたとき何も起こらないようにする
@@ -134,8 +140,15 @@ class PageChart extends React.Component
         <p className="label">{label}</p>
         { payload.map( v => {
               const ns = v.name.split( '_' );
-              const pref_code = EX_PREFECTURE_CODES[ ns[ 0 ] ];
-              return { pref_code: pref_code + (ns[ 1 ] ? 10000 : 0), tag: (<p className="desc-small" key={v.name}>{`${this.state.srcdata?.map_summary.get( pref_code )?.name}${ns[ 1 ] ? `(${this.avarageName()})`:''} : ${agh.sprintf( ns[ 1 ] ? "%.1f" : "%d", v.value )}`}</p>) };
+              const pref = ns[ 0 ];
+              const is_avg = ns[ 1 ] != null;
+              const pref_code = EX_PREFECTURE_CODES[ pref ];
+              return { pref_code: pref_code + (is_avg ? 10000 : 0), tag: (
+                <p className="desc-small" key={v.name}>
+                  <div className="inline-box-palette" style={{backgroundColor: this.chartLineColor( pref, is_avg )}}>
+                  </div>
+                  <div>{`${this.state.srcdata?.map_summary.get( pref_code )?.name}${ is_avg ? `(${this.avarageName()})`:''} : ${agh.sprintf( is_avg ? "%.1f" : "%d", v.value )}`}</div>
+                </p>) };
             } )
             .sort( (a, b) => a.pref_code - b.pref_code )
             .map( v => v.tag ) }
@@ -244,8 +257,8 @@ class PageChart extends React.Component
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip content={<this._CustomTooltip />} />
-                  { Array.from( this.state.pref_checked.keys() ).map( pref => (<Line type="monotone" key={pref} dataKey={pref} dot={false} stroke={this.hsl_color( pref, this.state.display_avarage ? 0.3 : 1 )} />) ) }
-                  { this.state.display_avarage && Array.from( this.state.pref_checked.keys() ).map( pref => (<Line type="monotone" key={`${pref}_avg`} dataKey={`${pref}_avg`} dot={false} stroke={this.hsl_color_dark( pref )} />) ) }
+                  { Array.from( this.state.pref_checked.keys() ).map( pref => (<Line type="monotone" key={pref} dataKey={pref} dot={false} stroke={this.chartLineColor( pref )} />) ) }
+                  { this.state.display_avarage && Array.from( this.state.pref_checked.keys() ).map( pref => (<Line type="monotone" key={`${pref}_avg`} dataKey={`${pref}_avg`} dot={false} stroke={this.chartLineColor( pref, true )} />) ) }
                 </LineChart>
               </ResponsiveContainer>
             </div>

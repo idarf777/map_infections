@@ -106,7 +106,7 @@ export default function makeConfig()
     DEPLOY_DIRECTORY: path.join( appRoot.path, 'dist' ),
 
     CITY_NAME_DATABASE: 'map_infectors_server.sqlite3',
-
+    DATA_SINCE: new Date( '2020-01-01' ),
     TOKYO_CSV: {
       DATA_URI: 'https://raw.githubusercontent.com/idarf777/parse-tokyo-covid-report-pdf/master/csv/',
       DATA_BEGIN_AT: new Date( '2020-04-10' ),

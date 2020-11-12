@@ -372,7 +372,9 @@ body {
   margin: 0;
   color: #666;
   font-size: 14pt;
-  font-weight: 700
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
 }
 
 .recharts-tooltip-wrapper .custom-tooltip .desc {
@@ -385,6 +387,8 @@ body {
   color: #101010;
   font-size: 10pt;
   line-height: 12pt;
+  display: flex;
+  flex-direction: row;
 }
 
 .recharts-tooltip-wrapper .custom-tooltip .intro {
@@ -540,6 +544,14 @@ body {
   margin-top: 3pt;
   width: 10pt;
   height: 16pt;
+  background-color: blue;
+}
+.desc-small .inline-box-palette {
+  margin-top: 1pt;
+  margin-right: 1pt;
+  margin-bottom: 1pt;
+  width: 8pt;
+  height: 10pt;
   background-color: blue;
 }
 .pane-root {

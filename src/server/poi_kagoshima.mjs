@@ -60,7 +60,7 @@ async function parse_html( html )
       }
     } );
 
-    if ( !prevs[ 2 ].value.match( />.*?[ー-－─]/ ) )  // 取り消し線っぽい
+    if ( !prevs[ 2 ].value.match( />.*?[ー-－─]|欠番/ ) )  // 取り消し線っぽい
       csv.push( [ prevs[ 1 ].value, prevs[ 2 ].value ] );
   }
   return csv;

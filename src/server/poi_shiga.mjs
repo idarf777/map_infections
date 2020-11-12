@@ -7,7 +7,11 @@ const ALTER_CITY_NAMES = [
 async function parse_json( cr )
 {
   const json = JSON.parse( iconv.decode( cr.data, 'UTF8' ) );
-  return json[ 'patients' ][ 'data' ].map( p => [ new Date( p[ 'date' ] || p[ 'リリース日' ] ), p[ '居住地' ] ] );
+  return json[ 'patients' ][ 'data' ].map( p => {
+    const date = new Date( p[ 'date' ] || p[ 'リリース日' ] );
+    date.setHours( 0, 0, 0, 0 );
+    return [ date, p[ '居住地' ] ];
+  });
 }
 export default class PoiShiga extends BasePoi
 {
