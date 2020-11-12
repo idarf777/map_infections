@@ -73,7 +73,11 @@ export default function makeConfig()
     TOOLTIPS_CURSOR_OFFSET: 20,
     ANIMATION_BEGIN_AT: 30, // [day] 現在から遡る日数
     MAP_CLICK_PROPAGATION_TIME: 500, // [msec] 子コンポーネントをクリックしてからDeckコンポーネントのonClickが発火するまでがこの時間以下なら無視する (e.stopPropagation()が効かない)
-    MAP_PREFECTURE_ACTIVE_COLOR: [ 200, 100, 240 ],
+    MAP_PREFECTURE_ACTIVE_COLOR: [ 200, 100, 240, 128 ],
+    MAP_SUMMARY_NATIONWIDE_NAME: { ja: '全国', zh: '全國', en: 'nationwide', ko: '전국' },
+    MAP_SUMMARY_LOCALE_FALLBACK: 'en',
+    MAP_CHART_AVERAGE_DAYS: 10,  // 移動平均の日数 [day] 奇数であること
+    MAP_CHART_AVERAGE_NAME: { ja: '平均', zh: '平均', en: 'average', ko: '평균' },
 
     COOKIE_MAP_TOKEN: 'mbt',
     COOKIE_EXPIRE_DATE: 'edt',
@@ -102,7 +106,7 @@ export default function makeConfig()
     DEPLOY_DIRECTORY: path.join( appRoot.path, 'dist' ),
 
     CITY_NAME_DATABASE: 'map_infectors_server.sqlite3',
-
+    DATA_SINCE: new Date( '2020-01-01' ),
     TOKYO_CSV: {
       DATA_URI: 'https://raw.githubusercontent.com/idarf777/parse-tokyo-covid-report-pdf/master/csv/',
       DATA_BEGIN_AT: new Date( '2020-04-10' ),

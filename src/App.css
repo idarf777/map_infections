@@ -14,6 +14,7 @@ body {
   top: 0;
   left: 0;
   padding: 8pt;
+  cursor : default;
 }
 
 .map-overlay .map-overlay-inner {
@@ -73,10 +74,17 @@ body {
   font-size: xx-large;
 }
 
-.map-overlay-inner .blue button {
+.thin-border button {
+  border-width: 0.1em;
+}
+.lightblue button {
+  background-color: aliceblue;
+  color: darkblue;
+}
+.blue button {
   background-color: blue;
 }
-.map-overlay-inner .green button {
+.green button {
   background-color: green;
 }
 
@@ -112,6 +120,7 @@ body {
   line-height: 2;
   color: #6b6b76;
   overflow: auto;
+  cursor: default;
 }
 
 .navigation-control {
@@ -126,7 +135,7 @@ body {
   position: absolute;
   bottom: 2em;
   right: 0;
-  max-width: 400pt;
+  max-width: 800pt;
   background: #fff;
   box-shadow: 0 0.1em 0.2em rgba(0,0,0,0.3);
   padding: 1em 2em;
@@ -135,6 +144,7 @@ body {
   line-height: 2;
   color: #6b6b76;
   overflow: auto;
+  cursor: default;
 }
 
 .chart-title {
@@ -150,16 +160,22 @@ body {
   font-size: 10pt;
 }
 
+.chart-switch {
+  font-size: 12pt;
+  margin: 2pt;
+}
+
 .tooltip {
   position: absolute;
   zIndex: 1;
   pointerEvents: none;
+  opacity: 0.8;
 }
 .tooltip-desc {
   padding: 1em;
   font-size: 10pt;
   line-height: 1.6em;
-  color: #fff;
+  color: whitesmoke;
   border-radius: 0.3em;
   background: #000;
   width: 100%;
@@ -214,47 +230,120 @@ body {
   white-space: pre-wrap;
   font-size: small;
 }
-.scrollabletextbox {
-  height: 300pt;
-  font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
-  font-size: 82%;
-  overflow:scroll;
-}
 
-.left{
+.text-left{
   text-align: left;
 }
-.center{
+.text-center{
   text-align: center;
 }
-.right{
+.text-right{
   text-align: right;
 }
 
-table{
+.full-panel {
   width: 100%;
+  height: 100%;
+  background-color: whitesmoke;
+  font-size: 11pt;
+  line-height: 2;
+  color: #6b6b76;
+}
+
+.scrollable-textbox {
+  height: 300pt;
+  font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
+  overflow: scroll;
+}
+
+.chart-panel .scrollable-textbox {
+  height: 325pt;
+}
+
+.full-panel .scrollable-textbox {
+  height: 100%;
+}
+
+.scrollable-textbox table{
+  max-width: 500pt;
   border-collapse: collapse;
   border-spacing: 0;
 }
-table th{
+.scrollable-textbox table th{
   text-align: center;
   color:white;
   background: linear-gradient(#829ebc,#225588);
-  border-left: 1px solid #3c6690;
-  border-top: 1px solid #3c6690;
-  border-bottom: 1px solid #3c6690;
-  box-shadow: 0px 1px 1px rgba(255,255,255,0.3) inset;
-  width: 25%;
-  padding: 10px 0;
-  font-size: small;
+  border-left: 0.1em solid #3c6690;
+  border-top: 0.1em solid #3c6690;
+  border-bottom: 0.1em solid #3c6690;
+  box-shadow: 0 0.1em 0.1em rgba(255,255,255,0.3) inset;
+  max-width: 40%;
+  min-width: 60pt;
+  padding: 1em 0;
+  font-size: 8pt;
 }
-table th,table td{
-  padding: 1pt 0;
+.scrollable-textbox table th, .scrollable-textbox table td{
+  padding: 1pt 10pt;
   text-align: center;
-  font-size: small;
+  font-size: 9pt;
 }
-table tr:nth-child(odd){
+.scrollable-textbox table tr:nth-child(odd){
   background-color: #eee
+}
+
+.chart-panel-left {
+  float: left;
+}
+.chart-panel-right {
+  float: right;
+}
+
+.chart-checkbox {
+  float: right;
+}
+
+.chart-button-left {
+  float: left;
+  margin-left: 30pt;
+}
+.chart-button-right {
+  float: right;
+}
+.checkbox-input{
+  display: none;
+}
+.checkbox-parts{
+  padding-left: 20pt;
+  padding-top: 1pt;
+  position:relative;
+  margin-right: 0;
+}
+.checkbox-parts::before{
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 12pt;
+  height: 12pt;
+  border: 0.1em solid #999;
+  border-radius: 0.2em;
+}
+.checkbox-input:checked + .checkbox-parts{
+  /*color: #d01137;*/
+  font-weight: bold;
+}
+.checkbox-input:checked + .checkbox-parts::after{
+  content: "";
+  display: block;
+  position: absolute;
+  top: -0.2em;
+  left: 0.2em;
+  width: 0.4em;
+  height: 0.9em;
+  transform: rotate(40deg);
+  border-bottom: 0.2em solid #d01137;
+  border-right: 0.2em solid #d01137;
 }
 
 .sns-text {
@@ -268,3 +357,271 @@ table tr:nth-child(odd){
   font-size: 16pt;
 }
 
+.recharts-tooltip-wrapper .custom-tooltip {
+  max-width: 120pt;
+  margin: 0;
+  font-size: 12pt;
+  line-height: 18pt;
+  border: 0.1em solid #f5f5f5;
+  background-color: aliceblue;
+  opacity: 0.85;
+  padding: 1em
+}
+
+.recharts-tooltip-wrapper .custom-tooltip .label {
+  margin: 0;
+  color: #666;
+  font-size: 14pt;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+}
+
+.recharts-tooltip-wrapper .custom-tooltip .desc {
+  margin: 0;
+  color: #101010
+}
+
+.recharts-tooltip-wrapper .custom-tooltip .desc-small {
+  margin: 0;
+  color: #101010;
+  font-size: 10pt;
+  line-height: 12pt;
+  display: flex;
+  flex-direction: row;
+}
+
+.recharts-tooltip-wrapper .custom-tooltip .intro {
+  border-top: 1px solid #f5f5f5;
+  margin: 0
+}
+
+
+/* from https://webparts.cman.jp/button/onoff/ */
+
+  /* === ボタンを表示するエリア ============================== */
+.switchArea {
+  line-height    : 26pt;                /* 1行の高さ          */
+  letter-spacing : 0;                   /* 文字間             */
+  text-align     : center;              /* 文字位置は中央     */
+  font-size      : 10pt;                /* 文字サイズ         */
+
+  position       : relative;            /* 親要素が基点       */
+  margin         : auto;                /* 中央寄せ           */
+  width          : 50pt;               /* ボタンの横幅       */
+  background     : #fff;                /* デフォルト背景色   */
+}
+
+/* === チェックボックス ==================================== */
+.switchArea input[type="checkbox"] {
+  display        : none;            /* チェックボックス非表示 */
+}
+
+/* === チェックボックスのラベル（標準） ==================== */
+.switchArea label {
+  display        : block;               /* ボックス要素に変更 */
+  box-sizing     : border-box;          /* 枠線を含んだサイズ */
+  height         : 23pt;                /* ボタンの高さ       */
+  border         : 0.1em solid #999999;   /* 未選択タブのの枠線 */
+  border-radius  : 10pt;                /* 角丸               */
+}
+
+/* === チェックボックスのラベル（ONのとき） ================ */
+.switchArea input[type="checkbox"]:checked +label {
+  border-color   : #78bd78;             /* 選択タブの枠線     */
+}
+
+/* === 表示する文字（標準） ================================ */
+.switchArea label span:after{
+  content        : "OFF";               /* 表示する文字       */
+  padding        : 0 0 0 16pt;          /* 表示する位置       */
+  color          : #999999;             /* 文字色             */
+}
+
+/* === 表示する文字（ONのとき） ============================ */
+.switchArea  input[type="checkbox"]:checked + label span:after{
+  content        : "ON";                /* 表示する文字       */
+  padding        : 0 16pt 0 0;          /* 表示する位置       */
+  color          : #78bd78;             /* 文字色             */
+}
+
+/* === 丸部分のSTYLE（標準） =============================== */
+.switchArea #swImg {
+  position       : absolute;            /* 親要素からの相対位置*/
+  width          : 20pt;                /* 丸の横幅           */
+  height         : 20pt;                /* 丸の高さ           */
+  background     : #999999;             /* カーソルタブの背景 */
+  top            : 1pt;                 /* 親要素からの位置   */
+  left           : 1pt;                 /* 親要素からの位置   */
+  border-radius  : 10pt;                /* 角丸               */
+  transition     : .2s;                 /* 滑らか変化         */
+}
+
+/* === 丸部分のSTYLE（ONのとき） =========================== */
+.switchArea input[type="checkbox"]:checked ~ #swImg {
+  transform      : translateX(28pt);    /* 丸も右へ移動       */
+  background     : #78bd78;             /* カーソルタブの背景 */
+}
+
+
+.checkboxArea {
+  margin         : auto;                /* 中央寄せ           */
+  width          : 20pt;                /* ボタンの横幅       */
+}
+
+/* === チェックボックス ==================================== */
+.checkboxArea input[type="checkbox"] {
+  display        : none;            /* チェックボックス非表示 */
+}
+
+/* === チェックボックスのラベル（標準） ==================== */
+.checkboxArea label {
+  display        : block;               /* ボックス要素に変更 */
+  box-sizing     : border-box;          /* 枠線を含んだサイズ */
+  text-align     : center;              /* 文字位置は中央     */
+  border         : 0.2em solid #ccc;      /* 枠線(一旦四方向)   */
+  border-radius  : 0.3em;                 /* 角丸               */
+  height         : 20pt;                /* ボタンの高さ       */
+  font-size      : 6pt;                /* 文字サイズ         */
+  line-height    : 20pt;                /* 太字               */
+  font-weight    : bold;                /* 太字               */
+  background     : #eee;                /* 背景色             */
+  box-shadow     : 0.1em 0.1em 0.1em #888;    /* 影付け             */
+  transition     : .3s;                 /* ゆっくり変化       */
+  margin         : 0 0 5pt 0;
+}
+
+/* === ON側のチェックボックスのラベル（ONのとき） ========== */
+.checkboxArea label span:after{
+  content        : "OFF";               /* 表示する文字       */
+  color          : #aaa;
+}
+.checkboxArea input[type="checkbox"]:checked + label {
+  background     : #78bd78;             /* 背景色             */
+  box-shadow     : none;                /* 影を消す           */
+}
+.checkboxArea input[type="checkbox"]:checked + label span:after {
+  content        : "ON";                /* 表示する文字       */
+  color          : #fff;                /* 文字色             */
+}
+
+.list-prefectures {
+  width: 120pt;
+  padding: 0;
+  background-color: #eeeeff;
+  border:solid 1px #6666ff;
+  max-height: 90vh;
+  overflow: scroll;
+}
+
+.list-prefectures ul {
+  list-style-type: none;
+  margin: 0.4em auto;
+  padding: 0;
+}
+.list-prefectures ul li {
+  text-align: left;
+  font-size: 12pt;
+  line-height: 16pt;
+  margin-bottom: 0.1em;
+  padding-left: 0.8em;
+  border-bottom: solid #cccccc 0.1em;
+}
+.inline-box-container {
+  overflow: hidden;
+}
+.inline-box-container .inline-box {
+  float: left;
+  margin-right: 5pt;
+}
+.inline-box-low {
+  float: left;
+  margin-right: 5pt;
+  margin-top: 3pt;
+}
+.inline-box-palette {
+  float: left;
+  margin-top: 3pt;
+  width: 10pt;
+  height: 16pt;
+  background-color: blue;
+}
+.desc-small .inline-box-palette {
+  margin-top: 1pt;
+  margin-right: 1pt;
+  margin-bottom: 1pt;
+  width: 8pt;
+  height: 10pt;
+  background-color: blue;
+}
+.pane-root {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  overflow: auto;
+}
+.pane-child-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 110pt;
+  max-height: 100vh;
+  background-color: white;
+}
+.pane-child-right {
+  display: block;
+  justify-content: space-between;
+  width: 100%;
+  max-height: 100vh;
+  background-color: white;
+}
+.chart-box {
+  width: 100%;
+  height: 100%;
+  background: white;
+  font-size: 11pt;
+  line-height: 2;
+  color: #6b6b76;
+}
+
+.pane-child-left .date-selector {
+  background-color: white;
+  padding: 0.5em;
+}
+
+.date-selector input {
+  background-color: transparent;
+  display: inline-block;
+  width: 100%;
+  position: relative;
+  cursor: ew-resize;
+}
+
+.date-selector input #slider_date {
+  height: 2em;
+}
+
+.date-selector .date-begin label {
+  font-size: large;
+  float: left;
+}
+
+.date-selector .date-finish label {
+  font-size: large;
+  float: right;
+}
+
+.pane-child-right .chart-button-right {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding: 10px;  /* rechartがpxでしかmarginを指定できないので、やむなくpx */
+  width: 60pt;
+}
+.pane-child-right .chart-option-right {
+  position: absolute;
+  bottom: 0;
+  right: 100pt;
+  padding: 10px;  /* rechartがpxでしかmarginを指定できないので、やむなくpx */
+  width: 140pt;
+}

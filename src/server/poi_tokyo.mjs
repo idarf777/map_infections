@@ -196,7 +196,7 @@ export default class PoiTokyo
         if ( !map_city_infectors.has( name ) )
         {
           const poi = map_poi.get( name );
-          map_city_infectors.set( name, { city_code: poi?.city_cd, geopos: poi?.geopos(), name: `東京都${name}`, data: [] } );
+          map_city_infectors.set( name, { city_code: poi?.city_cd || 13000, geopos: poi?.geopos(), name: `東京都${name.replace( /^(都外|調査中)$/, "(生活地:$1)" )}`, data: [] } );
         }
         const vals = map_city_infectors.get( name ).data;
         const m = d[ 1 ].match( /(\d+)/ );
@@ -205,8 +205,8 @@ export default class PoiTokyo
         vals.push( { date: datetostring( date ), infectors: Math.max( (name === '調査中') ? (-Number.MAX_VALUE) : 0, subtotal - prev_subtotal ), subtotal: subtotal } );  // 調査中の値のみ減ることが許される
       }
     }
-    //for ( const spot of map_city_infectors.values() )
-    //  spot.data = spot.data.filter( d => d.infectors > 0 );
+    for ( const spot of map_city_infectors.values() )
+      spot.data = spot.data.filter( d => d.infectors > 0 || (d === spot.data[ 0 ] && d.subtotal > 0) ); // 最初の日はinfectors==0でもsubtotal>0かもしれない
 
     Log.info( 'parsed tokyo CSV' );
     return {
@@ -214,7 +214,7 @@ export default class PoiTokyo
       name: '東京都',
       begin_at: datetostring( timestamps[ 0 ] ),
       finish_at: datetostring( timestamps[ timestamps.length - 1 ] ),
-      spots: Array.from( map_city_infectors.values() )//.filter( spot => spot.data.reduce( (sum, v) => sum + v.infectors, 0 ) > 0 )
+      spots: Array.from( map_city_infectors.values() )
     };
   }
 }

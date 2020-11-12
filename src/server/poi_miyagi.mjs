@@ -2,6 +2,7 @@ import xlsx from 'xlsx';
 import {axios_instance, sanitize_poi_name} from "./util.mjs";
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
+import Log from "./logger.mjs";
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
@@ -10,12 +11,14 @@ const ALTER_CITY_NAMES = [
   ['気仙沼保健所管内', '気仙沼市'],
   ['石巻保健所管内', '石巻市'],
   ['登米保健所管内', '登米市'],
-  ['仙台市保健所管内', '仙台市']
+  ['仙台市保健所管内', '仙台市'],
+  ['仙南保健所管内', '大河原町'],
+  ['栗原保健所管内', '栗原市'],
 ];
 async function load_xlsx( data )
 {
   const html = iconv.decode( data, 'UTF8' );
-  const m = html.match( /<a .*?href="([^.]+?\.xlsx)".*?>新型コロナ患者状況一覧表/ );
+  const m = html.match( /<a .*?href="([^.<>"]+?\.xlsx)".*?>.+?患者状況一覧表/ );
   if ( m == null )
     throw new Error( "no uri on miyagi-pref" );
   let uri = m[ 1 ].trim();
@@ -32,7 +35,7 @@ async function parse_xlsx( promise )
   const book = xlsx.read( cr.data, { cellDates: true } );
   const wsName = book.SheetNames.find( name => name.startsWith( '患者状況一覧' ) );
   if ( wsName == null )
-    throw new Error( "no worksheet on miyagi-pref" );
+    throw new Error( "宮城県 : no worksheet" );
   const worksheet = book.Sheets[ wsName ];
   const range = worksheet['!ref'];
   const rows = parseInt( range.match( /^.+:[A-z]+(\d+)$/ )[ 1 ] );
@@ -43,6 +46,11 @@ async function parse_xlsx( promise )
     const cellCity = worksheet[ `D${row}` ];
     const isValidDate = cellDate?.t === 'd';
     const isValidCity = cellCity?.t === 's';
+    if ( cellCity.t === 'e' )
+    {
+      Log.info( `宮城県 : row ${row} is skipped` );
+      continue;
+    }
     if ( (!isValidDate && !isValidCity) || (!(isValidDate && isValidCity) && csv.length === 0) )
       break;
     csv.push( [ isValidDate ? cellDate.v : csv[ csv.length-1 ][ 0 ], isValidCity ? sanitize_poi_name( cellCity.v ) : csv[ csv.length-1 ][ 1 ] ] );

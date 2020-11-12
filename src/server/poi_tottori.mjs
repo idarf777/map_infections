@@ -4,7 +4,7 @@ import Log from "./logger.mjs";
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
-  ['', '']
+  ['西伯郡', '伯耆町']
 ];
 
 async function parse_html( html )
@@ -88,7 +88,7 @@ async function parse_html( html )
 
     //console.log( no + ":" + mon + " " + day + " " + city);
     while(true){
-      csv.push( [ new Date( 2020, mon - 1, day ), city.replace( /[\s]/g, '' ).replace( /[(（].+$/, '' ) ] );
+      csv.push( [ new Date( 2020, mon - 1, day ), city.replace( /[\s]|[(（].+$|<[^>]*?>/g, '' ) ] );
       if( no == to_no){
         break;
       }else{

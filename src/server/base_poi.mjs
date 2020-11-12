@@ -32,7 +32,7 @@ export default class BasePoi
     const { pref_name, alter_citys, cb_alter_citys, csv_uri, cb_load_csv, cb_parse_csv, csv_encoding, row_begin, min_columns, col_date, cb_date, col_city, cb_city, cb_name } = arg;
     const set_irregular = new Set();
 
-    Log.info( `getting ${pref_name} CSV...` );
+    Log.info( `${pref_name} : getting CSV...` );
     const map_poi = await DbPoi.getMap( pref_name );
     alter_citys && alter_citys.forEach( names => map_poi.set( names[ 0 ], map_poi.get( names[ 1 ] ) ) );
     cb_alter_citys && cb_alter_citys( map_poi );
@@ -40,9 +40,9 @@ export default class BasePoi
     const cache_dir = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_CACHE_DIR}/${pref_name}` );
     await mkdirp( cache_dir );
     await fs.writeFile( path.join( cache_dir, 'src' ), cr.data );
-    Log.info( `parsing ${pref_name} CSV...` );
+    Log.info( `${pref_name} parsing CSV...` );
     const rows = await ( cb_parse_csv ? cb_parse_csv( cr ) : parse_csv( iconv.decode( cr.data, csv_encoding || encoding.detect( cr.data ) ) ) );
-    const map_city_infectors = new Map();
+    const map_city_infectors = new Map(); // 都市名 - (UNIXタイムスタンプ - 感染者数のマップ)のマップ
     for ( let rownum = row_begin; rownum < rows.length; rownum++ )
     {
       const row = rows[ rownum ];
@@ -54,7 +54,7 @@ export default class BasePoi
       const city = sanitize_poi_name( (cb_city && cb_city( row )) || row[ col_city ] );
       if ( !map_poi.has( city ) )
       {
-        Log.info( `${pref_name}${city} not found, put into ${pref_name}` );
+        Log.info( `${pref_name} : ${city} not found at ${datetostring( date )}, put into ${pref_name}` );
         map_poi.set( city, map_poi.get( '' ) );
         set_irregular.add( city );
         continue;
@@ -80,20 +80,25 @@ export default class BasePoi
     const spots = Array.from( map_city_infectors.entries() ).map( pair => {
       let subtotal = 0;
       const key = pair[ 0 ];
-      const name = (cb_name && cb_name( key )) || (pref_name +  ((key === '') ? '(生活地:非公表)' : (set_irregular.has( key ) && `(生活地:${key})` ) || key) );
+      const name = (cb_name && cb_name( key )) || (pref_name +  ((!key || key === '') ? '(生活地:非公表)' : (set_irregular.has( key ) && `(生活地:${key})` ) || key) );
       const poi = map_poi.get( pair[ 0 ] );
       return {
         city_code: poi.city_cd * ((poi.city_cd < 1000) ? 1000 : 1),
         geopos: poi.geopos(),
         name,
         data: Array.from( pair[ 1 ].keys() ).sort().map( tm => {
+          if ( tm < config.DATA_SINCE.getTime()  ||  tm > today.getTime() )
+          {
+            Log.info( `${pref_name} : ${pair[ 0 ]} invalid date ${new Date( tm )}` );
+            return null;
+          }
           const infectors = pair[ 1 ].get( tm );
           subtotal += infectors;
           return { date: datetostring( tm ), infectors, subtotal }
-        } ).filter( e => e && (new Date( e.date ).getTime() <= today.getTime()) )
+        } ).filter( e => e )
       };
     } );
-    Log.info( `parsed ${pref_name} CSV` );
+    Log.info( `${pref_name} : CSV parse complete` );
     if ( spots.length === 0  ||  spots.reduce( (sum, spot) => (sum + spot.data?.length || 0), 0 ) === 0 )
       return {};
     const tms_begin = spots.map( spot => ((spot.data?.length || 0) > 0) && new Date( spot.data[ 0 ].date ) ).filter( e => e ).sort( (a,b) => a.getTime() - b.getTime() );

@@ -8,11 +8,12 @@ const ALTER_CITY_NAMES = [
   ['上十三保健所管内', '十和田市'],
   ['八戸市保健所管内', '八戸市'],
   ['青森市保健所管内', '青森市'],
+  ['弘前保健所管内', 'むつ市'],
 ];
 async function load_csv()
 {
   const resIndex = await axios_instance().get( config.AOMORI_CSV.INDEX_URI );
-  const m = resIndex.data.match( /陽性患者関係\.csv[\s\S]+?<a .*?class="download".*?href="([^.]+?\.csv)"/ );
+  const m = resIndex.data.match( /陽性患者関係\.csv[\s\S]+?<a .*?class="download".*?href="([^.<>"]+?\.csv)"/ );
   if ( m == null )
     throw new Error( "no uri on aomori-pref" );
   let uri = m[ 1 ].trim();

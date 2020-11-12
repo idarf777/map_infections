@@ -212,6 +212,7 @@ async function parse_html( html, pref_name )
           const host = config.TOKUSHIMA_PDF.INDEX_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+\/)/ )[ 1 ];
           uri = `${host}${uri}`;
         }
+        Log.info( `${pref_name} : receiving ${uri}` );
         const cr = await axios_instance(
           { responseType: 'arraybuffer', 
             headers:{
@@ -229,7 +230,7 @@ async function parse_html( html, pref_name )
   // デバッグし易くするため、再度 cache されているファイル名を読み込む 
   cache_dir = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_CACHE_DIR}/${pref_name}` );
   cachedFiles = [];
-  for( const file of await fs.readdir(cache_dir).catch(()=>{ LOG.error('???? no cached file')})){ 
+  for( const file of await fs.readdir(cache_dir).catch(()=>{ Log.error('???? no cached file')})){
     const fp = path.join(cache_dir, `/${file}`);
     cachedFiles.push(fp);
   }
@@ -245,7 +246,7 @@ async function parse_html( html, pref_name )
   let counter = 0;
   for( const theFile of cachedFiles ){
     //Log.debug("* " + theFile);
-    if(  theFile.match(/.(pdf|PDF)/) == null ){
+    if(  theFile.match(/.pdf/i) == null ){
       //Log.debug("** match");
       continue; // continue と同じ働き
     }

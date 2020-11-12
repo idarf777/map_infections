@@ -6,7 +6,7 @@ const config = global.covid19map.config;
 //const ALTER_CITY_NAMES = [['徳島県', ''], ['大阪市（帰省先：高松市）', '高松市'], ['岡山県', '']];
 function filter_city( city )
 {
-  const m = city.match( /帰省先[：:](.+?)[）)\s\S]/ );
+  const m = city.match( /帰省先[：:](.+?)[）)\s]/ );
   return m ? m[ 1 ] : city;
 }
 async function parse_json( cr )

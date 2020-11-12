@@ -11,7 +11,7 @@ import crypto from 'crypto';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
-import { datetostring, to_bool, axios_instance } from "./util.mjs";
+import {datetostring, to_bool, axios_instance, PREFECTURE_CODES} from "./util.mjs";
 // CSRFは後の課題とする
 
 // 北海道
@@ -106,7 +106,7 @@ app.use( `${config.SERVER_URI_PREFIX}/static`, express.static( path.join( config
 function merge_jsons( jsons )
 {
   let spots = [];
-  const progresses = {};
+  const progresses = new Map();
   jsons.forEach( json => {
     if ( !( json.begin_at && json.finish_at ) )
       return;
@@ -117,31 +117,30 @@ function merge_jsons( jsons )
       json.finish_at = null;
       return;
     }
-    spots = spots.concat( curspots.filter( spot => !['東京都調査中', '東京都都外'].includes( spot.name ) ) ); // 表示からは都外、調査中を除外
+    spots = spots.concat( curspots );
     // 都道府県単位の推移を計算する
-    const map_ifc = new Map();
-    curspots.forEach( spot => spot.data.forEach( d => map_ifc.set( d.date, Math.max( 0, (map_ifc.get( d.date ) || 0) + d.infectors ) ) ) );   // 同日の新規感染者数の合計
+    const map_ifc = curspots.reduce( ( map, spot ) => spot.data.reduce( ( map, d ) => {
+      const c = map.get( d.date );
+      return map.set( d.date, { infectors: Math.max( 0, c?.infectors || 0 ) + d.infectors, subtotal: (c?.subtotal || 0) + d.subtotal } );   // "東京都調査中"のinfectorsは負の値になり得る
+    }, map ), new Map() );
     const sm = [];
-    let st = 0;
     for ( const date = new Date( json.begin_at ), enddate = new Date( json.finish_at ); date.getTime() <= enddate.getTime(); date.setDate( date.getDate() + 1 ) )
     {
       const sd = datetostring( date );
-      const n = map_ifc.get( sd ) || 0;
-      st += n;
-      if ( n > 0 )
-        sm.push( { date: sd, infectors: n, subtotal: st } );
+      const cur = map_ifc.get( sd );
+      cur && sm.push( { ...cur, date: sd } );
     }
-    progresses[ json.pref_code ] = sm;
+    progresses.set( json.pref_code, sm );
   } );
   if ( spots.length === 0 )
     throw new Error( 'no data to fit' );
-  const summary = jsons.filter( json => json && Object.keys( json ).length > 0 ).map( json => { return { pref_code: json.pref_code, name: json.name, begin_at: json.begin_at, finish_at: json.finish_at, subtotal: progresses[ json.pref_code ] } } );
+  const summary = jsons.filter( json => json && Object.keys( json ).length > 0 ).map( json => { return { pref_code: json.pref_code, name: json.name, begin_at: json.begin_at, finish_at: json.finish_at, subtotal: progresses.get( json.pref_code ) } } );
+
+  // 欠けている都道府県を検出して表示する
   const suset = summary.reduce( ( set, s ) => set.add( s.pref_code ), new Set() );
-  for( let curpref = 1; curpref <= 47; curpref++ )
-  {
-    if ( !suset.has( curpref ) )
-      DbPoi.get( curpref ).then( row => Log.info( `pref_code = ${curpref} (${row.name}) is missing` ) );
-  }
+  for( const pref_code of Object.values( PREFECTURE_CODES ) )
+     !suset.has( pref_code ) && DbPoi.get( pref_code ).then( row => Log.info( `pref_code = ${pref_code} (${row.name}) is missing` ) );
+
   return {
     begin_at: datetostring( Math.min( ...jsons.map( json => json.begin_at && new Date( json.begin_at ).getTime() ).filter( e => e ) ) ),
     finish_at: datetostring( Math.max( ...jsons.map( json => json.finish_at && new Date( json.finish_at ).getTime() ).filter( e => e ) ) ),
@@ -259,7 +258,7 @@ const CITIES = [
   [ 'hokkaido', PoiHokkaido ],
 ];
 const AVAILABLE_CITIES = [
-  //'tokyo'
+  //'shiga'
 ];
 
 async function busy_lock()

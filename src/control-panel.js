@@ -1,50 +1,65 @@
 import * as React from 'react';
 import {PureComponent} from 'react';
 import { datetostring } from "./server/util.mjs";
+import GridView from "./grid-view.js";
 //import Log from './logger.js';
 
 export default class ControlPanel extends PureComponent
 {
   state = {
-    license_view: 0,
-    description_view: 0
+    license_view: false,
+    prefecture_view: false,
+    description_view: false,
   };
   SHOW_HIDE_STYLES = [ "hidden", "show" ];
-  _onClickShowDescription = e => {
-    this.setState( { description_view: this.state.description_view ^ 1 } );
+  _onClickShowPrefecture = e => {
     e.stopPropagation();
+    this.setState( { prefecture_view: !this.state.prefecture_view } );
+    this.props.onClickRelay( e );
+  }
+  _onClickShowDescription = e => {
+    e.stopPropagation();
+    this.setState( { description_view: !this.state.description_view } );
+    this.props.onClickRelay( e );
   }
   _onClickShowLicense = e => {
-    this.setState( { license_view: this.state.license_view ^ 1 } );
     e.stopPropagation();
+    this.setState( { license_view: !this.state.license_view } );
+    this.props.onClickRelay( e );
   }
+  _onClickNull = e => {
+    e.stopPropagation();
+    this.props.onClickRelay( e );
+  };
 
   render() {
     return (
-      <div className="control-panel">
-        <div className="right"><h3>{this.props.apimsg}</h3></div>
-        <div className="right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowDescription}>ABOUT DATA...</button></div></div>
-        <div className={ this.SHOW_HIDE_STYLES[ this.state.description_view ] }>
-          <div className="scrollabletextbox">
-            <table>
-              <thead>
-                <tr><th>prefecture</th><th>first</th><th>last</th></tr>
-              </thead>
-              <tbody>
-              {
-                this.props.srcdata && this.props.srcdata.summary.concat( Array.from( this.props.srcdata.places.values() ) ).sort( (a, b) => (a.city_code || a.pref_code) - (b.city_code || b.pref_code) )
-                  .map( (v, i) => {
-                    return <tr key={i}><td>{v.name}</td><td>{datetostring(v.begin_at)}</td><td>{datetostring(v.finish_at)}</td></tr>
-                  } )
-              }
-              </tbody>
-            </table>
+      <div className="control-panel" onClick={this._onClickNull}>
+        <div className="text-right"><h3>{this.props.apimsg}</h3></div>
+        <div className="text-right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowPrefecture}>ABOUT DATA...</button></div></div>
+        <div className={ this.SHOW_HIDE_STYLES[ this.state.prefecture_view ? 1 : 0 ] }>
+          <div className="text-right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowDescription}>DETAILS...</button></div></div>
+          <div className={ this.SHOW_HIDE_STYLES[ this.state.description_view ? 0 : 1 ] }>
+            <GridView
+              header={['place', 'first', 'last']}
+              data={this.props.srcdata?.summary.concat( this.props.srcdata?.places ).filter( v => v.pref_code ).sort( (a, b) => a.pref_code - b.pref_code )}
+              data_keys={['name', 'begin_at', 'finish_at']}
+              data_key_column={'place'}
+              />
+          </div>
+          <div className={ this.SHOW_HIDE_STYLES[ this.state.description_view ? 1 : 0 ] }>
+            <GridView
+              header={['place', 'first', 'last']}
+              data={this.props.srcdata?.summary.concat( this.props.srcdata?.places ).filter( v => !v.pref_code ).sort( (a, b) => a.city_code - b.city_code )}
+              data_keys={['name', 'begin_at', 'finish_at']}
+              data_key_column={'place'}
+            />
           </div>
         </div>
 
-        <div className="right"><button className="btn-square-small" onClick={this._onClickShowLicense}>LICENSE...</button></div>
-        <div className={ this.SHOW_HIDE_STYLES[ this.state.license_view ] }>
-          <div className="scrollabletextbox">
+        <div className="text-right"><button className="btn-square-small" onClick={this._onClickShowLicense}>LICENSE...</button></div>
+        <div className={ this.SHOW_HIDE_STYLES[ this.state.license_view ? 1 : 0 ] }>
+          <div className="scrollable-textbox">
             <div className="pre">
               MIT License<br/>
                 <br/>
@@ -111,7 +126,7 @@ export default class ControlPanel extends PureComponent
 */}
         </div>
 
-        <div className="right">
+        <div className="text-right">
           <div className="sns-text">
             SHARE:
           </div>
