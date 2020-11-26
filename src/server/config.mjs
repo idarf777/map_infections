@@ -79,6 +79,8 @@ export default function makeConfig()
     MAP_CHART_AVERAGE_DAYS: 10,  // 移動平均の日数 [day] 奇数であること
     MAP_CHART_AVERAGE_NAME: { ja: '平均', zh: '平均', en: 'average', ko: '평균' },
 
+    CREDIT_NAME: "© Shizentai Factory Co.",
+
     COOKIE_MAP_TOKEN: 'mbt',
     COOKIE_EXPIRE_DATE: 'edt',
     COOKIE_EXPIRE: 900,
@@ -277,7 +279,7 @@ export default function makeConfig()
       LICENSE: license.FREE
     },
     EHIME_CSV: {
-      DATA_URI: 'https://www.pref.ehime.jp/opendata-catalog/dataset/2174/resource/7057/380008_ehime_covid19_patients.csv',
+      DATA_URI: 'https://www.pref.ehime.jp/opendata-catalog/dataset/2174/resource/7068/380008_ehime_covid19_patients.csv',
       LICENSE: license.CC
     },
 

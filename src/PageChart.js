@@ -25,6 +25,7 @@ import {
   Line
 } from "recharts";
 import {Link} from "react-router-dom";
+import ControlPanel from "./control-panel.js";
 
 const config = makeConfig();
 window.covid19map = { config: config };
@@ -204,6 +205,7 @@ class PageChart extends React.Component
     return (
       <div className="full-panel">
         <div className="pane-root">
+          <ControlPanel containerComponent={this.props.containerComponent} srcdata={this.state.srcdata} share={'chart'} />
           <div className="pane-child-left">
             { (this.state.data_api_loaded !== DATA_API_STATUS.loaded) ?
                 (<div className="text-left"><h3>{this.state.data_api_loaded}</h3></div>)
@@ -252,7 +254,7 @@ class PageChart extends React.Component
           <div className="pane-child-right">
             <div className="chart-box">
               <ResponsiveContainer>
-                <LineChart data={data} margin={{top: 10, right: 50, left: 50, bottom: 50}} >
+                <LineChart data={data}  margin={{top: 20, right: 40, left: 20, bottom: 0}}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
@@ -262,16 +264,23 @@ class PageChart extends React.Component
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <div className="chart-button-right">
-              <div className="green">
-                <Link to="/map"><button className="btn-square-small">VIEW MAP</button></Link>
+            <div className="chart-bottom-border">
+              <div className="chart-credit">
+                {config.CREDIT_NAME}
               </div>
-            </div>
-            <div className="chart-option-right">
-              <label>
-                <input type="checkbox" className="checkbox-input" checked={this.state.display_avarage} onChange={this._onChangeDrawAvg} />
-                <span className="checkbox-parts">{`Draw ${config.MAP_CHART_AVERAGE_DAYS} days Average`}</span>
-              </label>
+              <div className="chart-bottom">
+                <div className="chart-option-right">
+                  <label>
+                    <input type="checkbox" className="checkbox-input" checked={this.state.display_avarage} onChange={this._onChangeDrawAvg} />
+                    <span className="checkbox-parts">{`Draw ${config.MAP_CHART_AVERAGE_DAYS} days Average`}</span>
+                  </label>
+                </div>
+                <div className="chart-button-right">
+                  <div className="green">
+                    <Link to="/map"><button className="btn-square-small">VIEW MAP</button></Link>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

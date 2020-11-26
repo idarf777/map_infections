@@ -257,6 +257,15 @@ class PageMap extends React.Component
 
   onLoadMap( e )
   {
+    // クレジット表示
+    const credit = document.getElementsByClassName('mapboxgl-ctrl-attrib-inner');
+    if ( credit[ 0 ] && !credit[ 0 ].innerText.match( new RegExp( config.CREDIT_NAME ) ) )
+    {
+      const span = document.createElement( 'span' );
+      span.innerText = config.CREDIT_NAME;
+      credit[ 0 ].appendChild( span );
+    }
+
     try
     {
       // HashRouterで遷移するとなぜかmultiple loadでエラーになる
@@ -398,7 +407,7 @@ class PageMap extends React.Component
         <div className="navigation-control">
           <NavigationControl />
         </div>
-        <ControlPanel containerComponent={this.props.containerComponent} apimsg={this.state.data_api_loaded} srcdata={this.state.srcdata} onClickRelay={this._onClickOnChild} />
+        <ControlPanel containerComponent={this.props.containerComponent} apimsg={(this.state.data_api_loaded !== DATA_API_STATUS.loaded) && this.state.data_api_loaded} srcdata={this.state.srcdata} onClickRelay={this._onClickOnChild} share={'map'} />
         <ChartPanel containerComponent={this.props.containerComponent}
                     srcdata={this.state.srcdata}
                     summary={this.state.selectedSummary}

@@ -7,6 +7,9 @@ body {
   height: 100vh;
 }
 
+.mapbox-improve-map {
+  display: none;
+}
 .map-overlay {
   font: medium 'Helvetica Neue', Arial, Helvetica, sans-serif;
   position: absolute;
@@ -18,7 +21,7 @@ body {
 }
 
 .map-overlay .map-overlay-inner {
-  background-color: #fff;
+  background-color: #FFFFFFb0;
   box-shadow: 0 0.1em 0.2em rgba(0, 0, 0, 0.1);
   border-radius: 0.3em;
   padding: 0.5em;
@@ -112,7 +115,7 @@ body {
   top: 0;
   right: 0;
   max-width: 400pt;
-  background: #fff;
+  background: #FFFFFFb0;
   box-shadow: 0 0.1em 0.2em rgba(0,0,0,0.3);
   padding: 1em 2em;
   margin: 8pt;
@@ -121,6 +124,7 @@ body {
   color: #6b6b76;
   overflow: auto;
   cursor: default;
+  z-index: 1;
 }
 
 .navigation-control {
@@ -128,7 +132,7 @@ body {
   bottom: 2em;
   left: 0;
   padding: 2em;
-  zIndex: 1;
+  z-index: 1;
 }
 
 .chart-panel {
@@ -136,7 +140,7 @@ body {
   bottom: 2em;
   right: 0;
   max-width: 800pt;
-  background: #fff;
+  background: #FFFFFFb0;
   box-shadow: 0 0.1em 0.2em rgba(0,0,0,0.3);
   padding: 1em 2em;
   margin: 8pt;
@@ -148,15 +152,16 @@ body {
 }
 
 .chart-title {
+  background: white;
   text-align: center;
   font-size: 14pt;
   font-weight: bold;
 }
 
 .chart-area {
+  background: white;
   width: 350pt;
   height: 300pt;
-  margin: 2pt;
   font-size: 10pt;
 }
 
@@ -167,8 +172,8 @@ body {
 
 .tooltip {
   position: absolute;
-  zIndex: 1;
-  pointerEvents: none;
+  z-index: 1;
+  pointer-events: none;
   opacity: 0.8;
 }
 .tooltip-desc {
@@ -251,17 +256,10 @@ body {
 }
 
 .scrollable-textbox {
-  height: 300pt;
+  max-height: 300pt;
   font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
   overflow: scroll;
-}
-
-.chart-panel .scrollable-textbox {
-  height: 325pt;
-}
-
-.full-panel .scrollable-textbox {
-  height: 100%;
+  background-color: #FFFFFF;
 }
 
 .scrollable-textbox table{
@@ -569,7 +567,8 @@ body {
   background-color: white;
 }
 .pane-child-right {
-  display: block;
+  display: flex;
+  flex-direction: column;
   justify-content: space-between;
   width: 100%;
   max-height: 100vh;
@@ -611,17 +610,36 @@ body {
   float: right;
 }
 
+.pane-child-right .chart-bottom-border {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.pane-child-right .chart-credit {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding-top: 10pt;
+  padding-left: 30pt;
+  color: #6b6b76;
+  font-size: 8pt;
+  font-weight: 600;
+  font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+.pane-child-right .chart-bottom {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
 .pane-child-right .chart-button-right {
-  position: absolute;
   bottom: 0;
   right: 0;
-  padding: 10px;  /* rechartがpxでしかmarginを指定できないので、やむなくpx */
+  padding: 6pt;
   width: 60pt;
 }
 .pane-child-right .chart-option-right {
-  position: absolute;
   bottom: 0;
   right: 100pt;
-  padding: 10px;  /* rechartがpxでしかmarginを指定できないので、やむなくpx */
+  padding: 6pt;
   width: 140pt;
 }

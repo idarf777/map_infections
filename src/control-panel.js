@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {PureComponent} from 'react';
-import { datetostring } from "./server/util.mjs";
+//import { datetostring } from "./server/util.mjs";
 import GridView from "./grid-view.js";
 //import Log from './logger.js';
 
@@ -15,27 +15,27 @@ export default class ControlPanel extends PureComponent
   _onClickShowPrefecture = e => {
     e.stopPropagation();
     this.setState( { prefecture_view: !this.state.prefecture_view } );
-    this.props.onClickRelay( e );
+    this.props.onClickRelay && this.props.onClickRelay( e );
   }
   _onClickShowDescription = e => {
     e.stopPropagation();
     this.setState( { description_view: !this.state.description_view } );
-    this.props.onClickRelay( e );
+    this.props.onClickRelay && this.props.onClickRelay( e );
   }
   _onClickShowLicense = e => {
     e.stopPropagation();
     this.setState( { license_view: !this.state.license_view } );
-    this.props.onClickRelay( e );
+    this.props.onClickRelay && this.props.onClickRelay( e );
   }
   _onClickNull = e => {
     e.stopPropagation();
-    this.props.onClickRelay( e );
+    this.props.onClickRelay && this.props.onClickRelay( e );
   };
 
   render() {
     return (
       <div className="control-panel" onClick={this._onClickNull}>
-        <div className="text-right"><h3>{this.props.apimsg}</h3></div>
+        {this.props.apimsg && (<div className="text-right"><h3>{this.props.apimsg}</h3></div>)}
         <div className="text-right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowPrefecture}>ABOUT DATA...</button></div></div>
         <div className={ this.SHOW_HIDE_STYLES[ this.state.prefecture_view ? 1 : 0 ] }>
           <div className="text-right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowDescription}>DETAILS...</button></div></div>
@@ -131,10 +131,10 @@ export default class ControlPanel extends PureComponent
             SHARE:
           </div>
           <div className="sns-icon">
-            <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.shizentai-factory.com/covid19map/index.html" target="_blank" rel="noopener noreferrer"><i title="Share by facebook" className="fa fa-facebook fa-big"></i></a>
+            <a href={`https://www.facebook.com/sharer/sharer.php?u=https://www.shizentai-factory.com/covid19map/#/${this.props.share}`} target="_blank" rel="noopener noreferrer"><i title="Share by facebook" className="fa fa-facebook fa-big"></i></a>
           </div>
           <div className="sns-icon">
-            <a href="https://twitter.com/intent/tweet?url=https://www.shizentai-factory.com/covid19map/index.html&text=COVID-19+NUMBER+OF+INFECTED+MAP+ANIMATION" target="_blank" rel="noopener noreferrer"><i title="Share by Twitter" className="fab fa-twitter-square"></i></a>
+            <a href={`https://twitter.com/intent/tweet?url=https://www.shizentai-factory.com/covid19map/#/${this.props.share}&text=COVID-19+NUMBER+OF+INFECTED+MAP+ANIMATION`} target="_blank" rel="noopener noreferrer"><i title="Share by Twitter" className="fab fa-twitter-square"></i></a>
           </div>
         </div>
       </div>
