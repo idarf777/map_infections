@@ -88,7 +88,7 @@ async function getPdfText( data )
       if( index >= items.length){
         break;
       }
-      if( m == null && m1 == null　&&  m2 == null){
+      if( m == null && m1 == null && m2 == null){
         continue;
       }
       if( m1 == null & m !=null ){
@@ -110,6 +110,7 @@ async function getPdfText( data )
         // PDF の表の形式 例目/年代/性別/職業/居住地
         let x ;
         let x_width = 35;
+        const y_threshold = 12;
         while(true){
           // 居住地が書かれている x 座標を得る。
           m1 = items[index].str.match(/保健所管内/);  // こちらが居住地より後に出る。
@@ -124,7 +125,7 @@ async function getPdfText( data )
           break;
         }
 
-        while(true){
+        for ( let prev_y=0; ; ){
           m1 = items[index];
           m2 = items[index].str.match(/\d+? +?\d+?代 +(男|女)( +)(.+?)( +)(.+?)$/); 
             // 571829.pdf 用 57  30代 女  物産店店員   徳島" にマッチさせるために作った物が
@@ -135,6 +136,10 @@ async function getPdfText( data )
           }
           if( x-x_width <= m1.transform[4]  &&  m1.transform[4] <= x+x_width){
             // 居住地の座標なら居住地
+            const y_diff = Math.abs( prev_y - m1.transform[ 5 ] );
+            prev_y = m1.transform[ 5 ];
+            if ( y_diff <= y_threshold )
+              continue;  // 1つのマス内に書かれた、居住地についての解説と見なす
             city = m1.str;
             csv.push( [new Date( 2020, mon-1, day), city] );
             continue;
