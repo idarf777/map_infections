@@ -72,10 +72,11 @@ class PageMap extends React.Component
 
   getElevationValue( d, opt )
   {
+    //Array.isArray( d ) && Log.debug( d.map( v => v[ 0 ] ).join( ' ' ) );
     const c = Math.max( Math.min( this.state.viewState?.zoom || config.MAP_ZOOM, 11 ), 7 );// 11->-1 7->1
     const coef = Math.pow( 10, (4 - (c - 7))/4.0 ); // zoom=7で1.0 11で0.1
-    const getval = id => (this.state && (opt?.is_real ? this.state.inf[ id ] : coef*Math.min( this.state.inf_a[ id ], config.MAX_INFECTORS ) )) || 0;
-    return Array.isArray( d ) ? d.reduce( (acc, cur) => getval( cur[ 0 ] ) + acc, 0 ) : getval( d );
+    const getval = id => (this.state && (opt?.is_real ? this.state.inf[ id ] : (coef*this.state.inf_a[ id ]))) || 0;
+    return Math.min( Array.isArray( d ) ? d.reduce( (acc, cur) => getval( cur[ 0 ] ) + acc, 0 ) : getval( d ), opt?.is_real ? Number.MAX_VALUE : config.MAX_INFECTORS );
   };
   getColorValue( d )
   {
