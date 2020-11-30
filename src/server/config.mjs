@@ -15,9 +15,10 @@ export const LOGLEVEL = Object.freeze( {
 } );
 export default function makeConfig()
 {
+  const buildmode = process.env.NODE_ENV || 'development';
   if ( !process.env.REACT_APP_APPNAME )
   {
-    let path = `${appRoot.path}/.env.${process.env.NODE_ENV || 'development'}`;
+    let path = `${appRoot.path}/.env.${buildmode}`;
     if ( fs.statSync( path + '.local' ) )
       path += '.local';
     dotenv.config( { path } );
@@ -27,7 +28,7 @@ export default function makeConfig()
 
   const is_debug = to_bool( env.REACT_APP_DEBUG );
   const DEFAULT_SERVER_PORT = 3001;
-  const REDIS_ROOT = 'covid19map_';
+  const REDIS_ROOT = `covid19map_${buildmode}_`;
   const SERVER_URI_PREFIX = env.REACT_APP_SERVER_URI_PREFIX || '';
 
   const license = Object.freeze( {
@@ -280,7 +281,7 @@ export default function makeConfig()
       LICENSE: license.FREE
     },
     EHIME_CSV: {
-      DATA_URI: 'https://www.pref.ehime.jp/opendata-catalog/dataset/2174/resource/7068/380008_ehime_covid19_patients.csv',
+      DATA_URI: 'https://www.pref.ehime.jp/opendata-catalog/dataset/2174/resource/7070/380008_ehime_covid19_patients.csv',
       LICENSE: license.CC
     },
 

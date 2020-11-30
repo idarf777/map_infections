@@ -382,6 +382,8 @@ function sendIndex( req, res )
 app.get( `${config.SERVER_URI_PREFIX}/*`, sendIndex );
 app.get( config.SERVER_URI_PREFIX, sendIndex );
 
-app.listen( config.SERVER_PORT, () => {
-  Log.info( `server is running at port ${config.SERVER_PORT}` );
-});
+busy_unlock().then( () =>
+  app.listen( config.SERVER_PORT, () => {
+    Log.info( `server is running at port ${config.SERVER_PORT}` );
+  })
+);

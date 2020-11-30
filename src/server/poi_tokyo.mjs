@@ -140,7 +140,7 @@ export default class PoiTokyo
 {
   static async load()
   {
-    const cache_dir = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_CACHE_DIR}/tokyo` );
+    const cache_dir = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_CACHE_DIR}/東京都` );
     await mkdirp( cache_dir );
     // TOKYO_CSV.DATA_BEGIN_AT以降の取得可能なCSVをすべて取得する
     Log.info( 'getting tokyo CSV...' );
