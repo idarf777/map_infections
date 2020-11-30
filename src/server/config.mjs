@@ -157,6 +157,7 @@ export default function makeConfig()
     },  // CSVリンクをスクレイピングで探す
     IWATE_HTML: {
       DATA_URI: 'https://www.pref.iwate.jp/kurashikankyou/iryou/covid19/1029635/index.html',
+      DATA2_URI: 'https://www.pref.iwate.jp/kurashikankyou/iryou/covid19/1034904/index.html',
       LICENSE: license.FREE
     },  // スクレイピングでデータを拾う
     MIYAGI_XLSX: {
@@ -192,7 +193,7 @@ export default function makeConfig()
       },
     },
     AICHI_CSV: {
-      DATA_URI: 'https://raw.githubusercontent.com/code4nagoya/covid19/master/data/patients.csv',
+      DATA_URI: 'https://raw.githubusercontent.com/code4nagoya/covid19/development/data/patients.csv',
       LICENSE: license.MIT
     },
     NAGANO_HTML: {
@@ -301,7 +302,7 @@ export default function makeConfig()
       LICENSE: license.CC
     },
     KUMAMOTO_JSON: {
-      DATA_URI: 'https://raw.githubusercontent.com/codeforkumamoto/covid19/development/data/data.json',
+      DATA_URI: 'https://raw.githubusercontent.com/codeforkumamoto/covid19/master/data/data.json',
       LICENSE: license.MIT
     }, 
     MIYAZAKI_HTML: {

@@ -29,12 +29,15 @@ async function parse_xlsx( promise )
   const csv = [];
   for ( let row = 4; row < rows; row++ )
   {
+    const cellNumber = worksheet[ `A${row}` ];
     const cellDate = worksheet[ `C${row}` ];
     const cellCity = worksheet[ `F${row}` ];
     const isValidDate = cellDate?.t === 'd';
     const isValidCity = cellCity?.t === 's';
-    if ( (!isValidDate && !isValidCity) || (!(isValidDate && isValidCity) && csv.length === 0) )
+    if ( cellNumber?.t !== 'n' || typeof cellNumber?.v !== "number" )
       break;
+    if ( (!isValidDate && !isValidCity) || (!(isValidDate && isValidCity) && csv.length === 0) )
+      continue;
     csv.push( [ isValidDate ? cellDate.v : csv[ csv.length-1 ][ 0 ], isValidCity ? sanitize_poi_name( cellCity.v ) : csv[ csv.length-1 ][ 1 ] ] );
   }
   return csv;

@@ -1,10 +1,11 @@
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
+import {axios_instance} from "./util.mjs";
 
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [];
-async function parse_html( html )
+async function parse_html_impl( html )
 {
   const csv = [];
   const rootm = html.match( /に関する情報[\s\S]+?<\/tr>([\s\S]+?)<\/tbody>/ );
@@ -24,9 +25,15 @@ async function parse_html( html )
       continue;
     const am = mr[ 2 ].match( /[:：]([^)）]+)/ );
     const city = am ? am[ 1 ] : mr[ 2 ];
-    csv.push( [ new Date( parseInt( dm[ 1 ] ) + 2018, parseInt( dm[ 2 ] ) - 1, parseInt( dm[ 3 ] ) ), city ] );
+    csv.push( [ new Date( parseInt( dm[ 1 ] ) + 2018, parseInt( dm[ 2 ] ) - 1, parseInt( dm[ 3 ] ) ), city.replace( /<.+?>/g, '' ) ] );
   }
   return csv.sort( (a, b) => a[ 0 ].getTime() - b[ 0 ].getTime() );
+}
+async function parse_html( html )
+{
+  const patients = await parse_html_impl( html );
+  const cr = await axios_instance( { responseType: 'arraybuffer' } ).get( config.IWATE_HTML.DATA2_URI );
+  return patients.concat( await parse_html_impl( iconv.decode( cr.data, 'UTF8' ) ) );
 }
 export default class PoiIwate extends BasePoi
 {
