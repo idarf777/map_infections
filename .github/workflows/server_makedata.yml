@@ -22,7 +22,6 @@ jobs:
         node-version: [14.x]
 
     steps:
-      - uses: actions/checkout@v2
       - name: install sqlite3
         run: |
           sudo apt install libsqlite3-dev
@@ -31,10 +30,11 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-        run: |
+      - run: |
           npm i
       - name: fetch repository
-        run: |
+        uses: actions/checkout@v2
+      - run: |
           git config --global user.email "aida@shizentai-factory.com"
           git config --global user.name "Takeshi Aida (CI)"
           git remote -v
@@ -45,7 +45,8 @@ jobs:
         run: |
           npm run server_ci
       - name: sync repository
-        run: |
+        uses: actions/checkout@v2
+      - run: |
           git add json/cache/東京都/*.csv json/cache/徳島県/*.pdf
           git commit -m 'Update by GitHub Actions'
           git push origin ${GITHUB_REF##*/}
