@@ -22,31 +22,31 @@ jobs:
         node-version: [14.x]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: install sqlite3
-      run: |
-        sudo apt install libsqlite3-dev
-        dpkg -L libsqlite3-dev
-    - name: install Node.js and packages
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-      run: |
-        npm i
-    - name: fetch repository
-      run: |
-        git config --global user.email "aida@shizentai-factory.com"
-        git config --global user.name "Takeshi Aida (CI)"
-        git remote -v
-        git status
-        git fetch origin
-        git checkout ${GITHUB_REF##*/}
-    - name: Makedata
-      run: |
-        npm run server_ci
-    - name: sync repository
-      run: |
-        git add json/cache/ìåãûìs/*.csv json/cache/ìøìáåß/*.pdf
-        git commit -m 'Update by GitHub Actions'
-        git push origin ${GITHUB_REF##*/}
+      - uses: actions/checkout@v2
+      - name: install sqlite3
+      - run: |
+          sudo apt install libsqlite3-dev
+          dpkg -L libsqlite3-dev
+      - name: install Node.js and packages
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+        run: |
+          npm i
+      - name: fetch repository
+        run: |
+          git config --global user.email "aida@shizentai-factory.com"
+          git config --global user.name "Takeshi Aida (CI)"
+          git remote -v
+          git status
+          git fetch origin
+          git checkout ${GITHUB_REF##*/}
+      - name: Makedata
+        run: |
+          npm run server_ci
+      - name: sync repository
+        run: |
+          git add json/cache/Êù±‰∫¨ÈÉΩ/*.csv json/cache/Âæ≥Â≥∂Áúå/*.pdf
+          git commit -m 'Update by GitHub Actions'
+          git push origin ${GITHUB_REF##*/}
 
