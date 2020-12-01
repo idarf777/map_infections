@@ -141,10 +141,15 @@ function merge_jsons( jsons )
   for( const pref_code of Object.values( PREFECTURE_CODES ) )
      !suset.has( pref_code ) && DbPoi.get( pref_code ).then( row => Log.info( `pref_code = ${pref_code} (${row.name}) is missing` ) );
 
+  const setfigure = v => Math.round( v * 1000000 ) * 0.000001;
   return {
     begin_at: datetostring( Math.min( ...jsons.map( json => json.begin_at && new Date( json.begin_at ).getTime() ).filter( e => e ) ) ),
     finish_at: datetostring( Math.max( ...jsons.map( json => json.finish_at && new Date( json.finish_at ).getTime() ).filter( e => e ) ) ),
-    spots: spots.sort( (a, b) => a.city_code - b.city_code ),
+    spots: spots.map( spot => {
+      for ( let i=0; i<spot.geopos?.length || 0; i++ )
+        spot.geopos[ i ] = setfigure( spot.geopos[ i ] );
+      return spot;
+    } ).sort( (a, b) => a.city_code - b.city_code ),
     summary: summary.sort( (a, b) => a.pref_code - b.pref_code )
   };
 }
@@ -258,7 +263,7 @@ const CITIES = [
   [ 'hokkaido', PoiHokkaido ],
 ];
 const AVAILABLE_CITIES = [
-  //'ehime'
+  //'tokushima'
 ];
 
 async function busy_lock()
@@ -377,6 +382,8 @@ function sendIndex( req, res )
 app.get( `${config.SERVER_URI_PREFIX}/*`, sendIndex );
 app.get( config.SERVER_URI_PREFIX, sendIndex );
 
-app.listen( config.SERVER_PORT, () => {
-  Log.info( `server is running at port ${config.SERVER_PORT}` );
-});
+busy_unlock().then( () =>
+  app.listen( config.SERVER_PORT, () => {
+    Log.info( `server is running at port ${config.SERVER_PORT}` );
+  })
+);

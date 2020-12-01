@@ -1,3 +1,4 @@
+import agh from 'agh.sprintf';
 import {
   axios_instance,
   datetostring,
@@ -16,7 +17,7 @@ function summaryName( pref_code, geojsons )
   return p && (p[ `name_${locale}` ] || p[ `name_${config.MAP_SUMMARY_LOCALE_FALLBACK}` ]);
 }
 
-export default function Loader( json, geojsons )
+export default function loader( json, geojsons )
 {
   const src_places = [];    // city_codeと都市名
   const src_infectors = []; // 日ごとの感染者数
