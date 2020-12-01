@@ -1,6 +1,6 @@
 import agh from 'agh.sprintf';
 import csv from "csv";
-import * as rax from 'retry-axios';
+import rax from 'retry-axios';
 import axios from "axios";
 
 export function round_8( v )
@@ -262,17 +262,24 @@ export function sanitize_poi_name( name )
 
 export function axios_instance( options )
 {
-  const instance = axios.create( options );
-  instance.defaults = {
-    raxConfig: {
-      instance,
-      retry: 3,
-      retryDelay: 5000,
-      statusCodesToRetry: [[100, 199], [429, 429], [500, 599]],
-    }
-  }
-  rax.default.attach( instance );
-  return instance;
+  const opt = {
+    ...options,
+  };
+  if ( opt.timeout == null )
+    opt.timeout = 10000;
+  const instance = axios.create( opt );
+  const raxConfig = {
+    instance,
+    retry: 3,
+    retryDelay: 5000,
+    statusCodesToRetry: [[100, 199], [429, 429], [500, 599]],
+  };
+  const interceptorId = rax.attach( instance );
+  return {
+    get: uri => instance.get( uri, { raxConfig } ),
+    post: uri => instance.get( uri, { raxConfig } ),
+    head: uri => instance.head( uri, { raxConfig } ),
+  };
 }
 
 export const PREFECTURE_CODES = {

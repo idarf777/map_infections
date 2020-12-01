@@ -23,9 +23,30 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Makedata
+    - name: install sqlite3
+      run: |
+        sudo apt install libsqlite3-dev
+        dpkg -L libsqlite3-dev
+    - name: install Node.js and packages
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: |
-        npm ci
+      run: |
+        npm i
+    - name: fetch repository
+      run: |
+        git config --global user.email "aida@shizentai-factory.com"
+        git config --global user.name "Takeshi Aida (CI)"
+        git remote -v
+        git status
+        git fetch origin
+        git checkout ${GITHUB_REF##*/}
+    - name: Makedata
+      run: |
+        npm run server_ci
+    - name: sync repository
+      run: |
+        git add json/cache/東京都/*.csv json/cache/徳島県/*.pdf
+        git commit -m 'Update by GitHub Actions'
+        git push origin ${GITHUB_REF##*/}
+

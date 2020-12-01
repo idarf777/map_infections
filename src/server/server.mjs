@@ -189,7 +189,7 @@ async function execMakeDataSerial( cities )
     jsons[ i ] = await make_data( cities[ i ] ).catch( ex => {
       Log.error( ex );
       errors.push( `${cities[ i ][ 0 ]}: ${ex.message}` );
-      jsons[ i ] = ex.pois;
+      return ex.pois;
     } );
     Log.info( `${cities[ i ][ 0 ]} complete.` );
   }
@@ -199,15 +199,21 @@ async function execMakeDataSerial( cities )
 // 順不同でどんどんやる
 async function execMakeData( cities )
 {
+  let remain_cities = { ...PREFECTURE_CODES };
+  const error_cities = [];
   const errors = [];
   const promises = cities.map( async city => {
-    let json;
-    json = await make_data( city ).catch( ex => {
+    const json = await make_data( city ).catch( ex => {
       Log.error( ex );
+      error_cities.push( city[ 0 ] );
       errors.push( `${city[ 0 ]}: ${ex.message}` );
-      json = ex.pois;
+      return ex.pois;
     } );
+    delete remain_cities[ city[ 0 ] ];
     Log.info( `${city[ 0 ]} complete.` );
+    (error_cities.length > 0) && Log.info( `    errors = ${error_cities.join( ' ' )}` );
+    const remains = Object.keys( remain_cities );
+    Log.info( (remains.length > 0) ? `    remains = ${remains.join( ' ' )}` : '    all cities done!' );
     return json;
   } );
   return { jsons: (await Promise.all( promises )).filter( v => v ), errors };
@@ -254,7 +260,7 @@ const CITIES = [
   [ 'fukuoka', PoiFukuoka ],
   [ 'nagasaki', PoiNagasaki ],
   [ 'saga', PoiSaga ],
-  [ 'ohita', PoiOhita ],
+  [ 'oita', PoiOhita ],
   [ 'kumamoto', PoiKumamoto ],
   [ 'miyazaki', PoiMiyazaki ],
   [ 'kagoshima', PoiKagoshima ],
@@ -279,41 +285,48 @@ async function busy_unlock()
   return process.env.MAKE_DATA_BUSY_ENABLE ? redis.del( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY ) : true;
 }
 
+async function exec_make_data()
+{
+  const begintm = new Date();
+  await mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) );
+  const cities = (AVAILABLE_CITIES.length > 0) ? CITIES.filter( c => AVAILABLE_CITIES.some( v => c[ 0 ] === v ) ) : CITIES;
+  const data = await (to_bool( process.env.MAKE_DATA_ORDERED ) ? execMakeDataSerial( cities ) : execMakeData( cities ));
+  Log.info( 'merging data...' );
+  const merged = merge_jsons( data.jsons );
+  Log.info( `MAKE DATA complete with ${data.errors.length} error${(data.errors.length > 1) ? 's':''} in ${(new Date().getTime() - begintm.getTime())/1000} sec.` );
+  ( data.errors.length > 0 ) && Log.error( data.errors );
+  return merged;
+}
+
+if ( process.env.CI_TEST_SERVER )
+{
+  exec_make_data()
+    .then( r => Log.info( r ) )
+    .catch( ex => Log.error( ex ) );
+}
+
 app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
   if ( !config.DEBUG && req.query.token !== process.env.MAKEDATA_TOKEN )
   {
     res.status( 501 ).send( 'bad auth' );
     return;
   }
-  const trapper = ex => {
-    Log.error( ex );
-    res.status( 500 ).send( ex.message )
-  };
-  const begintm = new Date();
   (req.query.unbusy ? busy_unlock() : busy_lock())
     .then( async v => {
       if ( v )
         throw new Error( 'busy' );
-      await mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) );
-      const cities = (AVAILABLE_CITIES.length > 0) ? CITIES.filter( c => AVAILABLE_CITIES.some( v => c[ 0 ] === v ) ) : CITIES;
-      ( to_bool( process.env.MAKE_DATA_ORDERED ) ? execMakeDataSerial( cities ) : execMakeData( cities ) )
-        .then( async r => {
-          Log.info( 'merging data...' )
-          const merged = merge_jsons( r.jsons );
-          await write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged );
-          await busy_unlock();
-          res.send( merged );
-          Log.info( `MAKE DATA complete with ${r.errors.length} error${(r.errors.length > 1) ? 's':''} in ${(new Date().getTime() - begintm.getTime())/1000} sec.` );
-          ( r.errors.length > 0 ) && Log.error( r.errors );
-        } )
-        .catch( trapper );
+      const merged = await exec_make_data();
+      await write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged );
+      res.send( merged );
     } )
     .catch( ex => {
       if ( ex.message !== 'busy' )
         redis.del( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY );
-      trapper( ex );
+      Log.error( ex );
+      res.status( 500 ).send( ex.message )
     } )
-})
+    .finally( () => busy_unlock().then( () => {} ) );
+} );
 
 app.get( config.SERVER_URI, (req, res) => {
   const p = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/${config.SERVER_MAKE_DATA_FILENAME}.json` );
