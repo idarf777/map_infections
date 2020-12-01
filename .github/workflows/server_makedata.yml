@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: install sqlite3
-      - run: |
+        run: |
           sudo apt install libsqlite3-dev
           dpkg -L libsqlite3-dev
       - name: install Node.js and packages
