@@ -326,6 +326,7 @@ if ( process.env.CI_TEST_SERVER )
 {
   exec_make_data()
     .then( r => Log.info( r ) )
+    .then( () => process.exit( 0 ) )
     .catch( ex => Log.error( ex ) );
 }
 else

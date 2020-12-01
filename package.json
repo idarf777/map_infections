@@ -99,9 +99,9 @@
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js",
-    "dev": "cross-env NODE_ENV=development concurrently \"npm run start\" \"npm run server\"",
-    "server": "cross-env NODE_ENV=development nodemon src/server/server.mjs --ignore json/* --ignore src/*.js --ignore src/*.css",
-    "server_ci": "cross-env NODE_ENV=development CI_TEST_SERVER=1 node src/server/server.mjs"
+    "dev": "node node_modules/cross-env/src/bin/cross-env.js NODE_ENV=development concurrently \"npm run start\" \"npm run server\"",
+    "server": "node node_modules/cross-env/src/bin/cross-env.js NODE_ENV=development nodemon src/server/server.mjs --ignore json/* --ignore src/*.js --ignore src/*.css",
+    "server_ci": "node node_modules/cross-env/src/bin/cross-env.js NODE_ENV=development CI_TEST_SERVER=1 node src/server/server.mjs"
   },
   "eslintConfig": {
     "extends": "react-app"
