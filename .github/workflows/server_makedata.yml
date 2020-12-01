@@ -46,7 +46,7 @@ jobs:
         npm run server_ci
     - name: sync repository
       run: |
-        git add json/cache/æ±äº¬éƒ½/*.csv json/cache/å¾³å³¶çœŒ/*.pdf
+        git add json/cache/“Œ‹“s/*.csv json/cache/“¿“‡Œ§/*.pdf
         git commit -m 'Update by GitHub Actions'
         git push origin ${GITHUB_REF##*/}
 
