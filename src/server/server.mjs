@@ -7,7 +7,6 @@ import { promises as fs } from "fs";
 import path from 'path';
 import helmet from 'helmet';
 import Redis from 'ioredis';
-import crypto from 'crypto';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
@@ -77,31 +76,6 @@ import PoiOkinawa from "./poi_okinawa.mjs";
 const COOKIE_OPTIONS = Object.freeze( { maxAge: config.COOKIE_EXPIRE*1000, path: config.SERVER_URI_PREFIX } );
 const RedisStore = connectRedis( session );
 const redis = new Redis();
-const app = express();
-app.use( cookieParser() );
-app.use( helmet.xssFilter() );
-app.use( session( {
-  secret: 'covid19sessionkey',
-  saveUninitialized: true,
-  resave: true,
-  store: new RedisStore( {
-    client: redis,
-    prefix: 'session:'
-  } ),
-  cookie: {
-    ...COOKIE_OPTIONS,
-    httpOnly: false,
-    secure: !config.DEBUG
-  } } ) );
-if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
-{
-  app.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", config.SERVER_ALLOW_FROM_ALL ? '*' : "http://localhost:3000");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-  });
-}
-app.use( `${config.SERVER_URI_PREFIX}/static`, express.static( path.join( config.DEPLOY_DIRECTORY, 'static' ) ) );
 
 function merge_jsons( jsons )
 {
@@ -272,19 +246,6 @@ const AVAILABLE_CITIES = [
   //'tokushima'
 ];
 
-async function busy_lock()
-{
-  if ( !to_bool( process.env.MAKE_DATA_BUSY_ENABLE ) )
-    return null;
-  const v = await redis.getset( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY, 1 );
-  await redis.expire( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY, config.SERVER_MAKE_DATA_BUSY_EXPIRE );
-  return v;
-}
-async function busy_unlock()
-{
-  return process.env.MAKE_DATA_BUSY_ENABLE ? redis.del( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY ) : true;
-}
-
 async function exec_make_data()
 {
   const begintm = new Date();
@@ -298,50 +259,18 @@ async function exec_make_data()
   return merged;
 }
 
-if ( process.env.CI_TEST_SERVER )
+async function busy_lock()
 {
-  exec_make_data()
-    .then( r => Log.info( r ) )
-    .catch( ex => Log.error( ex ) );
+  if ( !to_bool( process.env.MAKE_DATA_BUSY_ENABLE ) )
+    return null;
+  const v = await redis.getset( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY, 1 );
+  await redis.expire( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY, config.SERVER_MAKE_DATA_BUSY_EXPIRE );
+  return v;
 }
-
-app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
-  if ( !config.DEBUG && req.query.token !== process.env.MAKEDATA_TOKEN )
-  {
-    res.status( 501 ).send( 'bad auth' );
-    return;
-  }
-  (req.query.unbusy ? busy_unlock() : busy_lock())
-    .then( async v => {
-      if ( v )
-        throw new Error( 'busy' );
-      const merged = await exec_make_data();
-      await write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged );
-      res.send( merged );
-    } )
-    .catch( ex => {
-      if ( ex.message !== 'busy' )
-        redis.del( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY );
-      Log.error( ex );
-      res.status( 500 ).send( ex.message )
-    } )
-    .finally( () => busy_unlock().then( () => {} ) );
-} );
-
-app.get( config.SERVER_URI, (req, res) => {
-  const p = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/${config.SERVER_MAKE_DATA_FILENAME}.json` );
-  fs.stat( p )
-    .then( stat => {
-      if ( !stat?.isFile() )
-        throw new Error( 'no json' );
-      res.sendFile( p );
-    } )
-    .catch( err => {
-      Log.debug( err );
-      res.status( 500 ).send( {message: `get "${config.SERVER_MAKE_DATA_URI}" first!`} );
-    } );
-  }
-);
+async function busy_unlock()
+{
+  return process.env.MAKE_DATA_BUSY_ENABLE ? redis.del( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY ) : true;
+}
 
 function restrictKey()
 {
@@ -392,11 +321,85 @@ function sendIndex( req, res )
       response && sendIndexHtml( req, res, response.data.token );
     } );
 }
-app.get( `${config.SERVER_URI_PREFIX}/*`, sendIndex );
-app.get( config.SERVER_URI_PREFIX, sendIndex );
 
-busy_unlock().then( () =>
-  app.listen( config.SERVER_PORT, () => {
-    Log.info( `server is running at port ${config.SERVER_PORT}` );
-  })
-);
+if ( process.env.CI_TEST_SERVER )
+{
+  exec_make_data()
+    .then( r => Log.info( r ) )
+    .catch( ex => Log.error( ex ) );
+}
+else
+{
+  const app = express();
+  app.use( cookieParser() );
+  app.use( helmet.xssFilter() );
+  app.use( session( {
+    secret: 'covid19sessionkey',
+    saveUninitialized: true,
+    resave: true,
+    store: new RedisStore( {
+      client: redis,
+      prefix: 'session:'
+    } ),
+    cookie: {
+      ...COOKIE_OPTIONS,
+      httpOnly: false,
+      secure: !config.DEBUG
+    } } ) );
+  if ( config.DEBUG || config.SERVER_ALLOW_FROM_ALL )
+  {
+    app.use(function(req, res, next) {
+      res.header("Access-Control-Allow-Origin", config.SERVER_ALLOW_FROM_ALL ? '*' : "http://localhost:3000");
+      res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+      next();
+    });
+  }
+  app.use( `${config.SERVER_URI_PREFIX}/static`, express.static( path.join( config.DEPLOY_DIRECTORY, 'static' ) ) );
+
+  app.get( config.SERVER_MAKE_DATA_URI, (req, res) => {
+    if ( !config.DEBUG && req.query.token !== process.env.MAKEDATA_TOKEN )
+    {
+      res.status( 501 ).send( 'bad auth' );
+      return;
+    }
+    (req.query.unbusy ? busy_unlock() : busy_lock())
+      .then( async v => {
+        if ( v )
+          throw new Error( 'busy' );
+        const merged = await exec_make_data();
+        await write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged );
+        res.send( merged );
+      } )
+      .catch( ex => {
+        if ( ex.message !== 'busy' )
+          redis.del( config.SERVER_REDIS_MAKE_DATA_BUSY_KEY );
+        Log.error( ex );
+        res.status( 500 ).send( ex.message )
+      } )
+      .finally( () => busy_unlock().then( () => {} ) );
+  } );
+
+  app.get( config.SERVER_URI, (req, res) => {
+    const p = path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/${config.SERVER_MAKE_DATA_FILENAME}.json` );
+    fs.stat( p )
+      .then( stat => {
+        if ( !stat?.isFile() )
+          throw new Error( 'no json' );
+        res.sendFile( p );
+      } )
+      .catch( err => {
+        Log.debug( err );
+        res.status( 500 ).send( {message: `get "${config.SERVER_MAKE_DATA_URI}" first!`} );
+      } );
+    }
+  );
+
+  app.get( `${config.SERVER_URI_PREFIX}/*`, sendIndex );
+  app.get( config.SERVER_URI_PREFIX, sendIndex );
+
+  busy_unlock().then( () =>
+    app.listen( config.SERVER_PORT, () => {
+      Log.info( `server is running at port ${config.SERVER_PORT}` );
+    })
+  );
+}
