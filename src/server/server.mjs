@@ -325,7 +325,7 @@ function sendIndex( req, res )
 if ( process.env.CI_TEST_SERVER )
 {
   exec_make_data()
-    .then( r => Log.info( r ) )
+    .then( merged => write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged ) )
     .then( () => process.exit( 0 ) )
     .catch( ex => Log.error( ex ) );
 }
