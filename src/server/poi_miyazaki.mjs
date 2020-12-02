@@ -53,7 +53,7 @@ async function parse_html( html )
     }
     
     const _m = m.slice(4, 11);
-    var city = _m.filter( v => v);
+    var city = _m.filter( v => v ).map( s => s.replace( /(&nbsp;|<.+?>)/g, '' ) );
 
 /*    if( m[4] != undefined ){
       city = m[4];
