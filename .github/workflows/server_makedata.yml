@@ -5,13 +5,6 @@ on:
     paths-ignore:
       - 'json/**'
 
-  # masterブランチのみ、PRでCIを走らせる
-  pull_request:
-    paths-ignore:
-      - 'json/**'
-    branches:
-      - master
-
 jobs:
   makedata:
     runs-on: ubuntu-latest
@@ -46,10 +39,14 @@ jobs:
           npm i
           npm run server_ci
       - name: sync repository
+        continue-on-error: true
         run: |
           git config --global user.email "aida@shizentai-factory.com"
           git config --global user.name "Takeshi Aida (CI)"
-          git add -f json/cache/東京都/*.csv json/cache/徳島県/*.pdf
+          git add -f -A json/cache/東京都/*.csv json/cache/徳島県/*.pdf
           git commit -m 'Update by GitHub Actions'
+      - if: success()
+        name: push if modified
+        run: |
           git push --force-with-lease origin ${GITHUB_REF##*/}
 

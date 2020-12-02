@@ -266,12 +266,12 @@ export function axios_instance( options )
     ...options,
   };
   if ( opt.timeout == null )
-    opt.timeout = 10000;
+    opt.timeout = 20000;
   const instance = axios.create( opt );
   const raxConfig = {
     instance,
     retry: 3,
-    retryDelay: 5000,
+    retryDelay: 10000,
     statusCodesToRetry: [[100, 199], [429, 429], [500, 599]],
   };
   const interceptorId = rax.attach( instance );
