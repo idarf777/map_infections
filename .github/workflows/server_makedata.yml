@@ -53,6 +53,7 @@ jobs:
           git add -f -A json/cache/東京都/*.csv json/cache/徳島県/*.pdf
           git commit -m 'Update by GitHub Actions'
       - if: success()
+        name: push if modified
         run: |
           git push --force-with-lease origin ${GITHUB_REF##*/}
 
