@@ -1,21 +1,30 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Server-CI-makedata
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
-on: [push]
+on:
+  push:
+    paths-ignore:
+      - 'json/**'
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+  # masterブランチのみ、PRでCIを走らせる
+  pull_request:
+    paths-ignore:
+      - 'json/**'
+    branches:
+      - master
+
 jobs:
   makedata:
     runs-on: ubuntu-latest
 
-
     services:
       redis:
         image: redis:5.0-alpine
+        ports:
+          - 6379:6379
         options: --health-cmd "redis-cli -h localhost ping" --health-interval 10s --health-timeout 5s --health-retries 15
+        env:
+          REDIS_HOST: redis
+          REDIS_PORT: 6379
 
     strategy:
       matrix:
@@ -26,28 +35,21 @@ jobs:
         run: |
           sudo apt install libsqlite3-dev
           dpkg -L libsqlite3-dev
-      - name: install Node.js and packages
+      - name: install Node.js
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: |
-          npm i
-      - name: fetch repository
+      - name: install git
         uses: actions/checkout@v2
-      - run: |
-          git config --global user.email "aida@shizentai-factory.com"
-          git config --global user.name "Takeshi Aida (CI)"
-          git remote -v
-          git status
-          git fetch origin
-          git checkout ${GITHUB_REF##*/}
       - name: Makedata
         run: |
+          npm i
           npm run server_ci
       - name: sync repository
-        uses: actions/checkout@v2
-      - run: |
-          git add json/cache/東京都/*.csv json/cache/徳島県/*.pdf
+        run: |
+          git config --global user.email "aida@shizentai-factory.com"
+          git config --global user.name "Takeshi Aida (CI)"
+          git add -f json/cache/東京都/*.csv json/cache/徳島県/*.pdf
           git commit -m 'Update by GitHub Actions'
-          git push origin ${GITHUB_REF##*/}
+          git push --force-with-lease origin ${GITHUB_REF##*/}
 

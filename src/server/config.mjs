@@ -19,7 +19,7 @@ export default function makeConfig()
   if ( !process.env.REACT_APP_APPNAME )
   {
     let path = `${appRoot.path}/.env.${buildmode}`;
-    if ( fs.statSync( path + '.local' ) )
+    if ( fs.existsSync( path + '.local' ) )
       path += '.local';
     dotenv.config( { path } );
   }
