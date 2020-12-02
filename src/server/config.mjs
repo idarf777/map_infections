@@ -19,7 +19,7 @@ export default function makeConfig()
   if ( !process.env.REACT_APP_APPNAME )
   {
     let path = `${appRoot.path}/.env.${buildmode}`;
-    if ( fs.statSync( path + '.local' ) )
+    if ( fs.existsSync( path + '.local' ) )
       path += '.local';
     dotenv.config( { path } );
   }
@@ -281,7 +281,7 @@ export default function makeConfig()
       LICENSE: license.FREE
     },
     EHIME_CSV: {
-      DATA_URI: 'https://www.pref.ehime.jp/opendata-catalog/dataset/2174/resource/7070/380008_ehime_covid19_patients.csv',
+      DATA_URI: 'https://www.pref.ehime.jp/opendata-catalog/fs/7/2/0/4/_/380008_ehime_covid19_patients.csv',
       LICENSE: license.CC
     },
 
