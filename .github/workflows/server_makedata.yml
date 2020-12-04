@@ -4,6 +4,8 @@ on:
   push:
     paths-ignore:
       - 'json/**'
+  schedule:
+    - cron: "0 18 * * *" # 3:00 JST  デフォルト(master)ブランチ以外ではトリガーされない
 
 jobs:
   makedata:
