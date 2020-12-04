@@ -4,7 +4,7 @@ import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
 const config = global.covid19map.config;
 
-const ALTER_CITY_NAMES = [['東部地域', '大月市'], ['峡東地域', '甲州市'], ['峡南地域', '身延町'], ['中北地域', '甲府市'], ['富士北麓地域', '富士河口湖町']];
+const ALTER_CITY_NAMES = [['東部地域', '大月市'], ['峡東地域', '甲州市'], ['峡南地域', '身延町'], ['中北地域', '甲府市'], ['富士北麓地域', '富士河口湖町'], ['富士東部地域', '富士吉田市']];
 const mapCityNames = new Map();
 const setCityNames = new Set();
 for ( const n of ALTER_CITY_NAMES )

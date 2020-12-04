@@ -51,7 +51,7 @@ export default class BasePoi
       const date = cb_date ? cb_date( row ) : new Date( row[ col_date ] );
       if ( !date )
         continue;
-      const city = sanitize_poi_name( (cb_city && cb_city( row )) || row[ col_city ] );
+      const city = sanitize_poi_name( (cb_city && cb_city( row )) || row[ col_city ] || '' );
       if ( !map_poi.has( city ) )
       {
         Log.info( `${pref_name} : ${city} not found at ${datetostring( date )}, put into ${pref_name}` );
