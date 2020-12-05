@@ -3,7 +3,7 @@ import iconv from "iconv-lite";
 import {axios_instance} from "./util.mjs";
 const config = global.covid19map.config;
 
-const ALTER_CITY_NAMES = [['北信保健所管内', '長野市'], ['長野市保健所管内', '長野市']];
+const ALTER_CITY_NAMES = [['北信保健所管内', '長野市'], ['長野市保健所管内', '長野市'], ['下高井郡山ノ内町', '山ノ内町']];
 async function load_csv()
 {
   const rh = await axios_instance( { responseType: 'arraybuffer' } ).get( config.NAGANO_HTML.DATA_URI );

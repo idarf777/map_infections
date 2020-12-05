@@ -4,7 +4,7 @@ import Log from "./logger.mjs";
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
-  ['西伯郡', '伯耆町']
+  ['西伯郡', '伯耆町'],  ['西部地区', '境港市']
 ];
 
 async function parse_html( html )
