@@ -166,8 +166,18 @@
           
     <div class="tab ">
 
-                                                        <ul class="active totaling " tab-number="1" part-val="8506296" title-list-entry-part-val="52492" language="1" device="1" total-count="242" display-number="5" step-number="1" paging="true" system="1">
+                                                        <ul class="active totaling " tab-number="1" part-val="8508937" title-list-entry-part-val="52559" language="1" device="1" total-count="242" display-number="5" step-number="1" paging="true" system="1">
                                                                                                                                       <li>
+                                                                                                                                                          <time  datetime="2020-12-5">2020年12月5日</time>
+                                                                                                                                  <span class="title"><a href="/ippannokata/kenko/kansensho/5040193/">【更新情報】12月4日に県内で185例目の新型コロナウイルス感染者が確認されました</a></span>
+                                                                                                      <span class="belong">(感染症)</span>
+                                                          </li>
+                                                                                                                    <li>
+                                                                                                                                                          <time  datetime="2020-12-4">2020年12月4日</time>
+                                                                                                                                  <span class="title"><a href="/ippannokata/kendozukuri/doro/5041689/">一般国道195号出合大戸トンネル防災訓練の実施及び通行止めについて</a></span>
+                                                                                                      <span class="belong">(道路・交通)</span>
+                                                          </li>
+                                                                                                                    <li>
                                                                                                                                                           <time  datetime="2020-12-1">2020年12月1日</time>
                                                                                                                                   <span class="title"><a href="/ippannokata/kurashi/chihososei/5042421/">ふるさと納税サイト「ANAのふるさと納税」で徳島県へのふるさと納税の受付を開始します</a></span>
                                                                                                       <span class="belong">(地方創生・市町村・地域づくり)</span>
@@ -181,16 +191,6 @@
                                                                                                                                                           <time  datetime="2020-11-30">2020年11月30日</time>
                                                                                                                                   <span class="title"><a href="/ippannokata/kenko/kansensho/5041159/">【更新情報】「新型コロナウイルス感染症に関する主な支援制度」の説明資料を更新しました</a></span>
                                                                                                       <span class="belong">(感染症)</span>
-                                                          </li>
-                                                                                                                    <li>
-                                                                                                                                                          <time  datetime="2020-11-27">2020年11月27日</time>
-                                                                                                                                  <span class="title"><a href="/ippannokata/kenko/kansensho/5040193/">【更新情報】11月26日に県内で181例目の新型コロナウイルス感染者が確認されました</a></span>
-                                                                                                      <span class="belong">(感染症)</span>
-                                                          </li>
-                                                                                                                    <li>
-                                                                                                                                                          <time  datetime="2020-11-26">2020年11月26日</time>
-                                                                                                                                  <span class="title"><a href="/kaigohoken/topics/5034744/">【高齢者施設向け】新型コロナウイルス感染症に係る周知（令和2年11月26日更新）</a></span>
-                                                                                                      <span class="belong">(重要情報)</span>
                                                           </li>
                                                                                                           </ul>
                                 
@@ -1016,13 +1016,29 @@ FAX番号 088ー621ー2841<br>
                                                                                                                                                                   <td class="left" style="">
                 29              </td>
                               </tr><tr><td class="left" style="">
+                12月2日（水）              </td>
+                                                                                                                                                                  <td class="left" style="">
+                81              </td>
+                                                                                                                                                                  <td class="left" style="">
+                43              </td>
+                                                                                                                                                                  <td class="left" style="">
+                38              </td>
+                              </tr><tr><td class="left" style="">
+                12月3日（木)              </td>
+                                                                                                                                                                  <td class="left" style="">
+                84              </td>
+                                                                                                                                                                  <td class="left" style="">
+                31              </td>
+                                                                                                                                                                  <td class="left" style="">
+                53              </td>
+                              </tr><tr><td class="left" style="">
                 累計              </td>
                                                                                                                                                                   <td class="left" style="">
-                39,124              </td>
+                39,289              </td>
                                                                                                                                                                   <td class="left" style="">
-                14,836              </td>
+                14,910              </td>
                                                                                                                                                                   <td class="left" style="">
-                24,288              </td>
+                24,379              </td>
                               </tr></tbody></table></div>
   </div>
                       <div class="block " style="" lang="" data-load="1">
@@ -1233,13 +1249,13 @@ FAX番号 088ー621ー2841<br>
     
 <div class="heading">
                   <h3>
-      <span>徳島県内の発生状況（累計感染者数181名）</span>
+      <span>徳島県内の発生状況（累計感染者数185名）</span>
       </h3>
       </div>
   </div>
                       <div class="block " style="" lang="" data-load="1">
     <div class="sentence">
-<p><strong>現在、徳島県内における「新型コロナウイルス」感染者数（累計）は181名です。</strong></p>
+<p><strong>現在、徳島県内における「新型コロナウイルス」感染者数（累計）は185名です。</strong></p>
 </div>  </div>
                       <div class="block " style="font-size:110%;font-family:0;" lang="" data-load="1">
     
@@ -1257,6 +1273,46 @@ FAX番号 088ー621ー2841<br>
                 性別              </th>
                                                                                                                                                                   <th style="width: 20%;width: 20%;width: 20%;" scope="col">
                 公表資料など（表下からダウンロードしてご確認ください）              </th>
+                              </tr><tr><th style="" scope="row">
+                185例目              </th>
+                                                                                                                                                                  <td class="left" style="">
+                12月4日              </td>
+                                                                                                                                                                  <td class="left" style="">
+                70代              </td>
+                                                                                                                                                                  <td class="left" style="">
+                女性              </td>
+                                                                                                                                                                  <td class="left" style="">
+                資料73-1              </td>
+                              </tr><tr><th style="" scope="row">
+                184例目              </th>
+                                                                                                                                                                  <td class="left" style="">
+                12月3日              </td>
+                                                                                                                                                                  <td class="left" style="">
+                40代              </td>
+                                                                                                                                                                  <td class="left" style="">
+                女性              </td>
+                                                                                                                                                                  <td class="left" style="">
+                資料72-1              </td>
+                              </tr><tr><th style="" scope="row">
+                183例目              </th>
+                                                                                                                                                                  <td class="left" style="">
+                12月3日              </td>
+                                                                                                                                                                  <td class="left" style="">
+                40代              </td>
+                                                                                                                                                                  <td class="left" style="">
+                男性              </td>
+                                                                                                                                                                  <td class="left" style="">
+                資料72-1              </td>
+                              </tr><tr><th style="" scope="row">
+                182例目              </th>
+                                                                                                                                                                  <td class="left" style="">
+                12月2日              </td>
+                                                                                                                                                                  <td class="left" style="">
+                50代              </td>
+                                                                                                                                                                  <td class="left" style="">
+                男性              </td>
+                                                                                                                                                                  <td class="left" style="">
+                資料71-1              </td>
                               </tr><tr><th style="" scope="row">
                 181例目              </th>
                                                                                                                                                                   <td class="left" style="">
@@ -3090,6 +3146,21 @@ FAX番号 088ー621ー2841<br>
                       <div class="block " style="" lang="" data-load="1">
     <div class="attach">
   <ul><li class="item item_side" type="none">
+                        <a href="/file/attachment/587039.pdf" target="_blank"><img class="file-extension pdf" alt="" src="/img/extension/pdf.png"><span>資料73-1（185例目の発生）</span></a>        <span>
+          (PDF:60 KB)
+                  </span>
+      </li>
+                  <li class="item item_side" type="none">
+                        <a href="/file/attachment/586903.pdf" target="_blank"><img class="file-extension pdf" alt="" src="/img/extension/pdf.png"><span>資料72-1（183、184例目の発生）</span></a>        <span>
+          (PDF:63 KB)
+                  </span>
+      </li>
+                  <li class="item item_side" type="none">
+                        <a href="/file/attachment/586760.pdf" target="_blank"><img class="file-extension pdf" alt="" src="/img/extension/pdf.png"><span>資料71-1（182例目の発生）</span></a>        <span>
+          (PDF:59 KB)
+                  </span>
+      </li>
+                  <li class="item item_side" type="none">
                         <a href="/file/attachment/585945.pdf" target="_blank"><img class="file-extension pdf" alt="" src="/img/extension/pdf.png"><span>資料70-1（181例目の発生）</span></a>        <span>
           (PDF:62 KB)
                   </span>
@@ -3130,13 +3201,13 @@ FAX番号 088ー621ー2841<br>
                   </span>
       </li>
                   <li class="item item_side" type="none">
-                        <a href="/file/attachment/583999.pdf" target="_blank"><img class="file-extension pdf" alt="" src="/img/extension/pdf.png"><span>資料61-1（169、170例目の発生）</span></a>        <span>
-          (PDF:126 KB)
+                        <a href="/file/attachment/584740.pdf" target="_blank"><img class="file-extension pdf" alt="" src="/img/extension/pdf.png"><span>資料62-1（171例目の発生）</span></a>        <span>
+          (PDF:62 KB)
                   </span>
       </li>
                   <li class="item item_side" type="none">
-                        <a href="/file/attachment/584740.pdf" target="_blank"><img class="file-extension pdf" alt="" src="/img/extension/pdf.png"><span>資料62-1（171例目の発生）</span></a>        <span>
-          (PDF:62 KB)
+                        <a href="/file/attachment/583999.pdf" target="_blank"><img class="file-extension pdf" alt="" src="/img/extension/pdf.png"><span>資料61-1（169、170例目の発生）</span></a>        <span>
+          (PDF:126 KB)
                   </span>
       </li>
                   <li class="item item_side" type="none">
@@ -3457,444 +3528,13 @@ FAX番号 088ー621ー2841<br>
       </div>
   </div>
                       <div class="block " style="" lang="" data-load="1">
-    
-<div class="table">
-  <table style="width: 100%;"><caption>
-                  <span>検査実施状況</span>
-                      </caption>
-        <tbody><tr><th style="width: 20%;width: 20%;width: 20%;" scope="col">
-                月日              </th>
-                                                                                                                                                                  <th style="width: 20%;width: 20%;width: 20%;" scope="col">
-                県検査件数              </th>
-                                                                                                                                                                  <th style="width: 20%;width: 20%;width: 20%;" scope="col">
-                県検査結果（陰性）              </th>
-                                                                                                                                                                  <th style="width: 20%;width: 20%;width: 20%;" scope="col">
-                県検査結果（陽性）              </th>
-                                                                                                                                                                  <th style="width: 20%;width: 20%;width: 20%;" scope="col">
-                その他陽性件数              </th>
-                              </tr><tr><td class="left" style="">
-                2/1～2/29              </td>
-                                                                                                                                                                  <td class="left" style="">
-                27              </td>
-                                                                                                                                                                  <td class="left" style="">
-                26              </td>
-                                                                                                                                                                  <td class="left" style="">
-                1              </td>
-                                                                                                                                                                  <td class="left" style="">
-                              </td>
-                              </tr><tr><td class="left" style="">
-                3/1～3/31              </td>
-                                                                                                                                                                  <td class="left" style="">
-                130              </td>
-                                                                                                                                                                  <td class="left" style="">
-                128              </td>
-                                                                                                                                                                  <td class="left" style="">
-                2              </td>
-                                                                                                                                                                  <td class="left" style="">
-                              </td>
-                              </tr><tr><td class="left" style="">
-                4/1～4/30              </td>
-                                                                                                                                                                  <td class="left" style="">
-                336              </td>
-                                                                                                                                                                  <td class="left" style="">
-                334              </td>
-                                                                                                                                                                  <td class="left" style="">
-                2              </td>
-                                                                                                                                                                  <td class="left" style="">
-                              </td>
-                              </tr><tr><td class="left" style="">
-                5/1～5/31              </td>
-                                                                                                                                                                  <td class="left" style="">
-                251(112)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                251              </td>
-                                                                                                                                                                  <td class="left" style="">
-                              </td>
-                                                                                                                                                                  <td class="left" style="">
-                              </td>
-                              </tr><tr><td class="left" style="">
-                6/1～6/30              </td>
-                                                                                                                                                                  <td class="left" style="">
-                181(89)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                180              </td>
-                                                                                                                                                                  <td class="left" style="">
-                1              </td>
-                                                                                                                                                                  <td class="left" style="">
-                              </td>
-                              </tr><tr><td class="left" style="">
-                7/1～7/31              </td>
-                                                                                                                                                                  <td class="left" style="">
-                957(607)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                937              </td>
-                                                                                                                                                                  <td class="left" style="">
-                20              </td>
-                                                                                                                                                                  <td class="left" style="">
-                              </td>
-                              </tr><tr><td class="left" style="">
-                8/1～8/31              </td>
-                                                                                                                                                                  <td class="left" style="">
-                4053(1585)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                3973              </td>
-                                                                                                                                                                  <td class="left" style="">
-                80              </td>
-                                                                                                                                                                  <td class="left" style="">
-                27              </td>
-                              </tr><tr><td class="left" style="">
-                9/1～9/30              </td>
-                                                                                                                                                                  <td class="left" style="">
-                986(489)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                975              </td>
-                                                                                                                                                                  <td class="left" style="">
-                11              </td>
-                                                                                                                                                                  <td class="left" style="">
-                4              </td>
-                              </tr><tr><td class="left" style="">
-                10/1～10/31              </td>
-                                                                                                                                                                  <td class="left" style="">
-                564(329)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                549              </td>
-                                                                                                                                                                  <td class="left" style="">
-                15              </td>
-                                                                                                                                                                  <td class="left" style="">
-                1              </td>
-                              </tr><tr><td class="left" style="">
-                11月1日（日）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                10(8)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                10              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月2日（月）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                5(2)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                5              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月3日（火）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                20(18)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                20              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月4日（水）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                5(3)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                5              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月5日（木）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                11(8)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                11              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                3              </td>
-                              </tr><tr><td class="left" style="">
-                11月6日（金）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                30(8)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                30              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月7日（土）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                17(8)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                17              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月8日（日）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                9(6)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                8              </td>
-                                                                                                                                                                  <td class="left" style="">
-                1              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月9日（月）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                11(1）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                9              </td>
-                                                                                                                                                                  <td class="left" style="">
-                2              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月10日（火）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                15(10)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                15              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月11日（水）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                17(9)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                17              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月12日（木）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                7(4)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                7              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月13日（金）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                12(8)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                11              </td>
-                                                                                                                                                                  <td class="left" style="">
-                1              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月14日（土）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                5(4)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                5              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月15日（日）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                6(5)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                6              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月16日（月）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                4(0)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                4              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                2              </td>
-                              </tr><tr><td class="left" style="">
-                11月17日（火）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                13(9)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                12              </td>
-                                                                                                                                                                  <td class="left" style="">
-                1              </td>
-                                                                                                                                                                  <td class="left" style="">
-                1              </td>
-                              </tr><tr><td class="left" style="">
-                11月18日（水）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                15(9)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                15              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月19日（木）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                15(10)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                14              </td>
-                                                                                                                                                                  <td class="left" style="">
-                1              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月20日（金）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                12(5）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                10              </td>
-                                                                                                                                                                  <td class="left" style="">
-                2              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月21日（土）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                18(12)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                17              </td>
-                                                                                                                                                                  <td class="left" style="">
-                1              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月22日（日）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                8(8)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                8              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月23日（月）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                3(3)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                3              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月24日（火）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                2(2)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                2              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月25日（水）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                15(15)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                15              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                1              </td>
-                              </tr><tr><td class="left" style="">
-                11月26日（木）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                9(5)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                8              </td>
-                                                                                                                                                                  <td class="left" style="">
-                1              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月27日（金）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                30(12)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                30              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月28日（土）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                13(6)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                13              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月29日（日）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                4(4)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                4              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                11月30日（月）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                4(3)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                4              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                12月1日（火）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                9(9)              </td>
-                                                                                                                                                                  <td class="left" style="">
-                9              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                                                                                                                                                                  <td class="left" style="">
-                0              </td>
-                              </tr><tr><td class="left" style="">
-                累計              </td>
-                                                                                                                                                                  <td class="left" style="">
-                7,839（3,425）              </td>
-                                                                                                                                                                  <td class="left" style="">
-                7,697              </td>
-                                                                                                                                                                  <td class="left" style="">
-                142              </td>
-                                                                                                                                                                  <td class="left" style="">
-                39              </td>
-                              </tr></tbody></table></div>
-  </div>
-                      <div class="block " style="" lang="" data-load="1">
-    <div class="sentence">
-<p>※毎日、前日の検査件数について掲載します。</p>
-
-<p>※検査件数の()内は、地域外来・検査センターの件数を内数として記載しております。</p>
-
-<p>※県検査とは、徳島県保健製薬環境センターによる検査、その他陽性件数とは、医療機関や民間検査機関による検査で陽性が判明した件数のことです。</p>
-</div>  </div>
-                      <div class="block " style="" lang="" data-load="1">
     <div class="attach">
   <ul><li class="item item_side" type="none">
+                        <a href="/file/attachment/587034.pdf" target="_blank"><img class="file-extension pdf" alt="" src="/img/extension/pdf.png"><span>検査実施状況（R2.12.5現在）</span></a>        <span>
+          (PDF:27 KB)
+                  </span>
+      </li>
+                  <li class="item item_side" type="none">
                         <a href="/file/attachment/586293.pdf" target="_blank"><img class="file-extension pdf" alt="" src="/img/extension/pdf.png"><span>令和2年11月末までの検査実施状況（検査件数）の詳細について</span></a>        <span>
           (PDF:33 KB)
                   </span>
@@ -4005,12 +3645,12 @@ FAX番号 088ー621ー2841<br>
 
 <p>なお、寄せられたコメントに対して直接返信することはありません。</p>
 </div>  </div>
-                      <div class="block" data-load="0" data-dynamic="1" data-val="12506376" data-table="" data-grant_table="" data-language="1" data-device="1" data-attribute_page_val="7034847" data-system="1">
+                      <div class="block" data-load="0" data-dynamic="1" data-val="12521040" data-table="" data-grant_table="" data-language="1" data-device="1" data-attribute_page_val="7034847" data-system="1">
   </div>
   </div>
 
   </div>
-                    <dynamic class="parts" data-load="0" data-dynamic="1" data-val="8506298" data-type="13" data-table="" data-grant_table="" data-language="1" data-device="1" data-attribute_page_val="7034847" data-system="1"></dynamic><div class="parts " style="" lang="" data-load="1">
+                    <dynamic class="parts" data-load="0" data-dynamic="1" data-val="8508939" data-type="13" data-table="" data-grant_table="" data-language="1" data-device="1" data-attribute_page_val="7034847" data-system="1"></dynamic><div class="parts " style="" lang="" data-load="1">
             <div class="note">
   </div>
 

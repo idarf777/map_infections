@@ -281,10 +281,10 @@ export default function makeConfig()
       LICENSE: license.FREE
     },
     EHIME_CSV: {
-      DATA_URI: 'https://www.pref.ehime.jp/opendata-catalog/fs/7/2/0/4/_/380008_ehime_covid19_patients.csv',
+      INDEX_URI: 'https://www.pref.ehime.jp/opendata-catalog/dataset/2174.html',
       LICENSE: license.CC
-    },
-
+    }, // スクレイピングでURIを拾う
+    
     // 九州
     FUKUOKA_CSV: {
       DATA_URI: 'https://ckan.open-governmentdata.org/dataset/8a9688c2-7b9f-4347-ad6e-de3b339ef740/resource/c27769a2-8634-47aa-9714-7e21c4038dd4/download/400009_pref_fukuoka_covid19_patients.csv',
