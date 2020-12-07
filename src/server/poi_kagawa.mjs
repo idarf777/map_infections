@@ -67,7 +67,8 @@ async function parse_html( html )
     str = hText[index].replace( /&nbsp;/g, "");
     
     if( str.includes( '月') ){
-      var result = str.match(/^<div class=\".+?\">(\d+)月(\d+)日/);
+      var _str = str.replace(/<br \/>/g, "");
+      var result = _str.match(/^<div class=\".+?\">(\d+)月(\d+)日/);
       var mon = result[ 1 ];
       var day = result[ 2 ];
 
