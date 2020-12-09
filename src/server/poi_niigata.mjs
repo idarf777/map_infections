@@ -3,6 +3,7 @@ import iconv from "iconv-lite";
 import Log from "./logger.mjs";
 const config = global.covid19map.config;
 
+const ALTER_CITY_NAMES = [['柏崎保健所管内', '柏崎市'], ['三条保健所管内', '三条市']];
 function parse_html( cr )
 {
   const rootm = iconv.decode( cr.data, 'UTF8' ).match( /県内における感染者の発生状況[\s\S]+?<tbody>[\s\S]*?(<tr[\s\S]+?)<\/tbody>/ );
@@ -48,6 +49,7 @@ export default class PoiNiigata extends BasePoi
   {
     return BasePoi.process_csv( {
       pref_name: '新潟県',
+      alter_citys: ALTER_CITY_NAMES,
       csv_uri: config.NIIGATA_HTML.DATA_URI,
       cb_parse_csv: cr => parse_html( cr ),
       row_begin: 0,

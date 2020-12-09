@@ -3,7 +3,9 @@ import iconv from "iconv-lite";
 import encoding from 'encoding-japanese';
 const config = global.covid19map.config;
 
-//const ALTER_CITY_NAMES = [['徳島県', ''], ['大阪市（帰省先：高松市）', '高松市'], ['岡山県', '']];
+const ALTER_CITY_NAMES = [
+  ['善通寺', '善通寺市']
+];
 function filter_city( city )
 {
   const m = city.match( /帰省先[：:](.+?)[）)\s]/ );
@@ -105,7 +107,7 @@ export default class PoiKagawa extends BasePoi
   {
     return BasePoi.process_csv( {
       pref_name: '香川県',
-      //alter_citys: ALTER_CITY_NAMES,
+      alter_citys: ALTER_CITY_NAMES,
       csv_uri: config.KAGAWA_HTML.DATA_URI,
       cb_parse_csv: cr => parse_html( cr ),
       row_begin: 0,
