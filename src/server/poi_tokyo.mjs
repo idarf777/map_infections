@@ -149,42 +149,43 @@ export default class PoiTokyo
     let lastdate = null;
     let firstcsv = null;
     // 連続でconfig.TOKYO_CSV.DATA_LACK_COUNT回、ファイルがなければ終了とする
-    for ( let date = new Date( config.TOKYO_CSV.DATA_BEGIN_AT ), today = new Date( datetostring( Date.now() ) ), lacks = 0;
-          lacks < config.TOKYO_CSV.DATA_LACK_COUNT  &&  today.getTime() >= date.getTime();
-          date.setDate( date.getDate()+1 ) )
+    for ( let d = new Date( config.TOKYO_CSV.DATA_BEGIN_AT ), today = new Date( datetostring( Date.now() ) ), lacks = 0;
+          lacks < config.TOKYO_CSV.DATA_LACK_COUNT  &&  today.getTime() >= d.getTime();
+          d.setDate( d.getDate()+1 ) )
     {
-      const csv = await load_csv( date, cache_dir ).catch( ex => Log.error( ex ) );
+      const csv = await load_csv( d, cache_dir ).catch( ex => Log.error( ex ) );
+      const date = datetostring( d );
       if ( !csv )
       {
-        Log.info( `${datetostring( date )} CSV lacks` );
+        Log.info( `${date} CSV lacks` );
         lacks++;
         continue;
       }
-      csvs.set( date.getTime(), csv );
-      lastdate = new Date( date );
+      csvs.set( date, csv );
+      lastdate = new Date( d );
       firstcsv |= csv;
       lacks = 0;
     }
     // 日付が欠けているところをその前日のCSVで補う
-    for ( let date = new Date( config.TOKYO_CSV.DATA_BEGIN_AT ); lastdate && (date.getTime() <= lastdate.getTime());  date.setDate( date.getDate()+1 ) )
+    for ( let d = new Date( config.TOKYO_CSV.DATA_BEGIN_AT ); lastdate && (d.getTime() <= lastdate.getTime());  d.setDate( d.getDate()+1 ) )
     {
-      if ( csvs.has( date.getTime() ) )
+      const date = datetostring( d );
+      if ( csvs.has( date ) )
         continue;
-      const prevdate = new Date( date );
+      const prevdate = new Date( d );
       prevdate.setDate( prevdate.getDate() - 1 );
-      csvs.set( date.getTime(), csvs.get( prevdate.getTime() ) || firstcsv );
+      csvs.set( date, csvs.get( prevdate.getTime() ) || firstcsv );
     }
 
     Log.info( 'parsing tokyo CSV...' );
     const map_city_infectors = new Map();
-    const timestamps = Array.from( csvs.keys() ).sort();
-    for ( const tm of timestamps )
+    const csvdates = Array.from( csvs.keys() ).sort();
+    for ( const date of csvdates )
     {
-      const date = new Date( tm );
-      const rows = await parse_csv( csvs.get( tm ) );
+      const rows = await parse_csv( csvs.get( date ) );
       if ( !( rows && rows.length > 0 && rows[ 0 ].length >= 2 && rows[ 0 ][ 0 ].match( /^[^\d]+$/ ) && rows[ 0 ][ 1 ].match( /^\(?\d+\)?$/ ) ) )  // 先頭行が「文字,数字」であるか検証
       {
-        Log.info( `CSV at ${datetostring( date )} is invalid` );
+        Log.info( `CSV at ${date} is invalid` );
         await remove_csv_cache( date, cache_dir ).catch( ex => {} );
         continue;
       }
@@ -202,18 +203,22 @@ export default class PoiTokyo
         const m = d[ 1 ].match( /(\d+)/ );
         const subtotal = parseInt( (m && m[ 1 ]) || '0' );
         const prev_subtotal = (vals.length > 0) ? vals[ vals.length - 1 ].subtotal : subtotal;  // 初日の新規感染者はデータがない=0人
-        vals.push( { date: datetostring( date ), infectors: Math.max( (name === '調査中') ? (-Number.MAX_VALUE) : 0, subtotal - prev_subtotal ), subtotal: subtotal } );  // 調査中の値のみ減ることが許される
+        vals.push( {
+          date: datetostring( date ),
+          infectors: subtotal - prev_subtotal, //Math.max( (name === '調査中') ? (-Number.MAX_VALUE) : 0, subtotal - prev_subtotal ),
+          subtotal: subtotal
+        } );
       }
     }
     for ( const spot of map_city_infectors.values() )
-      spot.data = spot.data.filter( d => d.infectors > 0 || (d === spot.data[ 0 ] && d.subtotal > 0) ); // 最初の日はinfectors==0でもsubtotal>0かもしれない
+      spot.data = spot.data.filter( d => d.infectors !== 0 || (d === spot.data[ 0 ] && d.subtotal > 0) ); // 最初の日はinfectors==0でもsubtotal>0かもしれない
 
     Log.info( 'parsed tokyo CSV' );
     return {
       pref_code: 13,
       name: '東京都',
-      begin_at: datetostring( timestamps[ 0 ] ),
-      finish_at: datetostring( timestamps[ timestamps.length - 1 ] ),
+      begin_at: csvdates[ 0 ],
+      finish_at: csvdates[ csvdates.length - 1 ],
       spots: Array.from( map_city_infectors.values() )
     };
   }
