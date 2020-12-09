@@ -243,7 +243,7 @@ const CITIES = [
   [ 'hokkaido', PoiHokkaido ],
 ];
 const AVAILABLE_CITIES = [
-  //'tokushima'
+  'ibaraki'
 ];
 
 async function exec_make_data()
