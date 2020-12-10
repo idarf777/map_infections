@@ -14,94 +14,136 @@ async function parse_html( html )
     '<tr>[\\r\\n|\\r|\\n]<td',
     '([\\s\\S]+?)<\\/tr>'].join(''), 'g');                                           // <tr> - <\tr>
 
+  var rowspan_no=0, rowspan_date=0, rowspan_age=0, rowspan_city=0;
   var mon, day, city;
   var no, to_no;
   var p_no=0;
  
   SEARCH_BLOCK: while ( true )
   {
-    const m = re.exec( html );
+    const m = re.exec( html );                    // <tr> - </tr> のブロック
     if ( !m )
       break;
-    const hText = m[1].split(/[\r\n|\r|\n]/);
+    const m_1 = m[1].replace(/[\r\n|\r|\n]/g,'')  // 見やすくするために改行を削除
+    const hText = m_1.split("</td>");             // <td> - </td> ブロック
 
     var index=0;
     var mm, mm_1;
-    while(true){
-      // 通し番号を探す
-      mm = hText[index].match(/.+?>(\d+)/);
-      mm_1 = hText[index].match(/.+?>(\d+)～(\d+)/);
-      index++;
-      if( mm_1 != null){
-        no = mm_1[2];
-        to_no = mm_1[1]
-        break;
-      }else if( mm != null){
-        to_no = no = mm[1];
-        break;
-      }
-      if( index >= hText.length){
+
+    //---- 通し番号を探す
+    mm = hText[index].match(/.+?>(\d+)/);
+    mm_1 = hText[index].match(/.+?>(\d+)～(\d+)/);
+    index++;
+    if( mm_1 != null){
+      no = mm_1[2];
+      to_no = mm_1[1]
+    }else if( mm != null){
+       to_no = no = mm[1];
+    }else{
         continue SEARCH_BLOCK;
-      }
     }
 
-    while(true){
-      // get date
-      mm = hText[index].match(/.+?>(\d+)(月|\/)(\d+)/);
-      index++;
+    //---- get date
+    mm= hText[index].match(/.+? rowspan="(\d+)/);
+    if( mm != null){
+      rowspan_date = mm[1];
+      mm = hText[index].match(/.+?>(\d+)(?:月|\/)(\d+)/);
       if( mm != null){
         mon = mm[1];
-        day = mm[3];
-        break;
+        day = mm[2];
+      }else{
+        Log.info("???? getting date error_0 : no=" + no + " index=" + index);
       }
-      if( index >= hText.length){
-        continue SEARCH_BLOCK;
+      index++;
+    }else if( rowspan_date <= 1){
+      mm = hText[index].match(/.+?>(\d+)(?:月|\/)(\d+)/);
+      if( mm != null){
+        mon = mm[1];
+        day = mm[2];
+      }else{
+        Log.info("???? getting date error_1 : no=" + no + " index=" + index);
       }
+      index++;
+    }else{
+      rowspan_date --;
     }
 
-    while(true){
-      // get age
-      mm = hText[index].match(/.+?>(\d+|非公表|成人|詳細情報のとおり)/);
-      index++;
+    /*
+    if(rowspan_date <= 1){
+      mm= hText[index].match(/.+? rowspan="(\d+)/)
       if( mm != null){
-        break;
+        rowspan_date = mm[1]
       }
-      if( index >= hText.length){
-        continue SEARCH_BLOCK;
+      mm = hText[index].match(/.+?>(\d+)(?:月|\/)(\d+)/);
+      if( mm != null){
+        mon = mm[1];
+        day = mm[2];
+      }else{
+        Log.info("???? getting date error : no=" + no + " index=" + index);
       }
+      index++;
+    }else{
+      rowspan_date-- ;
+    }
+    */
+
+    //---- get age
+    mm = hText[index].match(/.+?>(\d+|非公表|成人|詳細情報のとおり|児童|調査中)/);
+    if( mm != null){
+      index ++;
     }
  
-    while(true){
-      // get city
-      mm = hText[index].match(/.+?>(.+?)<\/td>/);
-      mm_1 = hText[index].match(/<p>(.+?)</);
-      index++;
+    //---- get city
+    mm= hText[index].match(/.+? rowspan="(\d+)/)
+    if( mm != null){
+      rowspan_city = mm[1]
+      mm = hText[index].match(/.+?>(.+?)$/);
       if( mm != null){
-        city = mm[1];
-         break;
-      }else if( mm_1 != null){
-        city = mm_1[1];
-        break;
+        //city = mm[1]
+        city = mm[1].replace(/<p>/, '').replace(/<\/p>/, '');  // 初めて使った .ドット構文
+        if( city.includes('東京都')){
+          city = '東京都';            // No 14 の特例　これが無くても結果に影響しない
+        }
+        if( city.includes('県外')){
+          city = '県外';              // No987 の特例　これが無くても結果に影響しない
+        }
+      }else{
+        Log.error("???? get city error : " + mm[0])
       }
-      if( index >= hText.length){
-        continue SEARCH_BLOCK;
+      index++;
+    }else if( rowspan_city <= 1){
+      mm = hText[index].match(/.+?>(.+?)$/);
+      if( mm != null){
+        //city = mm[1];
+        city = mm[1].replace(/<p>/, '').replace(/<\/p>/, '');
+        if( city.includes('東京都')){
+          city = '東京都';            // No 14 の特例　これが無くても結果に影響しない
+        }
+        if( city.includes('県外')){
+          city = '県外';              // No987 の特例　これが無くても結果に影響しない
+        }
       }
+      index++;
+    }else{
+      rowspan_city --;
     }
-    // 通し番号の抜けチェック
+
+  //---- 通し番号の抜けチェック
   if( p_no == 0 ){
       p_no = no;
   }else{
     if( p_no-1 != no){
-        Log.error( "???? serial error " + no + " " + p_no) ;
+      // 1103 は、全角で書かれているのでエラーになるが、結果に影響を与えない。
+      //Log.error( "???? serial error " + no + " " + p_no) ;
     }
     p_no = to_no;
   }
   // チェック用のブレイクポイントを置くところ
-  if( no == 159){
+  if( no == 1084){
     let x = 1;
   }
 
-  //console.log( no + ":" + mon + " " + day + " " + city);
+  //console.log( no + ":" + mon + " " + day + " " + city + " rowspan_city=" + rowspan_city);
 
   while(true){
     csv.push( [ new Date( 2020, mon - 1, day ), city ] );
