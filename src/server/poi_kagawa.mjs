@@ -1,5 +1,6 @@
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
+import Log from "./logger.mjs";
 import encoding from 'encoding-japanese';
 const config = global.covid19map.config;
 
@@ -14,7 +15,7 @@ async function parse_json( cr )
   const json = JSON.parse( iconv.decode( cr.data, 'UTF8' ) );
   return json[ 'patients' ][ 'data' ].map( p => [ new Date( p[ 'date' ] ), p[ '居住地' ] ] );
 }
-async function parse_html( html )
+async function parse_html( html_ )
 {
   const nextSearch = function (hText, index){
     while( true ){
@@ -30,69 +31,100 @@ async function parse_html( html )
   }
 
   const csv = [];
-  const detected = encoding.detect(html.data);
+  const re = new RegExp([
+    '<tr>(?:[\\s\\S]+?)(?:<th|<td)',
+    '([\\s\\S]+?)<\\/tr>'].join(''), 'g');          // <tr> - </tr>  join は、RegExp()　の括弧の中を1つの文字列にする
+
+  const detected = encoding.detect(html_.data);  // 文字コード検出
 //  const _hText = encoding.convert( html.data, {
 //     from:detected,
 //     to:'UNICODE',
 //     type: 'string' });
-  const _hText = iconv.decode( html.data, detected ) 
-  const hText = _hText.split(/\r\n|\r|\n/);
+  const html = iconv.decode( html_.data, detected ) 
   let entryFlag = false;
-  //let no, date, age, sec, city; 
-  for( let index = 0; index<hText.length; index++){
-    var str = hText[index];
+
+  var no, mon, day, age, sec, city;
+  var p_no=0;
+  var rowspan_date=0;
+  SEARCH_BLOCK: while(true){
+    const m = re.exec(html);
+    if( !m )
+      break;
+
+    // データのエントリーを探す
     if( entryFlag == false){
       //console.log(hText[index]);
-      if( str.includes('確認日') && str.includes('年齢') ){
+      if( m[0].includes('確認日') && m[0].includes('年齢') ){
         entryFlag = true;
-      }else{
-        continue;
       }
+      continue;
     }
 
-    str = hText[++index];
-    while(true){  // <tr> 検出
-     var result = str.match(/^<tr>$/);
-     if(result){
-       break;
-     }
-     str = hText[++index];
+    const m_1 = m[1].replace(/[\r\n|\r|\n|\t]/g,'')  // 見やすくするために改行とtab を削除
+    const hText = m_1.split("</td>");             // <td> - </td> ブロック
+     
+    var index = 0;
+    //---- 通し番号
+    var mm = hText[index].match(/>(\d+)/);
+    if( mm != null ){
+      no = mm[1];
+    }else{
+      Log.error("???? get no error : " + hText[index]);
     }
-
-    index = nextSearch(hText, index);
-    str = hText[index].replace( /&nbsp;/g, "");
-    var no = str.match(/^<div class=\".+?\">(\d+)/);
-
-    index = nextSearch(hText, index);
-    str = hText[index].replace( /&nbsp;/g, "");
+    index ++;
     
-    if( str.includes( '月') ){
-      var _str = str.replace(/<br \/>/g, "");
-      var result = _str.match(/^<div class=\".+?\">(\d+)月(\d+)日/);
-      var mon = result[ 1 ];
-      var day = result[ 2 ];
-
-      index = nextSearch(hText, index);
-      str = hText[index].replace( /&nbsp;/g, "");
-        }else{
-      // 日にちのカラムが前のと同じ。何もしない。
+    //---- get date
+    mm = hText[index].match(/rowspan="(\d+)/);
+    if( mm != null){
+      rowspan_date = mm[1];
+      mm = hText[index].match(/(\d+)月(\d+)日/);
+      if( mm != null){
+        mon = mm[1];
+        day = mm[2];
+      }else{
+        Log.error("???? get date error 0 : " + hText[index]);
+      }
+      index ++;
+    }else if( rowspan_date <= 1){
+      mm = hText[index].match(/(\d+)月(\d+)日/);
+      if( mm != null){
+        mon = mm[1];
+        day = mm[2];
+      }else{
+        Log.error("???? get date error 1 : " + hText[index]);
+      }
+      index ++;
+    }else{
+      rowspan_date --;
     }
 
-    var age = str.match(/^<div class=\".+?\">(\d+)代/);
+    //---- age
+    index ++;
+    //---- sex
+    index ++;
+    //---- city
+    mm = hText[index].match(/>(.+?)$/);
+    if( mm != null){
+      city = mm[1].replace(/<p[\s\S]+?>/,'').replace(/<\/p>/,'').replace(/&nbsp;/g,'');
+    }else{
+      Log.error("???? get city error : " + hText[index]);
+    }
+    if( p_no == 0){
+      p_no = no;
+    }else if( p_no - 1 != no){
+      Log.error( "???? serial error " + no + " " + p_no) ;
+    }else{
+      p_no = no;
+    }
+    if( no == 119){
+      let x = 1;
+    }
+    //console.log(no + " " + mon + " " + day + " " + city);
 
-    index = nextSearch(hText, index);
-    str = hText[index].replace( /&nbsp;/g, "");
-    var sex = str.match(/^<div class=\".+?\">(.*?)<\/div>/);
-
-    index = nextSearch(hText, index);
-    str = hText[index].replace( /&nbsp;/g, "");
-    
-    var city = str.match(/^<div class=\".+?\">(.*?)<\/div>/);
-  
     csv.push( [ new Date( 2020, mon-1, day), filter_city( city[ 1 ] ) ] );
     //console.log(no[ 1 ], "....", mon, "月", day, "日　", city[ 1 ] );
   
-    if( no[ 1 ] == 1){
+    if( no == 1){
       break;
     }
   }
