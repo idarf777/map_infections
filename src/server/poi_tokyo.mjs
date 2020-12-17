@@ -79,7 +79,7 @@ const map_cityname = new Map();
 for ( const names of cityname_tokyo )
   map_cityname.set( names[ 0 ], names[ 1 ] );
 
-const CSV_MODS = [ '-1', '_1', '06', '05', '04', '03', '02', '01', '' ];  // 修正版があるか調べてゆく
+const CSV_MODS = [ '-1', '_1', '06', '05', '04', '03', '02', '01', '2', '' ];  // 修正版があるか調べてゆく
 function csv_prefix( date )
 {
   return agh.sprintf( '%04d%02d%02d', date.getFullYear(), date.getMonth()+1, date.getDate() );
