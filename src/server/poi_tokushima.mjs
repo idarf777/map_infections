@@ -11,8 +11,9 @@ import {axios_instance} from "./util.mjs";
 const config = global.covid19map.config;
 const { JSDOM } = jsdom;
 
-
-async function getPdfText( data )
+const DEBUG = false;
+const DEBUG1 = false;
+async function getPdfText( data, year )
 {
   function zen2Han(figures){
     return figures.replace(/[０-９]/g, function(s) {
@@ -32,6 +33,12 @@ async function getPdfText( data )
   let mon, day, city;
   let m, m1, m2;
   const csv = [];
+
+  m = items[index].str.match(/追加情報/);
+  if( m != null){
+    return csv;
+  }
+
   while(true){
     // get date
     m = items[index].str.match(/[(（](\d+?|\D+?)月(\d+?|\D+?)日[）)]/);
@@ -51,7 +58,7 @@ async function getPdfText( data )
     m2 = items[index].str.match(/１ 感染者の概要/);
     index ++;
     if( m != null ){
-      pageStyle = "new";
+      pageStyle = "new";    // PDF で表を使っている書き方
       break;
     }else if( m1 != null ){
       pageStyle = "old";
@@ -61,6 +68,7 @@ async function getPdfText( data )
       break;
     }
   }
+  //console.log(pageStyle);
 
   // 感染者の居住地を見つける
   if( pageStyle == "old"  ){
@@ -76,97 +84,91 @@ async function getPdfText( data )
         continue;
       }
       city = m[1];
-      csv.push( [new Date( 2020, mon-1, day), city] );
+      csv.push( [ 0, new Date( year, mon-1, day), city] );
     }
   }else{
-    LOOP: while(true){
-      //m = items[index].str.match(/(\d+?) +?(\d+?)(代|未満) +?(女性|男性) +?(.+?)($| )/);
-      m = items[index].str.match(/例目 +年代 +性別/);
-      m1 = items[index].str.match(/例目 +年代 +性別 +職業/);
-      m2 = items[index].str.match(/居住地/);
-      index ++;
+    let no;
+    let x_no, x_city;
+    // '例目'表示位置の x 座標
+    while(true){
+      let item = items[index];
+      index++;
       if( index >= items.length){
         break;
       }
-      if( m == null && m1 == null && m2 == null){
-        continue;
-      }
-      if( m1 == null & m !=null ){
-        // PDF の表の形式 例目/年代/性別/居住地
-        while(true){
-          m = items[index].str.match(/(\d+?) +?(\d+?)(代|未満) +?(女性|男性) +?(.+?)($| )/);
-          index ++;
-          if( index >= items.length){
-            break LOOP;
-          }
-          if( m == null && m1 == null){
-            continue;
-          }
-          city = m[5];
-          csv.push( [new Date( 2020, mon-1, day), city] );
-        }
-      }
-      if( m1 != null || m2 != null){
-        // PDF の表の形式 例目/年代/性別/職業/居住地
-        let x ;
-        let x_width = 35;
-        const y_threshold = 12;
-        while(true){
-          // 居住地が書かれている x 座標を得る。
-          m1 = items[index].str.match(/保健所管内/);  // こちらが居住地より後に出る。
-          index ++;
-          if( index >= items.length){
-            break LOOP;
-          }
-          if( m1 == null ){
-            continue;
-          }
-          x = items[index-1].transform[4];
-          break;
-        }
 
-        for ( let prev_y=0; ; ){
-          m1 = items[index];
-          m2 = items[index].str.match(/\d+? +?\d+?代 +(男|女)( +)(.+?)( +)(.+?)$/); 
-            // 571829.pdf 用 57  30代 女  物産店店員   徳島" にマッチさせるために作った物が
-              // /571703.pdf   51  20代 男   自営業", にマッチしてしまう。
-          index ++;
-          if( index >= items.length){
-            break LOOP;
-          }
-          if( x-x_width <= m1.transform[4]  &&  m1.transform[4] <= x+x_width){
-            // 居住地の座標なら居住地
-            const y_diff = Math.abs( prev_y - m1.transform[ 5 ] );
-            prev_y = m1.transform[ 5 ];
-            if ( y_diff <= y_threshold )
-              continue;  // 1つのマス内に書かれた、居住地についての解説と見なす
-            city = m1.str;
-            csv.push( [new Date( 2020, mon-1, day), city] );
-            continue;
-          }
-          if( m2 != null){
-            // 一つの枠に4つ入っていることもある。
-            city = m2[5];
-            if( city.match("自営業") != null){    //　苦し紛れ
-              continue;
+      m = item.str.match(/例目/);
+      if( m != null ){
+        x_no = item.transform[4];
+        break;
+      }
+    }
+
+    // '居住地'表示位置の x 座標
+    let y_prev = 0;                 // 以前の表示位置の y 座標
+    while(true){
+      let item = items[index];
+      index++;
+      if( index >= items.length){
+        break;
+      }
+
+      m = item.str.match(/居住地/);
+      if( m != null ){
+        x_city = item.transform[4];
+        y_prev = item.transform[5];   // 保健所管内が次にくるので、それを読み飛ばすため
+        break;
+      }
+    }
+    
+    const x_width = 35;         // 表の幅
+    const y_threshold = 13;     // 同じ枠内かを判断する指標
+    LOOP: while(true){
+      let item = items[index];
+      index ++;
+
+      if( index >= items.length){
+        // Log.debug( no.length + " " + csv.length );
+        break;
+      }
+
+      let x = item.transform[4];
+      let y = item.transform[5];
+      if(  x_no - x_width <= x && x <= x_no + x_width ){
+        no =  item.str.match(/\d+/);
+        m = item.str.match(/(?:女性|男性|女|男)[\s\S]+?(徳島|阿南)/);
+        if( m != null ){
+          // 苦し紛れ：この記述が発生するのは1回だけ。
+          city = m[2];
+          csv.push( [parseInt(no[0], 10), new Date( year, mon-1, day), city] );
+        }
+        // console.log(item.str);
+      }else if( x_city - x_width <= x && x <= x_city + x_width){
+        const y_diff = Math.abs( y_prev - y);
+        if( y_diff < y_threshold ){
+          // この 居住地の記述は、直前の居住地の記述の付帯とみなすので、何もしない
+        }else{
+          city = item.str;
+          if( city.match(/(保健所管内)/) != null ){
+            // 何もしない
+          }else{
+            if( parseInt(no[0], 10) == 199 ){
+              year = 2020;                  // 苦し紛れ 令和3年の1月1日に 12月31日の感染者の発表をしている
             }
-            if( city.match("公務員") != null ){
-              continue;
-            }
-            csv.push( [new Date( 2020, mon-1, day), city] );
+            csv.push( [parseInt(no[0], 10), new Date( year, mon-1, day), city] );
+            // console.log( csv[csv.length - 1 ]);
           }
         }
+        y_prev = y;       // 居住地の付帯事項が書かれることがあるので、付帯事項を識別するために使う
       }
     }
   }
-
-/*  for( const item of csv){
-    Log.debug( item[1] + " " + item[0]);
+  if( DEBUG1 == true){
+    for( const item of csv){
+      Log.debug( item[0] + " " + item[2] + " " + item[1]);
+    }
   }
-  Log.debug( csv.length );
-*/
   return csv;
-
 }
 
 
@@ -179,34 +181,42 @@ async function parse_html( html, pref_name )
     const fp = path.join(cache_dir, `/${file}`);
     cachedFiles.push(fp);
   }
+  let markFileName = path.join(config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_CACHE_DIR}/${pref_name}/20210110.mrk`);
+  let num = cachedFiles.indexOf(markFileName);
+  if(num !== -1){
+    // 何もしない
+  }else{
+    for( const file of cachedFiles ){
+      if( file.match(/pdf/)){
+        await fs.unlink(file).catch(() => { LOG.error('????:2 no cached file') });
+      }
+    }
+    await fs.writeFile(markFileName, 'mark file', (err)=>{
+      if (err) throw err;
+      LOG.error('???? can not create markFile');
+    })
+  }
 
   // サーバのPDFファイル名を得る
   const dom = new JSDOM( html );
   let uri = null;
   let pdfFileCounter = 0;
-  for ( const tag of dom.window.document.querySelectorAll( 'a' ) )
+  let year = {};
+  const tags = dom.window.document.querySelectorAll( 'a' )
+  for ( const tag of tags )
   {
+    //console.log(tag.href);
+    //console.log(tag.textContent);
     // 感染者発生ファイルを検出
-    const m = tag.textContent.match( /資料.+?[(（]((\d+|\D+)例目の?発生)[)）]/ );
-    const m1 = tag.textContent.match( /資料.+?[(（]((\d+|\D+)(,|、)(\d+|\D+)例目の発生)[)）]/ );
-    const m2 = tag.textContent.match( /資料.+?[(（]((\d+|\D+)(-|ー|～|‐)(\d+|\D+)(例目の発生|例目発生 ))[)）]/ );
-    if( m == null && m1 == null && m2 == null){
+    const m = tag.textContent.match( /令和(\d+)年[\s\S]+?公表資料/ );
+    if( m == null ){
       continue;
     }
-    /*
-    if( m != null)
-      Log.debug(m[0]);
-    if( m1 != null)
-      Log.debug(m1[0]);
-    if( m2 != null)
-      Log.debug(m2[0]);
-    */
-
-    //if ( tag.textContent.match( /資料.+?[(（]((\d+|\D+)例目の発生)[)）]/ ) )
     {
       uri = tag.href;
       pdfFileCounter ++;
       const theFile = path.join( `${cache_dir}/`, uri.split('/').slice(-1)[0] );
+      year[theFile] = 2018 + parseInt(m[1],10);
       if( cachedFiles.includes(theFile) ){
         // theFile が cache に有る時は、何もしない。
         continue;
@@ -251,24 +261,49 @@ async function parse_html( html, pref_name )
   let counter = 0;
   for( const theFile of cachedFiles ){
     //Log.debug("* " + theFile);
-    if(  theFile.match(/.pdf/i) == null ){
+    if(  theFile.match(/.pdf/i) == null ){    // i は大文字と小文字の区別をしない
       //Log.debug("** match");
       continue; // continue と同じ働き
     }
+    if( DEBUG == true){
+      console.log(theFile);
+
+      if( theFile.match(588543)){
+        let _dummy = 1;  // debug 用
+      }
+    }
+
     const _cr = await fs.readFile( theFile);
-    const _csv = await getPdfText(_cr);
+    const _csv = await getPdfText(_cr, year[theFile]);
+
     for( const info of _csv){
-      const day = info[0];
-      const city = info[1];
+      const no = info[0];
+      const day = info[1];
+      const city = info[2];
       counter ++;
-      csv.push( [ day, city ]);
+      csv.push( [ no, day, city ]);
     }
   }
-
   //Log.debug(counter + " " + csv.length);
-  csv.forEach( c => c[ 1 ] = c[ 1 ].replace( /[(（].+?[)）]/g, '' ) );
-  return csv;
+  csv.sort(); // 確認しやすくするため、ただし文字列で sort されているようだ。??
+
+  if( DEBUG == true){
+    let i = 0;
+    for (const item of csv){
+      console.log( "** " + i + " - " + item[0] + " " + item[2] + " " + item[1]);
+      i++;
+    }
+    console.log(csv.length);
+  }
+
+  let r_csv = [];     // デバッグ用の通し番号を除く
+  for (const item of csv){
+    r_csv.push( item.splice(1,2));
+  }
+  //console.log( r_csv.length);
+  return r_csv;
 }
+
   // csv_cache を cache に書き込む
   // const csv_cache_data = JSON.stringify( csv_cache );
   // await fs.writeFile(csv_cash_file, csv_cache_data);
@@ -276,6 +311,10 @@ async function parse_html( html, pref_name )
 const ALTER_CITY_NAMES = [
   ['徳島', '徳島市'],
   ['阿南', '阿南市'],
+  ['美馬', '美馬市'],
+  ['吉野川', '吉野川市'],
+  ['美波', '美波町'],
+  
   ['徳島保健所管内', '徳島市'],
   ['阿南保健所管内', '阿南市'],
 ];
