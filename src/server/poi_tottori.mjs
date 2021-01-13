@@ -116,7 +116,7 @@ async function parse_html( html )
     }
     prevMon = mon;
 
-    Log.debug( no + " : " + mon + "-" + day + "  " + city );
+    // Log.debug( no + " : " + mon + "-" + day + "  " + city );
     city = city.replace(/(?:[<\(].+?$)/, ''); //function(match){ Log.debug(match); }); 
     r_csv.push( [new Date( year, mon-1, day), city])
   }
