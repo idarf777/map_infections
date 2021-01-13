@@ -16,7 +16,7 @@ export default class PoiOkayama extends BasePoi
       row_begin: 1,
       min_columns: 6,
       cb_date: rows => {
-        const dm = rows[ 3 ].match( /((\d+)年)?(\d+)月(\d+)日/ );
+        const dm = rows[ 3 ].match( /((\d+)\/)?(\d+)\/(\d+)\// );
         if ( !dm )
           throw new Error( "no date in okayama" );
         let year = new Date().getFullYear();

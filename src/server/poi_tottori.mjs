@@ -1,106 +1,127 @@
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
 import Log from "./logger.mjs";
+import { LOGLEVEL } from "./config.mjs";
+import {axios_instance} from "./util.mjs";
+
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
   ['西伯郡', '伯耆町'],  ['西部地区', '境港市']
 ];
 
+function getOnePatientProcess( hText ){
+  let no, mon, day, city;
+  no = hText[0].match(/(\d+?)(<\/a>|$)/)[1];
+/*  let mm = hText[2].match(/(\d+)\/(\d+)/);
+  mon = mm[1];
+  day = mm[2];
+*/
+  hText[2].match(/(\d+?)\/(\d+?)$/).map( function( value, index, array ){
+    if( index == 1){
+      mon = value;
+    }else if( index == 2){
+     day = value;
+    }
+  });
+  city = hText[3].match(/<td>(.+?)$/)[1];
+  if( no == 108 ){
+    let x =1;
+  }
+  return [no, mon, day, city];
+}
+
+let firstFlag = true;
+const csv = [];         // 再帰するから、関数の外側で宣言
 async function parse_html( html )
 {
-  const csv = [];
+  // 最初のHTML のページ
   const re = new RegExp( [
-    '<tr>[\\s\\S]+?<td style=',
-    '([\\s\\S]+?)<\\/tr>'].join(''), 'g');                                           // <tr> - <\tr>
+    '<tr>[\\s\\S]+?',
+    '(<td style=[\\s\\S]+?)<\\/tr>'].join(''), 'g');                                           // <tr> - <\tr>
 
-  var mon, day, city;
-  var no, to_no;
-  var p_no=0;
- 
-  SEARCH_BLOCK: while ( true )
+  while ( true )
   {
     const m = re.exec( html );
-    if ( !m )
-      break;
-    const hText = m[1].split(/[\r\n|\r|\n]/);
-
-    var index=0;
-    var mm, mm_1;
-    while(true){
-      // 通し番号を探す
-      mm = hText[index].match(/.+?>(\d+)/);
-      index++;
-      if( mm != null){
-        to_no = no = mm[1];
-        break;
-      }
-      if( index >= hText.length){
-        continue SEARCH_BLOCK;
-      }
-    }
-
-    while(true){
-      // get date
-      mm = hText[index].match(/.+?>(\d+)(月|\/)(\d+)/);
-      index++;
-      if( mm != null){
-        mon = mm[1];
-        day = mm[3];
-        break;
-      }
-      if( index >= hText.length){
-        continue SEARCH_BLOCK;
-      }
-    }
-
-    while(true){
-      // get city
-      mm = hText[index].match(/.+?>(.+?)<\/td>/);
-      mm_1 = hText[index].match(/<td>(.+?)<br \/>/);
-      index++;
-      if( mm != null){
-        city = mm[1];
-         break;
-      }else if( mm_1 != null){
-        city = mm_1[1];
-        break;
-      }
-      if( index >= hText.length){
-        continue SEARCH_BLOCK;
-      }
-    }
-
-    city = city.replace( /&nbsp;|[（(].+?[)）]/g, '' );
-    // 通し番号の抜けチェック
-    if( p_no == 0 ){
-      p_no = no;
-    }else{
-      if( p_no-1 != no){
-        Log.error( "???? serial error " + no + " " + p_no) ;
-      }
-      p_no = to_no;
-    }
-    // チェック用のブレイクポイントを置くところ
-    //if( no == 17){
-    //  let x = 1;
-    //}
-
-    //console.log( no + ":" + mon + " " + day + " " + city);
-    while(true){
-      csv.push( [ new Date( 2020, mon - 1, day ), city.replace( /[\s]|[(（].+$|<[^>]*?>/g, '' ) ] );
-      if( no == to_no){
+    if ( !m  ){
+      if( firstFlag == true){
+        firstFlag = false;
         break;
       }else{
-        no--;
+        return;
       }
     }
 
-  if( no == 1){
-      break;
+    const hText = m[1].replace(/(?:\r|\n|\s{2,})/g, '').split('</td>');
+
+    if( hText.length >= 7 && hText[0].match(/\d+(<\/a>|$)/) ){
+      csv.push(getOnePatientProcess(hText));
     }
   }
-  return csv;
+
+  // 過去の一覧のHTMLのページ
+  const re1 = new RegExp( [
+    '<a href="(.+?)">',
+    '過去の一覧<\\/a>'].join(''), 'g');
+
+  while ( true )
+  {
+    const m = re1.exec(html);
+    if( m == null ){
+      continue;
+    }
+    
+    let uri = m[1];
+    const host = config.TOTTORI_HTML.DATA_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+?\/)/ )[ 1 ];
+    uri = `${host}${uri}`;
+    
+    Log.info( `receiving : ${uri}` );
+    const cr = await axios_instance(
+    { responseType: 'arraybuffer', 
+      headers:{
+        Referer: config.TOTTORI_HTML.DATA_URI
+      }
+    } ).get( uri );
+
+    const html_1 = iconv.decode( cr.data, 'UTF8');
+    parse_html(html_1);                               // 再帰して、患者情報を読み込む部分を使いまわす。
+    break;
+  }
+  let today = new Date();
+  let year = today.getFullYear();
+  let prevMon = today.getMonth() + 1;
+  let r_csv = [];
+  let firstFlag1 = true;
+  let prevNo;
+
+  for ( let i=0; i<csv.length; i++){
+    let no = csv[i][0];
+    let mon = csv[i][1];
+    let day = csv[i][2];
+    let city = csv[i][3];
+
+    // data lost のチェック
+    if( firstFlag1 == true){
+      firstFlag1 = false;
+    }else{
+      if( prevNo - 1 != no){
+        Log.debug("???? data lost : " + prevNo + " -> " + no );
+      }
+    } 
+    prevNo = no;
+
+    // 年を求める
+    if( Number(prevMon) < Number(mon) ){
+      year --;
+    }
+    prevMon = mon;
+
+    // Log.debug( no + " : " + mon + "-" + day + "  " + city );
+    city = city.replace(/(?:[<\(].+?$)/, ''); //function(match){ Log.debug(match); }); 
+    r_csv.push( [new Date( year, mon-1, day), city])
+  }
+
+  return r_csv;
 }
 
 

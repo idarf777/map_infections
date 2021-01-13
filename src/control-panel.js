@@ -84,6 +84,7 @@ export default class ControlPanel extends PureComponent
               SOFTWARE.
             </div>
 
+            <p><a href="https://creativecommons.org/licenses/by/2.1/jp/">広島県のデータセットはCC BY 2.1 JPで提供されています。©広島県</a></p>
             <p><a href="https://creativecommons.org/licenses/by/2.1/jp/">岐阜県のデータセットはCC BY 2.1 JPで提供されています。©岐阜県健康福祉部</a></p>
             <p><a href="https://creativecommons.org/licenses/by/2.1/jp/">三重県のデータセットはCC BY 2.1 JPで提供されています。©三重県医療保健部</a></p>
             <p><a href="https://creativecommons.org/licenses/by/2.1/jp/">千葉市のデータセットはCC BY 2.1 JPで提供されています。©千葉市保健福祉局</a></p>
