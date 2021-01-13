@@ -264,7 +264,8 @@ export default function makeConfig()
       LICENSE: license.FREE
     },
     TOTTORI_HTML: {
-      DATA_URI: 'https://www.pref.tottori.lg.jp/291425.htm',
+      //DATA_URI: 'https://www.pref.tottori.lg.jp/291425.htm',
+      DATA_URI: 'https://www.pref.tottori.lg.jp/item/1207264.htm',
       LICENSE: license.FREE
     },
 
