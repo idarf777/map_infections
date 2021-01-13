@@ -289,7 +289,7 @@ export default function makeConfig()
     
     // 九州
     FUKUOKA_CSV: {
-      DATA_URI: 'https://ckan.open-governmentdata.org/dataset/8a9688c2-7b9f-4347-ad6e-de3b339ef740/resource/c27769a2-8634-47aa-9714-7e21c4038dd4/download/400009_pref_fukuoka_covid19_patients.csv',
+      DATA_URI: 'https://ckan.open-governmentdata.org/dataset/8a9688c2-7b9f-4347-ad6e-de3b339ef740/resource/6e61270c-9c69-4aee-82d2-e575b5352e51/download/400009_pref_fukuoka_covid19_patients1.csv',
       LICENSE: license.CC
     },
     NAGASAKI_HTML: {

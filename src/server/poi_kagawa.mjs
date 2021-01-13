@@ -21,7 +21,7 @@ async function parse_html( html_ )
 {
   const nextSearch = function (hText, index){
     while( true ){
-      str = hText[++index];
+      const str = hText[++index];
       if( str.includes('<div class="inlineC">&nbsp;</div>')){
         continue;
       }else if( str.includes('<div class=') ){ 
