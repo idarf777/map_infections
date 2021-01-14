@@ -77,7 +77,7 @@ const COOKIE_OPTIONS = Object.freeze( { maxAge: config.COOKIE_EXPIRE*1000, path:
 const RedisStore = connectRedis( session );
 const redis = new Redis();
 
-function merge_jsons( jsons )
+async function merge_jsons( jsons )
 {
   let spots = [];
   const progresses = new Map();
@@ -111,9 +111,13 @@ function merge_jsons( jsons )
   const summary = jsons.filter( json => json && Object.keys( json ).length > 0 ).map( json => { return { pref_code: json.pref_code, name: json.name, begin_at: json.begin_at, finish_at: json.finish_at, subtotal: progresses.get( json.pref_code ) } } );
 
   // 欠けている都道府県を検出して表示する
+  const errors = [];
   const suset = summary.reduce( ( set, s ) => set.add( s.pref_code ), new Set() );
   for( const pref_code of Object.values( PREFECTURE_CODES ) )
-     !suset.has( pref_code ) && DbPoi.get( pref_code ).then( row => Log.info( `pref_code = ${pref_code} (${row.name}) is missing` ) );
+  {
+     if ( !suset.has( pref_code ) )
+       errors.push( `pref_code = ${pref_code} (${(await DbPoi.get( pref_code )).name}) is missing` );
+  }
 
   const setfigure = v => Math.round( v * 1000000 ) * 0.000001;
   return {
@@ -124,7 +128,8 @@ function merge_jsons( jsons )
         spot.geopos[ i ] = setfigure( spot.geopos[ i ] );
       return spot;
     } ).sort( (a, b) => a.city_code - b.city_code ),
-    summary: summary.sort( (a, b) => a.pref_code - b.pref_code )
+    summary: summary.sort( (a, b) => a.pref_code - b.pref_code ),
+    errors
   };
 }
 
@@ -132,23 +137,17 @@ function city_json_path( city )
 {
   return path.join( config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_DIR}/${city}.json` );
 }
-async function write_city_json( city, json )
+async function write_city_json( city, json, errors )
 {
+  if ( errors?.length !== 0 )
+    json[ '$comment' ] = errors;
   return fs.writeFile( city_json_path( city ), JSON.stringify( json ), 'utf8' );
-}
-async function read_city_json( city )
-{
-  return JSON.parse( await fs.readFile( city_json_path( city ), 'utf8' ) );
 }
 
 async function make_data( city )
 {
-  const trapper = ex => {
-    ex.pois = read_city_json( city[ 0 ] ).then( () => Log.info( `Data of ${city[ 0 ]} is previous one` ) ).catch( ex2 => {} );
-    throw ex;
-  };
-  const pois = await city[ 1 ].load().catch( trapper );
-  await write_city_json( city[ 0 ], pois ).catch( trapper );
+  const pois = await city[ 1 ].load().catch( ex => {} );
+  await write_city_json( city[ 0 ], pois ).catch( ex => {} );
   Log.info( `Data of ${city[ 0 ]} ... ${datetostring( pois.begin_at )} - ${datetostring( pois.finish_at )}`  );
   return pois;
 }
@@ -253,10 +252,12 @@ async function exec_make_data()
   const cities = (AVAILABLE_CITIES.length > 0) ? CITIES.filter( c => AVAILABLE_CITIES.some( v => c[ 0 ] === v ) ) : CITIES;
   const data = await (to_bool( process.env.MAKE_DATA_ORDERED ) ? execMakeDataSerial( cities ) : execMakeData( cities ));
   Log.info( 'merging data...' );
-  const merged = merge_jsons( data.jsons );
+  const merged = await merge_jsons( data.jsons );
   Log.info( `MAKE DATA complete with ${data.errors.length} error${(data.errors.length > 1) ? 's':''} in ${(new Date().getTime() - begintm.getTime())/1000} sec.` );
-  ( data.errors.length > 0 ) && Log.error( data.errors );
-  return merged;
+  const errors = config.DEBUG ? data.errors.concat( merged.errors ) : merged.errors;
+  ( errors.length > 0 ) && Log.error( errors );
+  delete merged.errors;
+  return { merged, errors };
 }
 
 async function busy_lock()
@@ -325,7 +326,7 @@ function sendIndex( req, res )
 if ( process.env.CI_TEST_SERVER )
 {
   exec_make_data()
-    .then( merged => write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged ) )
+    .then( r => write_city_json( config.SERVER_MAKE_DATA_FILENAME, r.merged, r.errors ) )
     .then( () => process.exit( 0 ) )
     .catch( ex => Log.error( ex ) );
 }
@@ -367,9 +368,9 @@ else
       .then( async v => {
         if ( v )
           throw new Error( 'busy' );
-        const merged = await exec_make_data();
-        await write_city_json( config.SERVER_MAKE_DATA_FILENAME, merged );
-        res.send( merged );
+        const md = await exec_make_data();
+        await write_city_json( config.SERVER_MAKE_DATA_FILENAME, md.merged, md.errors );
+        res.send( md.merged );
       } )
       .catch( ex => {
         if ( ex.message !== 'busy' )
