@@ -110,6 +110,42 @@ export default function makeConfig()
 
     CITY_NAME_DATABASE: 'map_infectors_server.sqlite3',
     DATA_SINCE: new Date( '2020-01-01' ),
+    DATA_PAST_DIR: 'json/past',
+
+    // 北海道
+    HOKKAIDO_CSV: {
+      DATA_URI: 'https://www.harp.lg.jp/opendata/dataset/1369/resource/3132/010006_hokkaido_covid19_patients.csv',
+      LICENSE: license.CC
+    },
+
+    // 東北
+    AOMORI_CSV: {
+      INDEX_URI: 'https://opendata.pref.aomori.lg.jp/dataset/1531.html',
+      LICENSE: license.CC
+    },  // CSVリンクをスクレイピングで探す
+    AKITA_HTML: {
+      DATA_URI: 'https://www.pref.akita.lg.jp/pages/archive/47957',
+      LICENSE: license.FREE
+    },  // スクレイピングでデータを拾う
+    YAMAGATA_CSV: {
+      INDEX_URI: 'https://www.pref.yamagata.jp/090001/bosai/kochibou/kikikanri/covid19/shingata_corona.html',
+      LICENSE: license.CC
+    },  // CSVリンクをスクレイピングで探す
+    IWATE_HTML: {
+      DATA_URI: 'https://www.pref.iwate.jp/kurashikankyou/iryou/covid19/1029635/index.html',
+      DATA2_URI: 'https://www.pref.iwate.jp/kurashikankyou/iryou/covid19/1034904/index.html',
+      LICENSE: license.FREE
+    },  // スクレイピングでデータを拾う
+    MIYAGI_XLSX: {
+      HTML_URI: 'https://www.pref.miyagi.jp/site/covid-19/02.html',
+      LICENSE: license.FREE
+    },  // URIをスクレイピングで探す
+    FUKUSHIMA_HTML: {
+      DATA_URI: 'https://www.pref.fukushima.lg.jp/sec/21045c/fukushima-hasseijyoukyou.html',
+      LICENSE: license.FREE
+    },
+
+    // 関東
     TOKYO_CSV: {
       DATA_URI: 'https://raw.githubusercontent.com/idarf777/parse-tokyo-covid-report-pdf/master/csv/',
       DATA_BEGIN_AT: new Date( '2020-04-10' ),
@@ -140,49 +176,38 @@ export default function makeConfig()
       DATA_URI: 'http://stopcovid19.pref.gunma.jp/csv/01kanja.csv',
       LICENSE: license.MIT
     },
-    HOKKAIDO_CSV: {
-      DATA_URI: 'https://www.harp.lg.jp/opendata/dataset/1369/resource/3132/010006_hokkaido_covid19_patients.csv',
-      LICENSE: license.CC
-    },
-    AOMORI_CSV: {
-      INDEX_URI: 'https://opendata.pref.aomori.lg.jp/dataset/1531.html',
-      LICENSE: license.CC
-    },  // CSVリンクをスクレイピングで探す
-    AKITA_HTML: {
-      DATA_URI: 'https://www.pref.akita.lg.jp/pages/archive/47957',
-      LICENSE: license.FREE
-    },  // スクレイピングでデータを拾う
-    YAMAGATA_CSV: {
-      INDEX_URI: 'https://www.pref.yamagata.jp/090001/bosai/kochibou/kikikanri/covid19/shingata_corona.html',
-      LICENSE: license.CC
-    },  // CSVリンクをスクレイピングで探す
-    IWATE_HTML: {
-      DATA_URI: 'https://www.pref.iwate.jp/kurashikankyou/iryou/covid19/1029635/index.html',
-      DATA2_URI: 'https://www.pref.iwate.jp/kurashikankyou/iryou/covid19/1034904/index.html',
-      LICENSE: license.FREE
-    },  // スクレイピングでデータを拾う
-    MIYAGI_XLSX: {
-      HTML_URI: 'https://www.pref.miyagi.jp/site/covid-19/02.html',
-      LICENSE: license.FREE
-    },  // URIをスクレイピングで探す
-    FUKUSHIMA_HTML: {
-      DATA_URI: 'https://www.pref.fukushima.lg.jp/sec/21045c/fukushima-hasseijyoukyou.html',
-      LICENSE: license.FREE
-    },
+
+    // 甲信越
     NIIGATA_HTML: {
       DATA_URI: 'https://www.pref.niigata.lg.jp/site/shingata-corona/256362836.html',
       LICENSE: license.FREE
     },
-    TOYAMA_HTML: {
-      DATA_URI: 'http://www.pref.toyama.jp/cms_sec/1205/kj00021798.html',
-      LICENSE: license.FREE
-    },  // URIをスクレイピングで探す
     YAMANASHI_XLSX: {
       DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/yousei.xlsx',
       HTML_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/info_coronavirus_prevention.html',
       INDEX_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/info_coronavirus_data.html',
       LICENSE: license.CC
     }, // 山梨県はなぜかデータが2系統ある
+    NAGANO_HTML: {
+      DATA_URI: 'https://www.pref.nagano.lg.jp/hoken-shippei/kenko/kenko/kansensho/joho/corona-doko.html',
+      LICENSE: license.CC
+    }, // スクレイピングでデータを拾う
+
+    // 北陸
+    ISHIKAWA_CSV: {
+      DATA_URI: 'https://www.pref.ishikawa.lg.jp/kansen/documents/170003_ishikawa_covid19_patients.csv',
+      LICENSE: license.FREE
+    },
+    FUKUI_CSV: {
+      DATA_URI: 'https://www.pref.fukui.lg.jp/doc/toukei-jouhou/covid-19_d/fil/covid19_patients.csv',
+      LICENSE: license.CC
+    },
+    TOYAMA_HTML: {
+      DATA_URI: 'http://www.pref.toyama.jp/cms_sec/1205/kj00021798.html',
+      LICENSE: license.FREE
+    },  // URIをスクレイピングで探す
+
+    // 東海
     SHIZUOKA_CSV: {
       DATA_URI: 'https://opendata.pref.shizuoka.jp/dataset/8167/resource/46279/220001_shizuoka_covid19_patients.csv',
       LICENSE: license.CC,
@@ -197,22 +222,20 @@ export default function makeConfig()
       DATA_URI: 'https://raw.githubusercontent.com/code4nagoya/covid19/development/data/patients.csv',
       LICENSE: license.MIT
     },
-    NAGANO_HTML: {
-      DATA_URI: 'https://www.pref.nagano.lg.jp/hoken-shippei/kenko/kenko/kansensho/joho/corona-doko.html',
-      LICENSE: license.CC
-    }, // スクレイピングでデータを拾う
     MIE_CSV: {
       DATA_URI: 'https://www.pref.mie.lg.jp/common/content/000896797.csv',
       LICENSE: license.CC
     },
-    WAKAYAMA_CSV: {
-      INDEX_URI: 'https://stopcovid19.wakayama.jp/',
-      LICENSE: license.CC
-    }, // スクレイピングでJSのURLを拾う
     GIFU_CSV: {
       DATA_URI: 'https://gifu-opendata.pref.gifu.lg.jp/dataset/4661bf9d-6f75-43fb-9d59-f02eb84bb6e3/resource/9c35ee55-a140-4cd8-a266-a74edf60aa80/download/210005_gifu_covid19_patients.csv',
       LICENSE: license.CC
     },
+
+    // 関西
+    WAKAYAMA_CSV: {
+      INDEX_URI: 'https://stopcovid19.wakayama.jp/',
+      LICENSE: license.CC
+    }, // スクレイピングでJSのURLを拾う
     SHIGA_JSON: {
       DATA_URI: 'https://shiga-pref-org.github.io/covid19-data/data.json',
       LICENSE: license.CC
@@ -235,16 +258,6 @@ export default function makeConfig()
       LICENSE: license.FREE
     },
     
-    // 北陸
-    ISHIKAWA_CSV: {
-      DATA_URI: 'https://www.pref.ishikawa.lg.jp/kansen/documents/170003_ishikawa_covid19_patients.csv',
-      LICENSE: license.FREE
-    },
-    FUKUI_CSV: {
-      DATA_URI: 'https://www.pref.fukui.lg.jp/doc/toukei-jouhou/covid-19_d/fil/covid19_patients.csv',
-      LICENSE: license.CC
-    },
-
     // 中国
     YAMAGUCHI_CSV: {
       DATA_URI: 'https://yamaguchi-opendata.jp/ckan/dataset/f6e5cff9-ae43-4cd9-a398-085187277edf/resource/f56e6552-4c5d-4ec6-91c0-090f553e0aea/download/',
@@ -316,6 +329,8 @@ export default function makeConfig()
       DATA_URI: 'https://www.pref.kagoshima.jp/ae06/kenko-fukushi/kenko-iryo/kansen/kansensho/coronavirus.html',
       LICENSE: license.FREE
     },
+
+    // 沖縄
     OKINAWA_HTML: {
       DATA_URI: 'https://okinawa.stopcovid19.jp/cards/attributes-of-confirmed-cases/',
       LICENSE: license.CC
