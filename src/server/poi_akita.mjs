@@ -11,6 +11,8 @@ const ALTER_CITY_NAMES = [
   ['湯沢保健所管内', '湯沢市'],
   ['能代保健所管内', '能代市'],
   ['秋田中央保健所管内', '秋田市'],
+  ['秋田市保健所管内', '秋田市'],
+  ['北秋田保健所管内', '北秋田市'],
 ];
 async function parse_html( html )
 {
@@ -21,6 +23,7 @@ async function parse_html( html )
   const rows = rootm[ 1 ];
   //                                何例目                           日付                         年齢                        性別                            居住地
   const re = /<tr.*?>[\s\S]*?<td.*?>([\s\S]*?)<\/td>[\s\S]*?<td.*?>([\s\S]*?)<\/td>[\s\S]*?<td.*?>[\s\S]*?<\/td>[\s\S]*?<td.*?>[\s\S]*?<\/td>[\s\S]*?<td.*?>([\s\S]*?)<\/td>[\s\S]*?<\/tr>/g;
+  let prev_date = null;
   while ( true )
   {
     const m = re.exec( rows );
@@ -35,7 +38,11 @@ async function parse_html( html )
       year += 2018; // 令和
     const am = mr[ 3 ].match( /[:：]([^)）]+)/ );
     const city = am ? am[ 1 ] : mr[ 3 ];
-    csv.push( [ new Date( year, parseInt( dm[ 3 ] ) - 1, parseInt( dm[ 4 ] ) ), city.replace( /[(（].+?[)）]/g, '' ) ] );
+    const date = new Date( year, parseInt( dm[ 3 ] ) - 1, parseInt( dm[ 4 ] ) );
+    if ( prev_date != null && prev_date.getTime() < date.getTime() )
+      break;  // 年の境目を越えた
+    prev_date = date;
+    csv.push( [ date, city.replace( /[(（].+?[)）]/g, '' ) ] );
   }
   return csv.sort( (a, b) => a[ 0 ].getTime() - b[ 0 ].getTime() );
 }

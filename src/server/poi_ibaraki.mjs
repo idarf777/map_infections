@@ -12,6 +12,7 @@ async function parse_html( html )
     return csv;
   const rows = rootm[ 1 ];
   const re = /<tr.*?>[\s\S]*?<td.*?>(.*?)<\/td>[\s\S]*?<td(.*?)>.*?<\/td>[\s\S]*?<td.*?>.*?<\/td>[\s\S]*?<td.*?>(.*?)<\/td>[\s\S]*?<td.*?>.*?<\/td>[\s\S]*?<\/tr>/g;
+  let prev_date = null;
   while ( true )
   {
     const m = re.exec( rows );
@@ -23,13 +24,12 @@ async function parse_html( html )
     const dm = mr[ 1 ].match( /((\d+)\/)?(\d+)\/(\d+)/ );
     if ( !dm )
       continue;
-    const year = Number( dm[ 2 ] || new Date().getFullYear() ); // このへん2021年になってみないとわからない
-    csv.push( [ new Date( year, parseInt( dm[ 3 ] ) - 1, parseInt( dm[ 4 ] ) ), mr[ 3 ] ] );
-  }
-  for ( const v of [ ['古河市', 1], ['常総市', 1], ['坂東市', 54], ['境町', 2] ] ) // 12/4 （坂東市）社会福祉法人施設発生資料　58名分のPDFの内容  なんで表に組み入れないんだよ……
-  {
-    for ( let i=0; i<v[ 1 ]; i++ )
-      csv.push( [ new Date( '2020-12-04' ), v[ 0 ] ] );
+    const year = Number( dm[ 2 ] || new Date().getFullYear() );
+    const date = new Date( year, parseInt( dm[ 3 ] ) - 1, parseInt( dm[ 4 ] ) );
+    if ( prev_date != null && prev_date.getTime() < date.getTime() )
+      break;  // 年の境目を越えた
+    prev_date = date;
+    csv.push( [ date, mr[ 3 ] ] );
   }
   return csv.sort( (a, b) => a[ 0 ].getTime() - b[ 0 ].getTime() );
 }
