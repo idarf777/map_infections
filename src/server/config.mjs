@@ -104,6 +104,7 @@ export default function makeConfig()
     SERVER_MAKE_DATA_URI: `${SERVER_URI_PREFIX}/api/1.0/make_data`,
     SERVER_MAKE_DATA_DIR: 'json',
     SERVER_MAKE_DATA_CACHE_DIR: 'json/cache',
+    SERVER_MAKE_DATA_PAST_DIR: 'json/past',
     SERVER_MAKE_DATA_FILENAME: 'infectors',
 
     DEPLOY_DIRECTORY: path.join( appRoot.path, 'dist' ),
