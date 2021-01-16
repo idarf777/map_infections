@@ -1,4 +1,9 @@
 import BasePoi from "./base_poi.mjs";
+import jsdom from 'jsdom';
+const { JSDOM } = jsdom;
+import iconv from "iconv-lite";
+import Log from './logger.mjs';
+import {axios_instance, parse_csv} from "./util.mjs";
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
@@ -17,6 +22,24 @@ const ALTER_CITY_NAMES = [
   ['鞍手郡', '鞍手町' ],
   ['三潴郡', '大木町' ]
 ];
+
+// linkタグのJSを全て読んでデータを探す
+async function parse_html( html )
+{
+  const dom = new JSDOM( html );
+  for ( const tag of dom.window.document.querySelectorAll( 'a' ) )
+  {
+    if ( !tag.textContent.match( /ダウンロードする/ ) )
+      continue;
+    //const uri = complement_uri( tag.href );
+    const uri = tag.href;
+    Log.info( `loading ${uri}...` );
+    const cr = await axios_instance({ responseType: 'arraybuffer' }).get( uri ).catch( err => Log.error(err));
+    return parse_csv( iconv.decode( cr.data, 'UTF8' ));
+  }
+  throw new Error( "no valid data on fukuoka-pref" );
+}
+
 export default class PoiFukuoka extends BasePoi
 {
   static async load()
@@ -25,8 +48,8 @@ export default class PoiFukuoka extends BasePoi
       pref_name: '福岡県',
       alter_citys: ALTER_CITY_NAMES,
       csv_uri: config.FUKUOKA_CSV.DATA_URI,
-//      csv_encoding: 'CP932',
-      csv_encoding: 'UTF8',
+      cb_parse_csv: cr => parse_html( iconv.decode( cr.data, 'UTF8' ) ),
+      //csv_encoding: 'UTF8',
       row_begin: 1,
       min_columns: 8,
       col_date: 4,
