@@ -13,7 +13,7 @@ function merge_row( row )
   //  => xとwidthで文字列の画面上の長さをとり、どの文字列が繋がっているかを判断する
   if ( row.length <= 1 )
     return row[ 0 ]?.str || '';
-  const THRESHOLD_X = 20;
+  const THRESHOLD_X = 15;
   let xe = row[ 0 ].transform[ 4 ] + row[ 0 ].width;
   return row.map( item => {
     let str = '';
@@ -57,7 +57,7 @@ async function getPdfText( data )
     }
     if ( row.length > 0 )
       rows.push( row.join( ' ' ) );
-    return { text: rows, items, built };
+    return { page: i, text: rows, items, built };
   } ) );
 }
 async function parse_html( html )
@@ -80,27 +80,70 @@ async function parse_html( html )
     uri = `${host}${uri}`;
   }
   const cr = await axios_instance( { responseType: 'arraybuffer' } ).get( uri );
-  let builtyear = new Date().getFullYear();
-  const rows = await getPdfText( cr.data );
+  const rows = (await getPdfText( cr.data )).sort( (a,b) => a.page - b.page );
+  let builtyear = 2021;
   const bm = rows.find( row => row.built )?.built.match( /(\d+)年/ );
   if ( bm )
   {
     builtyear = parseInt( bm[ 0 ] );
     if ( builtyear < 2000 )
-      builtyear += 2018;
+      builtyear += 2018; // 令和
   }
-  return rows.flatMap( row => row.text ).map( row => {
-    const col = row.split( ' ' );
-    if ( col.length < 6 || !col[ 0 ].match( /^\d+$/ ) )
-      return null;
-    const dm = col[ 5 ].match( /((\d+)年)?(\d+)月(\d+)日/ );
-    if ( !dm )
-      return null;
-    let year = dm[ 2 ] ? parseInt( dm[ 2 ] ) : builtyear;
-    if ( year < 2000 )
-      year += 2018; // 令和
-    const cm = col[ 3 ].match( /(.+?市(.+?区)?)/ );
-    return [ new Date( `${year}-${dm[ 3 ]}-${dm[ 4 ]}` ), cm ? cm[ 1 ] : col[ 3 ] ];
+  const IDX_THRESHOLD = 1500; // ここは市区町村によって異なる
+  const STAGE_SEEKING = 0;  // 1月を探している
+  const STAGE_HEADED = 1;   // 2月になった
+  let stage = STAGE_SEEKING;
+  //return rows.flatMap( row => row.text ).map( row => {
+  const flatrows = rows.flatMap( row => row.text );
+  return flatrows.map( row => {
+    try
+    {
+      const col = row.split( ' ' );
+      if ( col.length < 6 || !col[ 0 ].match( /^\d+$/ ) )
+        return null;
+      const col_date = col[ 5 ].match( "調査中" ) ? 6 : 5;
+      const dm = col[ col_date ].match( /((\d+)年)?(\d+)月(\d+)日/ );
+      if ( !dm )
+        return null;
+      let year = builtyear;
+      const month = parseInt( dm[ 3 ] );
+      if ( dm[ 2 ] )
+      {
+        throw new Error( "year exists" );
+        //year = parseInt( dm[ 2 ] );
+        //if ( year < 2000 )
+        //  year += 2018; // 令和
+      }
+      else
+      {
+        // データに年が書かれていない場合の対応
+        const idx = parseInt( col[ 0 ] );
+        if ( idx < IDX_THRESHOLD )
+          return null;
+        if ( idx === 1 )
+          stage = STAGE_SEEKING;
+        switch ( stage )
+        {
+        case STAGE_SEEKING:
+          if ( month > 2 )
+            return null;
+          if ( month === 2 )
+            stage = STAGE_HEADED;
+          break;
+        case STAGE_HEADED:
+          break;  // 2022年のことはとりあえず考えない
+        default:
+          break;
+        }
+      }
+      const cm = col[ 3 ].match( /(.+?市(.+?区)?)/ );
+      return [ new Date( `${year}-${month}-${dm[ 4 ]}` ), cm ? cm[ 1 ] : col[ 3 ] ];
+    }
+    catch ( ex )
+    {
+      Log.error( ex );
+    }
+    return null;
   } ).filter( v => v );
 }
 export default class PoiChiba extends BasePoi
