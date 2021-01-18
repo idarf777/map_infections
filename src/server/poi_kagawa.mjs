@@ -2,11 +2,11 @@ import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
 import Log from "./logger.mjs";
 import encoding from 'encoding-japanese';
-const config = global.covid19map.config;
 import { promises as fs } from "fs";
-import fsx from "fs"
+import fsx from "fs";
 import path from "path";
 import {axios_instance} from "./util.mjs";
+const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
   ['善通寺', '善通寺市']
