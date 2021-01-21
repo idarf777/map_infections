@@ -133,10 +133,9 @@ export default function makeConfig()
       LICENSE: license.CC
     },  // CSVリンクをスクレイピングで探す
     IWATE_HTML: {
-      DATA_URI: 'https://www.pref.iwate.jp/kurashikankyou/iryou/covid19/1029635/index.html',
-      DATA2_URI: 'https://www.pref.iwate.jp/kurashikankyou/iryou/covid19/1034904/index.html',
+      DATA_URI: 'https://www.pref.iwate.jp/kurashikankyou/iryou/covid19/index.html',
       LICENSE: license.FREE
-    },  // スクレイピングでデータを拾う
+    },  // スクレイピングでページを探してデータを拾う
     MIYAGI_XLSX: {
       HTML_URI: 'https://www.pref.miyagi.jp/site/covid-19/02.html',
       LICENSE: license.FREE
