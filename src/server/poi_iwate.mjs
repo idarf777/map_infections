@@ -55,11 +55,12 @@ async function parse_html( html )
     gather_uri( html )
       .map( async uri => {
         const cr = await axios_instance( { responseType: 'arraybuffer' } ).get( uri );
-        return await parse_html_impl( iconv.decode( cr.data, 'UTF8' ) );
+        return parse_html_impl( iconv.decode( cr.data, 'UTF8' ) );
       } )
   );
   return patients.reduce( ( result, p ) => result.concat( p ), [] );
 }
+
 export default class PoiIwate extends BasePoi
 {
   static async load()

@@ -32,22 +32,24 @@ export default class BasePoi
     const { pref_name, alter_citys, cb_alter_citys, csv_uri, cb_load_csv, cb_parse_csv, csv_encoding, row_begin, min_columns, col_date, cb_date, col_city, cb_city, cb_name } = arg;
     const set_irregular = new Set();
 
-    const past_years = new Set();
+    const past_data = new Set();
     let past_rows = [];
     const current_year = new Date().getFullYear();
-    for ( let year = config.DATA_SINCE.getFullYear(); year < current_year; year++ )
+    for ( let year = config.DATA_SINCE.getFullYear(); year <= current_year; year++ )
     {
       const buf = await fs.readFile( path.join( path.join( config.ROOT_DIRECTORY, config.DATA_PAST_DIR ), `${pref_name}/${year}.csv` ), "utf-8" ).catch( ex => {} );
-      if ( buf != null )
-      {
-        Log.info( `${pref_name} : parsing ${year}'s CSV...` );
-        const past_csv = await parse_csv( buf );
-        if ( past_csv && past_csv.length > 0 )
-        {
-          past_years.add( year );
-          past_rows = past_rows.concat( past_csv.map( row => [ new Date( `${year}/${row[ 0 ]}` ), row[ 1 ] ] ) );  // [0] ... 月／日 (例: "10/21")  [1] ... 市区町村名
-        }
-      }
+      if ( !buf )
+        continue;
+      Log.info( `${pref_name} : parsing ${year}'s CSV...` );
+      const past_csv = await parse_csv( buf );
+      if ( !past_csv || past_csv.length === 0 )
+        continue;
+      past_rows = past_rows.concat( past_csv.map( row => {
+        // row[0] ... 月／日 (例: "10/21")  row[1] ... 市区町村名
+        const date = new Date( `${year}/${row[ 0 ]}` );
+        past_data.add( date.getTime() );
+        return [ date, row[ 1 ] ];
+      } ) );
     }
     Log.info( `${pref_name} : getting CSV...` );
     const map_poi = await DbPoi.getMap( pref_name );
@@ -61,14 +63,14 @@ export default class BasePoi
     const rows = await ( cb_parse_csv ? cb_parse_csv( cr ) : parse_csv( iconv.decode( cr.data, csv_encoding || encoding.detect( cr.data ) ) ) );
     const map_city_infectors = new Map(); // 都市名 - (UNIXタイムスタンプ - 感染者数のマップ)のマップ
     const parse_rows = ( params ) => {
-      const { row_begin, rows, min_columns, cb_date, col_date, cb_city, col_city, past_years } = params;
+      const { row_begin, rows, min_columns, cb_date, col_date, cb_city, col_city, past_data } = params;
       for ( let rownum = row_begin; rownum < rows.length; rownum++ )
       {
         const row = rows[ rownum ];
         if ( row.length < min_columns )
           break;
         const date = cb_date ? cb_date( row ) : new Date( row[ col_date ] );
-        if ( !date || (past_years && past_years.has( date.getFullYear() )) ) // ログがある年ならスキップする
+        if ( !date || (past_data && past_data.has( date.getTime() )) ) // ログがある日ならスキップする
           continue;
         const city = sanitize_poi_name( (cb_city && cb_city( row )) || row[ col_city ] || '' );
         if ( !map_poi.has( city ) )
@@ -85,7 +87,7 @@ export default class BasePoi
       }
     };
     parse_rows( { row_begin: 0, rows: past_rows, min_columns: 2, col_date: 0, col_city: 1 } );  // 昨年以前
-    parse_rows( { row_begin, rows, min_columns, cb_date, col_date, cb_city, col_city, past_years } ); // 今年
+    parse_rows( { row_begin, rows, min_columns, cb_date, col_date, cb_city, col_city, past_data } ); // 今年
 
     const unpublished = map_city_infectors.get( '' ) || new Map();
     for ( const k of [pref_name, `${pref_name}内`, '非公表', '非公開'] )
