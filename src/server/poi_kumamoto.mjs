@@ -11,8 +11,7 @@ const ALTER_CITY_NAMES = [
   ['御船保健所管内', '御船町'],
   ['有明保健所管内', '玉名市'],
   ['八代保健所管内', '八代市'],
-
-  ['熊本市北央区',     '熊本市'],
+  ['熊本市北央区',     '熊本市北区'],
   ['熊本市（八代市）', '熊本市'],
   ['八代',            '八代市'],
   ['錦町（人吉市）',   '錦町'],
@@ -20,7 +19,6 @@ const ALTER_CITY_NAMES = [
 async function parse_json( cr )
 {
   const json = JSON.parse( iconv.decode( cr.data, 'UTF8' ) );
-  const _tmp = json[ 'patients' ][ 'data' ].map( p => [ new Date( p[ 'date' ] ), p[ '居住地' ] ] );
   return json[ 'patients' ][ 'data' ].map( p => [ new Date( p[ 'date' ] ), p[ '居住地' ] ] );
 }
 export default class PoiKumamoto extends BasePoi
