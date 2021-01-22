@@ -3,7 +3,16 @@ import iconv from "iconv-lite";
 import Log from "./logger.mjs";
 const config = global.covid19map.config;
 
-const ALTER_CITY_NAMES = [['柏崎保健所管内', '柏崎市'], ['三条保健所管内', '三条市']];
+const ALTER_CITY_NAMES = [
+  ['柏崎保健所管内', '柏崎市'],
+  ['三条保健所管内', '三条市'],
+  ['長岡保健所管内', '長岡市'],
+  ['村上保健所管内', '村上市'],
+];
+function remove_tags( str )
+{
+  return str.replace( /<\/?.+?>/g, '' );
+}
 function parse_html( cr )
 {
   const rootm = iconv.decode( cr.data, 'UTF8' ).match( /県内における感染者の発生状況[\s\S]+?<tbody>[\s\S]*?(<tr[\s\S]+?)<\/tbody>/ );
@@ -12,19 +21,25 @@ function parse_html( cr )
     throw new Error( "not matched in 新潟県" );
   const csv = [];
   //                            通し番号                         何例目                         日付                          年齢                         性別                         居住地
-  const re = /<tr>[\s\S]*?<td.*?>[\s\S]*?<\/td>[\s\S]*?<td.*?>([\s\S]*?)<\/td>[\s\S]*?<td.*?>([\s\S]+?)<\/td>[\s\S]*?<td.*?>[\s\S]*?<\/td>[\s\S]*?<td.*?>[\s\S]*?<\/td>[\s\S]*?<td.*?>([\s\S]+?)<\/td>[\s\S]*?<\/tr>/g;
+  const re = /<tr>[\s\S]*?<td.*?>([\s\S]*?)<\/td>[\s\S]*?<td.*?>([\s\S]*?)<\/td>[\s\S]*?<td.*?>([\s\S]+?)<\/td>[\s\S]*?<td.*?>[\s\S]*?<\/td>[\s\S]*?<td.*?>[\s\S]*?<\/td>[\s\S]*?<td.*?>([\s\S]+?)<\/td>[\s\S]*?<\/tr>/g;
   while ( true )
   {
     const m = re.exec( html );
     if ( !m )
       break;
-    const mark = m[ 1 ];
-    const date = m[ 2 ];
-    const city = m[ 3 ];
-    const mm = mark.match( /(<a .+?>)?(.+?)</ );
+    const num = remove_tags( m[ 1 ] );
+    const mark = remove_tags( m[ 2 ] );
+    const date = remove_tags( m[ 3 ] );
+    const city = remove_tags( m[ 4 ] );
+    const nm = num.match( /(\d+)/ );
+    if ( !nm )
+      continue;
+    if ( parseInt( nm[ 1 ] ) <= 547 )
+      break;  // これ以前のものはCSV化済み  2022年はどうなるやら
+    const mm = mark.match( /([^\d]+)(\d+)例目/ );
     if ( !mm )
       continue;
-    const rootcity = mm[ 2 ].trim();
+    const rootcity = mm[ 1 ].trim();
     const dm = date.trim().match( /((\d+)年)?(\d+)月(\d+)日/ );
     if ( !dm )
       continue;
@@ -39,7 +54,7 @@ function parse_html( cr )
     let livein = cm ? cm[ 1 ] : city;
     if ( livein.match( /内滞在中/ ) )
       livein = rootcity;
-    csv.push( [ new Date( year, parseInt( dm[ 3 ] ) - 1, parseInt( dm[ 4 ] ) ), livein ] );
+    csv.push( [ new Date( year, parseInt( dm[ 3 ] ) - 1, parseInt( dm[ 4 ] ) ), livein.replace( /^(県外|県内|帰省先)[:：]/, '' ).replace( /滞在$/, '' ) ] );
   }
   return csv;
 }

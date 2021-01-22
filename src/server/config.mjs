@@ -181,7 +181,7 @@ export default function makeConfig()
     NIIGATA_HTML: {
       DATA_URI: 'https://www.pref.niigata.lg.jp/site/shingata-corona/256362836.html',
       LICENSE: license.FREE
-    },
+    },  // スクレイピングでデータを拾う
     YAMANASHI_XLSX: {
       DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/yousei.xlsx',
       HTML_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/info_coronavirus_prevention.html',
