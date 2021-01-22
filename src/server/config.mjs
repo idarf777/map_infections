@@ -133,10 +133,9 @@ export default function makeConfig()
       LICENSE: license.CC
     },  // CSVリンクをスクレイピングで探す
     IWATE_HTML: {
-      DATA_URI: 'https://www.pref.iwate.jp/kurashikankyou/iryou/covid19/1029635/index.html',
-      DATA2_URI: 'https://www.pref.iwate.jp/kurashikankyou/iryou/covid19/1034904/index.html',
+      DATA_URI: 'https://www.pref.iwate.jp/kurashikankyou/iryou/covid19/index.html',
       LICENSE: license.FREE
-    },  // スクレイピングでデータを拾う
+    },  // スクレイピングでページを探してデータを拾う
     MIYAGI_XLSX: {
       HTML_URI: 'https://www.pref.miyagi.jp/site/covid-19/02.html',
       LICENSE: license.FREE
@@ -303,7 +302,7 @@ export default function makeConfig()
     
     // 九州
     FUKUOKA_CSV: {
-      DATA_URI: 'https://ckan.open-governmentdata.org/dataset/8a9688c2-7b9f-4347-ad6e-de3b339ef740/resource/6e61270c-9c69-4aee-82d2-e575b5352e51/download/400009_pref_fukuoka_covid19_patients1.csv',
+      DATA_URI: 'https://ckan.open-governmentdata.org/dataset/401000_pref_fukuoka_covid19_patients',
       LICENSE: license.CC
     },
     NAGASAKI_HTML: {

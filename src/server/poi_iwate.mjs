@@ -1,6 +1,8 @@
 import BasePoi from "./base_poi.mjs";
+import jsdom from "jsdom";
 import iconv from "iconv-lite";
 import {axios_instance} from "./util.mjs";
+const { JSDOM } = jsdom;
 
 const config = global.covid19map.config;
 
@@ -29,11 +31,34 @@ async function parse_html_impl( html )
   }
   return csv.sort( (a, b) => a[ 0 ].getTime() - b[ 0 ].getTime() );
 }
+
+function gather_uri( html )
+{
+  return Array.from( new JSDOM( html ).window.document.querySelectorAll( 'a' ) )
+    .map( tag => {
+      if ( !tag.textContent.match( /公表分.+第\d+例目/ ) )
+        return null;
+      let uri = tag.href;
+      if ( !uri.match( /^https?:\/\// ) )
+      {
+        const host = config.IWATE_HTML.DATA_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+\/)/ )[ 1 ];
+        uri = `${host}${uri}`;
+      }
+      return uri;
+    } )
+    .filter( v => v );
+}
+
 async function parse_html( html )
 {
-  const patients = await parse_html_impl( html );
-  const cr = await axios_instance( { responseType: 'arraybuffer' } ).get( config.IWATE_HTML.DATA2_URI );
-  return patients.concat( await parse_html_impl( iconv.decode( cr.data, 'UTF8' ) ) );
+  const patients = await Promise.all(
+    gather_uri( html )
+      .map( async uri => {
+        const cr = await axios_instance( { responseType: 'arraybuffer' } ).get( uri );
+        return await parse_html_impl( iconv.decode( cr.data, 'UTF8' ) );
+      } )
+  );
+  return patients.reduce( ( result, p ) => result.concat( p ), [] );
 }
 export default class PoiIwate extends BasePoi
 {

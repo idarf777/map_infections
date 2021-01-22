@@ -146,8 +146,8 @@ async function write_city_json( city, json, errors )
 
 async function make_data( city )
 {
-  const pois = await city[ 1 ].load().catch( ex => {} );
-  await write_city_json( city[ 0 ], pois ).catch( ex => {} );
+  const pois = await city[ 1 ].load();
+  await write_city_json( city[ 0 ], pois );
   Log.info( `Data of ${city[ 0 ]} ... ${datetostring( pois.begin_at )} - ${datetostring( pois.finish_at )}`  );
   return pois;
 }
@@ -242,7 +242,7 @@ const CITIES = [
   [ 'hokkaido', PoiHokkaido ],
 ];
 const AVAILABLE_CITIES = [
-  //'ibaraki'
+  //'fukuoka'
 ];
 
 async function exec_make_data()
