@@ -1,5 +1,8 @@
 import BasePoi from "./base_poi.mjs";
+import jsdom from "jsdom";
 import iconv from "iconv-lite";
+import {axios_instance} from "./util.mjs";
+const { JSDOM } = jsdom;
 
 const config = global.covid19map.config;
 
@@ -14,7 +17,7 @@ const ALTER_CITY_NAMES = [
   ['秋田市保健所管内', '秋田市'],
   ['北秋田保健所管内', '北秋田市'],
 ];
-async function parse_html( html )
+async function parse_html_impl( html )
 {
   const csv = [];
   const rootm = html.match( /概要[\s\S]+?<\/tr>([\s\S]+?)<\/tbody>/ );
@@ -46,6 +49,38 @@ async function parse_html( html )
   }
   return csv.sort( (a, b) => a[ 0 ].getTime() - b[ 0 ].getTime() );
 }
+
+function gather_uri( html )
+{
+  return Array.from( new JSDOM( html ).window.document.querySelectorAll( 'a' ) )
+    .map( tag => {
+      const m = tag.textContent.match( /から(\d+)例目までの概要はこちら/ );
+      if ( !m || parseInt( m[ 1 ] ) <= 189 )  // やむなく直打ち
+        return null;
+      let uri = tag.href;
+      if ( !uri.match( /^https?:\/\// ) )
+      {
+        const host = config.AKITA_HTML.DATA_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+\/)/ )[ 1 ];
+        uri = `${host}${uri}`;
+      }
+      return uri;
+    } )
+    .filter( v => v );
+}
+
+async function parse_html( html )
+{
+  const patients = await Promise.all(
+    gather_uri( html )
+      .map( async uri => {
+        const cr = await axios_instance( { responseType: 'arraybuffer' } ).get( uri );
+        return parse_html_impl( iconv.decode( cr.data, 'UTF8' ) );
+      } )
+      .concat( [ parse_html_impl( html ) ] )
+  );
+  return patients.reduce( ( result, p ) => result.concat( p ), [] );
+}
+
 export default class PoiAkita extends BasePoi
 {
   static async load()

@@ -140,8 +140,8 @@ export default function makeConfig()
       HTML_URI: 'https://www.pref.miyagi.jp/site/covid-19/02.html',
       LICENSE: license.FREE
     },  // URIをスクレイピングで探す
-    FUKUSHIMA_HTML: {
-      DATA_URI: 'https://www.pref.fukushima.lg.jp/sec/21045c/fukushima-hasseijyoukyou.html',
+    FUKUSHIMA_JSON: {
+      DATA_URI: 'https://cdn2.dott.dev/data.json',
       LICENSE: license.FREE
     },
 
@@ -181,7 +181,7 @@ export default function makeConfig()
     NIIGATA_HTML: {
       DATA_URI: 'https://www.pref.niigata.lg.jp/site/shingata-corona/256362836.html',
       LICENSE: license.FREE
-    },
+    },  // スクレイピングでデータを拾う
     YAMANASHI_XLSX: {
       DATA_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/documents/yousei.xlsx',
       HTML_URI: 'https://www.pref.yamanashi.jp/koucho/coronavirus/info_coronavirus_prevention.html',
