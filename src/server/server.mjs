@@ -243,7 +243,7 @@ const CITIES = [
 ];
 const AVAILABLE_CITIES = [
   //'fukuoka'
-];
+].concat( (process.env.MAKE_DATA_CI_PREFECTURES || '').split( ',' ).map( s => s.trim() ) );
 
 async function exec_make_data()
 {

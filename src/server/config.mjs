@@ -140,8 +140,8 @@ export default function makeConfig()
       HTML_URI: 'https://www.pref.miyagi.jp/site/covid-19/02.html',
       LICENSE: license.FREE
     },  // URIをスクレイピングで探す
-    FUKUSHIMA_HTML: {
-      DATA_URI: 'https://www.pref.fukushima.lg.jp/sec/21045c/fukushima-hasseijyoukyou.html',
+    FUKUSHIMA_JSON: {
+      DATA_URI: 'https://cdn2.dott.dev/data.json',
       LICENSE: license.FREE
     },
 
