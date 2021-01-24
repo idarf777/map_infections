@@ -12,45 +12,13 @@ const ALTER_CITY_NAMES = [
   ['善通寺', '善通寺市']
 ];
 
+import {processPastYearData, savePastYearData} from "./processPastYearData.mjs";
+
 async function parse_html( html_, pref_name )
 {
-  function array2Csv( array ){
-    let csvFormat='';
-    for( const item of array){
-      mon = item[0].getMonth() + 1;
-      day = item[0].getDate();
-      city = item[1];
-      csvFormat += mon + "/" + day + "," + city + "\n";
-    }
-    return csvFormat;
-  }
-  // json/past/香川県フォルダを作る
-  const pastCsvDir = path.join(config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_PAST_DIR}/${pref_name}`);
-  if( fsx.existsSync( pastCsvDir )){
-    // Log.info( "file exist");
-  }else{
-    await fs.mkdir(pastCsvDir);
-  }
 
-  // 前年と前年以前のCSV ファイル名を予め読み込む 
-  const pastCsv = [];
-  let lastSaveYear=0;
-
-  for( const file of await fs.readdir(pastCsvDir).catch(()=>{ LOG.debug('*** no past files')})){ 
-    const yyyy = file.match(/\d{4}/)[0];  // 年度
-    lastSaveYear = yyyy > lastSaveYear ? yyyy : lastSaveYear;
-    const local_uri = path.join(config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_PAST_DIR}/${pref_name}`, file);
-    let pastData = await fs.readFile( local_uri);
-    pastData = iconv.decode(pastData, 'utf8');
-    const list = pastData.split(/\r\n|\r|\n/); 
-    for ( const item of list){
-      const m = item.match(/(\d+?)\/(\d+?),(.+?)$/);       // csv のテキスト形式
-      if( m == null){
-        break;
-      }
-      pastCsv.push( [ new Date(yyyy, m[1]-1, m[2]), m[3] ] );
-    }
-  }
+  // 前年以前のデータが有る場合は読み込む
+  let { pastCsv, lastYear } = await processPastYearData( pref_name) ;  // await が無いと、途中で戻ってくる。
 
   // データをパースする
   const today = new Date();
@@ -138,7 +106,7 @@ async function parse_html( html_, pref_name )
     prevMon = mon;
 
     // 保存されている年のデータがあるなら、終わり。
-    if( year == lastSaveYear){
+    if( year <= lastYear){
       break;
     }
     csv.push( [ new Date( year, mon-1, day), city ] );
@@ -148,37 +116,9 @@ async function parse_html( html_, pref_name )
     }
   }
 
-  // 前年のデータをセーブ
-  // 前年のデータが無い時もうまくいく。
-  let cYear = today.getFullYear();
-  let oneYearCsv = [];
-  let yearCount = 0;          // 読み込んだ csv に何年分の以前の年のデータあるか調べる
-  for (const data of csv ){
-    const _year = data[0].getFullYear();
-    if( _year == cYear ){
-      oneYearCsv.push( data );
-      continue;
-    }
-    if( yearCount == 0){
-      yearCount ++;
-    }else{
-      // cYear の data を save
-      const pastCsvFile = path.join(config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_PAST_DIR}/${pref_name}/${cYear}.csv`);
-      const csvFormat= array2Csv(oneYearCsv);
-      await fs.writeFile(pastCsvFile,  csvFormat, 'utf8', (err) => Log.error(err) );
-    }
-    oneYearCsv.splice(0);
-    oneYearCsv.push(data);
-    cYear --;
-  }
 
-  // 最後 の cYear の data を save
-  if( yearCount != 0){
-    const pastCsvFile = path.join(config.ROOT_DIRECTORY, `${config.SERVER_MAKE_DATA_PAST_DIR}/${pref_name}/${cYear}.csv`);
-    const csvFormat= array2Csv(oneYearCsv);
-    await fs.writeFile(pastCsvFile,  csvFormat);
-  }
-  
+  //前の年のデータがあれば保存
+  await savePastYearData( csv, pref_name );   // await が無いとデバッグしにくい
   // file から読み込んだ以前の年のデータを push
   pastCsv.map( item  => csv.push(item));
 
