@@ -269,7 +269,8 @@ export default function makeConfig()
       LICENSE: license.CC
     },
     OKAYAMA_CSV: {
-      DATA_URI: 'http://www.okayama-opendata.jp/ckan/dataset/e6b3c1d2-2f1f-4735-b36e-e45d36d94761/resource/c6503ebc-b2e9-414c-aae7-7374f4801e21/download/kansenshashousaijouhou0420.csv',
+      //DATA_URI: 'http://www.okayama-opendata.jp/ckan/dataset/e6b3c1d2-2f1f-4735-b36e-e45d36d94761/resource/c6503ebc-b2e9-414c-aae7-7374f4801e21/download/kansenshashousaijouhou0420.csv',
+      DATA_URI: 'http://www.okayama-opendata.jp/ckan/dataset/e6b3c1d2-2f1f-4735-b36e-e45d36d94761/resource/d021c012-297e-4ea9-bffa-cf55741884d1/download/kansenshashousaijouhou0420.csv',
       LICENSE: license.CC // CC のリンク先無
     },
     SHIMANE_HTML: {
