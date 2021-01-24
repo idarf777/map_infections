@@ -16,7 +16,8 @@ export default class PoiOkayama extends BasePoi
       row_begin: 1,
       min_columns: 6,
       cb_date: rows => {
-        const dm = rows[ 3 ].match( /((\d+)\/)?(\d+)\/(\d+)\// );
+        /*
+        const dm = rows[ 3 ].match( /((\d+)\/)?(\d+)\/(\d+)\// ); // 20210123 に修正 date の書式が変った模様
         if ( !dm )
           throw new Error( "no date in okayama" );
         let year = new Date().getFullYear();
@@ -26,7 +27,10 @@ export default class PoiOkayama extends BasePoi
           if ( year < 2000 )
             year += 2018; // 令和
         }
-        return new Date( `${year}-${dm[ 3 ]}-${dm[ 4 ]}` );
+          return new Date( `${year}-${dm[ 3 ]}-${dm[ 4 ]}` );
+        */
+        const dm = rows[3].replace(/\//g, '-');
+        return new Date( dm );
       },
       col_city: 5
     } );

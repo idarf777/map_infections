@@ -6,13 +6,32 @@ import {axios_instance} from "./util.mjs";
 
 const config = global.covid19map.config;
 
+import {processPastYearData, savePastYearData} from "./processPastYearData.mjs";
+
+//
+// 次にファイルを直す時は、再帰を止めた方が良い。
+// ホームページを見ていると、書式が変更されそうだ。
+//
+
 const ALTER_CITY_NAMES = [
   ['西伯郡', '伯耆町'],  ['西部地区', '境港市']
 ];
 
+const DEBUG = true;
+let no=0;
 function getOnePatientProcess( hText ){
-  let no, mon, day, city;
-  no = hText[0].match(/(\d+?)(<\/a>|$)/)[1];
+  let mon, day, city;
+  const _no = hText[0].match(/(\d+?)(<\/a>|$)/)[1];
+  if (DEBUG == true ){
+    if( no == 0 ){
+      // 何もしない。
+    }else{
+      if( no -1 != _no ){
+        Log.error( "???? serial no :" + no + "-" + _no );
+      }
+    }
+  }
+  no = _no;
 /*  let mm = hText[2].match(/(\d+)\/(\d+)/);
   mon = mm[1];
   day = mm[2];
@@ -31,10 +50,18 @@ function getOnePatientProcess( hText ){
   return [no, mon, day, city];
 }
 
-let firstFlag = true;
+//
+// 鳥取県の構成が、新しい患者のデータ -> 古い患者のデータ有るファイル -> 古い患者のデータ　となっている。
+//
+let firstFlag = true;   // 最初のHTMLファイルの処理か、次のHTMLのファイルの処理かを判断
 const csv = [];         // 再帰するから、関数の外側で宣言
-async function parse_html( html )
+
+async function parse_html( html, pref_name )
 {
+  // 前年以前のデータが有る場合は読み込む
+  // 再帰しているので、複数実行されるが、結果に影響を与えないので無視
+  //slet { pastCsv, lastYear } = await processPastYearData( pref_name) ;  // await が無いと、途中で戻ってくる。
+
   // 最初のHTML のページ
   const re = new RegExp( [
     '<tr>[\\s\\S]+?',
@@ -44,10 +71,10 @@ async function parse_html( html )
   {
     const m = re.exec( html );
     if ( !m  ){
-      if( firstFlag == true){
-        firstFlag = false;
+      if( firstFlag == true){       // 最初のHTMLファイルの時は、次のHTMLファイルを処理するルーチンに進む
+        firstFlag = false;      
         break;
-      }else{
+      }else{                        // 2つ目のHTMLファイルを処理した後は、リターンする
         return;
       }
     }
@@ -87,11 +114,18 @@ async function parse_html( html )
     parse_html(html_1);                               // 再帰して、患者情報を読み込む部分を使いまわす。
     break;
   }
+
+  //
+  // 全ての patient データを読み込んでからの処理
+  //
+
+  // 前年以前のデータが有る場合は読み込む
+  let { pastCsv, lastYear } = await processPastYearData( pref_name) ;  // await が無いと、途中で戻ってくる。
+
   let today = new Date();
   let year = today.getFullYear();
   let prevMon = today.getMonth() + 1;
-  let r_csv = [];
-  let firstFlag1 = true;
+  let r_csv = [];                                     // parse_htmlがリターンする時に、ここにデータ有り
   let prevNo;
 
   for ( let i=0; i<csv.length; i++){
@@ -101,8 +135,8 @@ async function parse_html( html )
     let city = csv[i][3];
 
     // data lost のチェック
-    if( firstFlag1 == true){
-      firstFlag1 = false;
+    if( i == 0 ){
+      // 何もしない
     }else{
       if( prevNo - 1 != no){
         Log.debug("???? data lost : " + prevNo + " -> " + no );
@@ -111,15 +145,24 @@ async function parse_html( html )
     prevNo = no;
 
     // 年を求める
+    // 前年以前のデータ json/past/鳥取県に残っている場合は、r_csv.push しない
     if( Number(prevMon) < Number(mon) ){
       year --;
     }
     prevMon = mon;
-
+    
+    if( year <= lastYear){      // past file が無いときは、 lastYear = 0
+      continue;
+    }
     // Log.debug( no + " : " + mon + "-" + day + "  " + city );
     city = city.replace(/(?:[<\(].+?$)/, ''); //function(match){ Log.debug(match); }); 
     r_csv.push( [new Date( year, mon-1, day), city])
   }
+
+  //前の年のデータがあれば保存
+  await savePastYearData( r_csv, pref_name );   // await が無いとデバッグしにくい
+  //file から読み込んだ以前の年のデータを push
+  pastCsv.map( item  => r_csv.push(item));
 
   return r_csv;
 }
@@ -133,7 +176,7 @@ export default class PoiTottori extends BasePoi
         pref_name: '鳥取県',
         alter_citys: ALTER_CITY_NAMES,
         csv_uri: config.TOTTORI_HTML.DATA_URI,
-        cb_parse_csv: cr => parse_html( iconv.decode( cr.data, 'UTF8' ) ),
+        cb_parse_csv: cr => parse_html( iconv.decode( cr.data, 'UTF8' ), '鳥取県' ),
         row_begin: 0,
         min_columns: 2,
         col_date: 0,
