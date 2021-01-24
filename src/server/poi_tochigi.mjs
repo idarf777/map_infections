@@ -4,7 +4,7 @@ import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
 const config = global.covid19map.config;
 
-const ALTER_CITY_NAMES = [['県西', '日光市'], ['県南', '佐野市'], ['県央', '宇都宮市'], ['県北', '那須塩原市'], ['宇都宮', '宇都宮市'], ['安足', '足利市']];
+const ALTER_CITY_NAMES = [['県西', '日光市'], ['県南', '佐野市'], ['県央', '宇都宮市'], ['県北', '那須塩原市'], ['宇都宮', '宇都宮市'], ['安足', '足利市'], ['安足管内', '足利市']];
 async function load_xlsx( data )
 {
   const html = iconv.decode( data, 'UTF8' );
@@ -29,9 +29,9 @@ async function parse_xlsx( promise )
   const csv = [];
   for ( let row = 3; row < rows; row++ )
   {
-    const cellDate = worksheet[ `F${row}` ];
+    const cellDate = worksheet[ `H${row}` ];
     const cellCity = worksheet[ `E${row}` ];
-    const cellNote = worksheet[ `H${row}` ];
+    const cellNote = worksheet[ `J${row}` ];
     const isValidDate = cellDate?.t === 'd';
     const isValidCity = cellCity?.t === 's';
     if ( (!isValidDate && !isValidCity) || (!(isValidDate && isValidCity) && csv.length === 0) )
