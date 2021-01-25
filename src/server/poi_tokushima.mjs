@@ -23,7 +23,7 @@ function zen2Han(figures){
 }
 
 let no;  // 通し番号 グローバル
-async function getPdfText_1( data, year ){
+async function getPdfText_1( data, year, lastYear ){
   const pdf = await (await pdfjsLib.getDocument( { data } ).promise);
   const items = (await Promise.all( Array.from( { length: pdf.numPages }, async ( v, i ) =>
   (await (await pdf.getPage( i+1 )).getTextContent()).items ) )).flatMap( v => v );
@@ -108,8 +108,10 @@ async function getPdfText_1( data, year ){
           if( city.match(/(保健所管内)/) != null ){
             // 何もしない
           }else{
+            if( year > lastYear){
               csv.push( [ Number(no), new Date( year, mon-1, day), city] );
-            // console.log( csv[csv.length - 1 ]);
+              // console.log( csv[csv.length - 1 ]);
+            }
           }
         }
         y_prev = y;       // 居住地の付帯事項が書かれることがあるので、付帯事項を識別するために使う
@@ -135,7 +137,7 @@ async function getPdfText_1( data, year ){
 }
 
 
-async function getPdfText( data, year )
+async function getPdfText( data, year, lastYear )
 {
 
   const pdf = await (await pdfjsLib.getDocument( { data } ).promise);
@@ -257,7 +259,9 @@ async function getPdfText( data, year )
         if( m != null ){
           // 苦し紛れ：この記述が発生するのは1回だけ。
           city = m[1];
-          csv.push( [parseInt(no[0], 10), new Date( year, mon-1, day), city] );
+          if( year > lastYear){
+            csv.push( [parseInt(no[0], 10), new Date( year, mon-1, day), city] );
+          }
         }
         // console.log(item.str);
       }else if( x_city - x_width <= x && x <= x_city + x_width){
@@ -274,9 +278,10 @@ async function getPdfText( data, year )
               if( parseInt(no[0], 10) == 199 ){
                 year = 2020;                  // 苦し紛れ 令和3年の1月1日に 12月31日の感染者の発表をしている
               }
-              csv.push( [parseInt(no[0], 10), new Date( year, mon-1, day), city] );
+              if( year > lastYear){
+                csv.push( [parseInt(no[0], 10), new Date( year, mon-1, day), city] );
+              }
             }
-            // console.log( csv[csv.length - 1 ]);
           }
         }
         y_prev = y;       // 居住地の付帯事項が書かれることがあるので、付帯事項を識別するために使う
@@ -442,9 +447,9 @@ async function parse_html( html, pref_name )
     const file_date = theFile.match(/\d{4}-\d{2}-\d{2}/)[0];
     let _csv;
     if( file_date < block ){
-      _csv = await getPdfText(_cr, year);
+      _csv = await getPdfText(_cr, year, lastYear);
     }else{
-      _csv = await getPdfText_1(_cr, year); // 令和3年1月13日以降は、PDFの1ページ目に　’例目’が書かれていないので、別途対応
+      _csv = await getPdfText_1(_cr, year, lastYear); // 令和3年1月13日以降は、PDFの1ページ目に　’例目’が書かれていないので、別途対応
                                             // まとめて対応すると、それまでのが動かなくなる可能性があり、その時のデバッグが大変
     }
    
