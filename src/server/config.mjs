@@ -211,12 +211,6 @@ export default function makeConfig()
     SHIZUOKA_CSV: {
       DATA_URI: 'https://opendata.pref.shizuoka.jp/dataset/8167/resource/46279/220001_shizuoka_covid19_patients.csv',
       LICENSE: license.CC,
-      SHIZUOKA_CITY_CSV: {
-        // 静岡市
-        DATA_URI: 'https://www.city.shizuoka.lg.jp/388_000109.html',
-        LICENSE: license.CC
-        // 保留
-      },
     },
     AICHI_CSV: {
       DATA_URI: 'https://raw.githubusercontent.com/code4nagoya/covid19/development/data/patients.csv',
