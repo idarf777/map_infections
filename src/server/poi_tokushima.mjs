@@ -317,7 +317,7 @@ async function parse_html( html, pref_name )
   let cachedFiles = [];
   await readCachedFileNames();
   async function readCachedFileNames(){
-    for( const file of await fs.readdir(cache_dir).catch(()=>{ LOG.error('???? no cached file')})){ 
+    for( const file of await fs.readdir(cache_dir).catch(()=>{ Log.error('???? no cached file')})){
       const fp = path.join(cache_dir, `/${file}`);
       cachedFiles.push(fp);
     }
@@ -335,13 +335,13 @@ async function parse_html( html, pref_name )
       if( file.includes('src') == true ){
         // src は、消さない。　その他は消す。
       }else{
-        await fs.unlink(file).catch(() => { LOG.error('????:2 no cached file') });
+        await fs.unlink(file).catch(() => { Log.error('????:2 no cached file') });
       }
     }
     cachedFiles = [];     // pdf のキャッシュファイルを全部消したので、フラッシュする
     await fs.writeFile(markFileName, 'mark file', (err)=>{
       if (err) throw err;
-      LOG.error('???? can not create markFile');
+      Log.error('???? can not create markFile');
     })
   }
 

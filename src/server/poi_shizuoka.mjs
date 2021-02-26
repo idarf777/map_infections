@@ -14,7 +14,9 @@ const ALTER_CITY_NAMES = [
   ['中部保健所管内', '静岡市'],
   ['西部保健所管内', '浜松市'],
   ['熱海保健所管内', '熱海市'],
-  ['御殿場保健所管内', '御殿場市']
+  ['御殿場保健所管内', '御殿場市'],
+  ['伊豆の奥西', '伊豆の国市'],
+  ['東伊豆長', '東伊豆町'],
 ];
 const mapCityNames = new Map();
 mapCityNames.set( '浜松市内', '浜松市' );
@@ -28,10 +30,10 @@ export default class PoiShizuoka extends BasePoi
       alter_citys: ALTER_CITY_NAMES,
       csv_uri: config.SHIZUOKA_CSV.DATA_URI,
       csv_encoding: 'CP932',
-      cb_city: row => mapCityNames.get( row[ 6 ] ) || row[ 6 ] || '非公表',
-      row_begin: 1,
-      min_columns: 7,
-      col_date: 4
+      cb_city: row => mapCityNames.get( row[ 7 ] ) || row[ 7 ] || '非公表',
+      row_begin: 9,
+      min_columns: 8,
+      col_date: 5
     } );
   }
 }
