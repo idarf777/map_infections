@@ -14,14 +14,17 @@ import {processPastYearData, savePastYearData} from "./processPastYearData.mjs";
 //
 
 const ALTER_CITY_NAMES = [
-  ['西伯郡', '伯耆町'],  ['西部地区', '境港市']
+  ['西伯郡', '伯耆町'],  ['西部地区', '境港市'],  ['中部地区', '倉吉市'],  ['東部地区', '鳥取市']
 ];
 
 const DEBUG = true;
 let no=0;
 function getOnePatientProcess( hText ){
   let mon, day, city;
-  const _no = hText[0].match(/(\d+?)(<\/a>|$)/)[1];
+  const _m = hText[0].replace( /\s/, '' ).replace( /<del>\d+<\/del>|<a>.*?<\/a>/g, '' ).match(/\d+/);
+  if ( !_m )
+    return null;
+  const _no = Number(_m[ 0 ]);
   if (DEBUG == true ){
     if( no == 0 ){
       // 何もしない。
@@ -36,14 +39,17 @@ function getOnePatientProcess( hText ){
   mon = mm[1];
   day = mm[2];
 */
-  hText[2].match(/(\d+?)\/(\d+?)$/).map( function( value, index, array ){
+  const m = hText[1].match(/(\d+?)\/(\d+?)$/);
+  if ( !m )
+    return null;
+  m.map( function( value, index, array ){
     if( index == 1){
       mon = value;
     }else if( index == 2){
      day = value;
     }
   });
-  city = hText[3].match(/<td>(.+?)$/)[1];
+  city = hText[2].match(/<td>(.+?)$/)[1];
   if( no == 108 ){
     let x =1;
   }
@@ -54,7 +60,7 @@ function getOnePatientProcess( hText ){
 // 鳥取県の構成が、新しい患者のデータ -> 古い患者のデータ有るファイル -> 古い患者のデータ　となっている。
 //
 let firstFlag = true;   // 最初のHTMLファイルの処理か、次のHTMLのファイルの処理かを判断
-const csv = [];         // 再帰するから、関数の外側で宣言
+let csv = [];         // 再帰するから、関数の外側で宣言
 
 async function parse_html( html, pref_name )
 {
@@ -63,15 +69,13 @@ async function parse_html( html, pref_name )
   //slet { pastCsv, lastYear } = await processPastYearData( pref_name) ;  // await が無いと、途中で戻ってくる。
 
   // 最初のHTML のページ
-  const re = new RegExp( [
-    '<tr>[\\s\\S]+?',
-    '(<td style=[\\s\\S]+?)<\\/tr>'].join(''), 'g');                                           // <tr> - <\tr>
+  const re = new RegExp( /<tr>[\s\S]*?(<td[\s\S]*?>[\s\S]*?)<\/tr>/g )
 
   while ( true )
   {
     const m = re.exec( html );
     if ( !m  ){
-      if( firstFlag == true){       // 最初のHTMLファイルの時は、次のHTMLファイルを処理するルーチンに進む
+      if( firstFlag ){       // 最初のHTMLファイルの時は、次のHTMLファイルを処理するルーチンに進む
         firstFlag = false;      
         break;
       }else{                        // 2つ目のHTMLファイルを処理した後は、リターンする
@@ -81,8 +85,10 @@ async function parse_html( html, pref_name )
 
     const hText = m[1].replace(/(?:\r|\n|\s{2,})/g, '').split('</td>');
 
-    if( hText.length >= 7 && hText[0].match(/\d+(<\/a>|$)/) ){
-      csv.push(getOnePatientProcess(hText));
+    if( hText.length >= 5 ){
+      const p = getOnePatientProcess(hText);
+      if ( p )
+        csv.push( p );
     }
   }
 
@@ -172,6 +178,9 @@ export default class PoiTottori extends BasePoi
 {
   static async load()
   {
+    firstFlag = true;
+    no = 0;
+    csv = [];
     return BasePoi.process_csv( {
         pref_name: '鳥取県',
         alter_citys: ALTER_CITY_NAMES,
