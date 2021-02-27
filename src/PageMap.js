@@ -258,10 +258,10 @@ class PageMap extends React.Component
   {
     // クレジット表示
     const credit = document.getElementsByClassName('mapboxgl-ctrl-attrib-inner');
-    if ( credit[ 0 ] && !credit[ 0 ].innerText.match( new RegExp( config.CREDIT_NAME ) ) )
+    if ( credit[ 0 ] && !credit[ 0 ].innerHTML.match( new RegExp( config.CREDIT_NAME ) ) )
     {
       const span = document.createElement( 'span' );
-      span.innerText = config.CREDIT_NAME;
+      span.innerHTML = config.CREDIT_NAME;
       credit[ 0 ].appendChild( span );
     }
 

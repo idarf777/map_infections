@@ -128,14 +128,23 @@ export default class ControlPanel extends PureComponent
         </div>
 
         <div className="text-right">
-          <div className="sns-text">
-            SHARE:
+          <div className="text-narrow-row">
+            <div className="sns-text">
+              SHARE:
+            </div>
+            <div className="sns-icon">
+              <a href={`https://www.facebook.com/sharer/sharer.php?u=https://www.shizentai-factory.com/covid19map/#/${this.props.share}`} target="_blank" rel="noopener noreferrer"><i title="Share by facebook" className="fa fa-facebook fa-big"></i></a>
+            </div>
+            <div className="sns-icon">
+              <a href={`https://twitter.com/intent/tweet?url=https://www.shizentai-factory.com/covid19map/#/${this.props.share}&text=COVID-19+NUMBER+OF+INFECTED+MAP+ANIMATION`} target="_blank" rel="noopener noreferrer"><i title="Share by Twitter" className="fab fa-twitter-square"></i></a>
+            </div>
           </div>
-          <div className="sns-icon">
-            <a href={`https://www.facebook.com/sharer/sharer.php?u=https://www.shizentai-factory.com/covid19map/#/${this.props.share}`} target="_blank" rel="noopener noreferrer"><i title="Share by facebook" className="fa fa-facebook fa-big"></i></a>
-          </div>
-          <div className="sns-icon">
-            <a href={`https://twitter.com/intent/tweet?url=https://www.shizentai-factory.com/covid19map/#/${this.props.share}&text=COVID-19+NUMBER+OF+INFECTED+MAP+ANIMATION`} target="_blank" rel="noopener noreferrer"><i title="Share by Twitter" className="fab fa-twitter-square"></i></a>
+        </div>
+        <div className="text-right">
+          <div className="text-narrow-row">
+            <div className="sns-text">
+              <a href="https://www.facebook.com/shizentai.factory" target="_blank">© Shizentai Factory Co.</a>
+            </div>
           </div>
         </div>
       </div>

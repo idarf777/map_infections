@@ -266,7 +266,7 @@ class PageChart extends React.Component
             </div>
             <div className="chart-bottom-border">
               <div className="chart-credit">
-                {config.CREDIT_NAME}
+                <div dangerouslySetInnerHTML={{__html: config.CREDIT_NAME}} />
               </div>
               <div className="chart-bottom">
                 <div className="chart-option-right">
