@@ -213,7 +213,7 @@ export default function makeConfig()
       LICENSE: license.CC,
     },
     AICHI_CSV: {
-      DATA_URI: 'https://raw.githubusercontent.com/code4nagoya/covid19/development/data/patients.csv',
+      DATA_URI: 'https://raw.githubusercontent.com/code4nagoya/covid19/master/data/patients.csv',
       LICENSE: license.MIT
     },
     MIE_CSV: {
@@ -271,8 +271,7 @@ export default function makeConfig()
       LICENSE: license.FREE
     },
     TOTTORI_HTML: {
-      //DATA_URI: 'https://www.pref.tottori.lg.jp/291425.htm',
-      DATA_URI: 'https://www.pref.tottori.lg.jp/item/1207264.htm',
+      DATA_URI: 'https://www.pref.tottori.lg.jp/291425.htm',
       LICENSE: license.FREE
     },
 
@@ -320,7 +319,7 @@ export default function makeConfig()
       LICENSE: license.FREE
     },
     KAGOSHIMA_HTML: {
-      DATA_URI: 'https://www.pref.kagoshima.jp/ae06/kenko-fukushi/kenko-iryo/kansen/kansensho/coronavirus.html',
+      DATA_URI: 'https://www.pref.kagoshima.jp/kenko-fukushi/covid19/hassei/index.html',
       LICENSE: license.FREE
     },
 
