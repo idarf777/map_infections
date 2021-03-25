@@ -2,13 +2,14 @@ import xlsx from 'xlsx';
 import {axios_instance, sanitize_poi_name} from "./util.mjs";
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
+import jschardet from "jschardet";
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [];
 async function load_xlsx( data )
 {
-  const html = iconv.decode( data, 'CP932' );
-  const m = html.match( /<a\s+href="(.+?\.xlsx)"\s*>\s*富山県内における新型コロナウイルス感染症の発生状況一覧/ );
+  const html = iconv.decode( data, jschardet.detect( data ).encoding );
+  const m = html.match( /<a href="(.+?\.xlsx)".*?>富山県内における新型コロナウイルス感染症の発生状況一覧/ );
   if ( m == null )
     throw new Error( "no uri on toyama-pref" );
   let uri = m[ 1 ].trim();
