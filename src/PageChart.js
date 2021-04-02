@@ -50,6 +50,7 @@ class PageChart extends React.Component
     from_day: 0,
     to_day: 0,
     data_api_loaded: DATA_API_STATUS.unloaded,
+    data_api_progress: null,
     pref_checked: new Set(),
     pref_color: new Map(),
     display_avarage: true,
@@ -76,30 +77,40 @@ class PageChart extends React.Component
     return config.MAP_CHART_AVERAGE_NAME[ get_user_locale_prefix() ] || config.MAP_CHART_AVERAGE_NAME[ config.MAP_SUMMARY_LOCALE_FALLBACK ];
   }
 
-  async downloadData()
+  async downloadData( cb_progress )
   {
+    const isNumber = v => typeof v == "number";
+    const setProgress = (ev, ini) => {
+      if ( isNumber( ev.total ) && ev.total > 0 && isNumber( ev.loaded ) )
+        cb_progress( ini + 25 * ev.loaded / ev.total );
+    };
     const setApiStatus = async status => setStateAsync( this, { data_api_loaded: status } );
     await setStateAsync( this, { pref_checked: this.state.pref_checked.add( WHOLE_JAPAN_KEY ) } );
+    cb_progress( 0 );
     await setApiStatus( DATA_API_STATUS.downloading );
     const host = config.SERVER_HOST || `${window.location.protocol}//${window.location.host}`;
-    const data = config.STANDALONE ? example_data : (await axios_instance().get( `${host}${config.SERVER_URI}` )).data;
+    const data = config.STANDALONE ? example_data : (await axios_instance().get( `${host}${config.SERVER_URI}`, { onDownloadProgress: ev => setProgress( ev, 0 ) } )).data;
+    cb_progress( 25 );
     await setApiStatus( DATA_API_STATUS.downloading_geometry );
-    const geojson = (await axios_instance().get( `${process.env.PUBLIC_URL}/japan_nogeo.geojson` )).data;  // 緯度経度なし
+    const geojson = (await axios_instance().get( `${process.env.PUBLIC_URL}/japan_nogeo.geojson`, { onDownloadProgress: ev => setProgress( ev, 25 ) } )).data;  // 緯度経度なし
+    cb_progress( 50 );
     await setApiStatus( DATA_API_STATUS.loading_geometry );
     const pref_geojsons = await load_geojson( geojson );
+    cb_progress( 75 );
     await setApiStatus( DATA_API_STATUS.loading );
     const srcdata = loader( data, pref_geojsons );
     const src_ids = srcdata.places.map( (v, i) => v.geopos && [ i ] ).filter( v => v ); // 位置情報がないPOI(東京都調査中、東京都都外)はヒストグラムを表示しない
     const max_day = count_days( srcdata.begin_at, srcdata.finish_at );
+    cb_progress( 100 );
     return setStateAsync( this, { pref_geojsons, srcdata, src_ids, begin_date: srcdata.begin_at, finish_date: srcdata.finish_at, max_day, from_day: 0, to_day: max_day-1 } );
   }
   componentDidMount()
   {
-    this.downloadData()
-      .then( () => this.setState( { data_api_loaded: DATA_API_STATUS.loaded } ) )
+    this.downloadData( progress => this.setState( { data_api_progress: progress } ) )
+      .then( () => this.setState( { data_api_loaded: DATA_API_STATUS.loaded, data_api_progress: null } ) )
       .catch( ex => {
         Log.error( ex );
-        this.setState( { data_api_loaded: DATA_API_STATUS.error } );
+        this.setState( { data_api_loaded: DATA_API_STATUS.error, data_api_progress: null } );
       } )
   }
 
@@ -205,7 +216,7 @@ class PageChart extends React.Component
     return (
       <div className="full-panel">
         <div className="pane-root">
-          <ControlPanel containerComponent={this.props.containerComponent} srcdata={this.state.srcdata} share={'chart'} />
+          <ControlPanel containerComponent={this.props.containerComponent} apiprogress={this.state.data_api_progress} srcdata={this.state.srcdata} share={'chart'} />
           <div className="pane-child-left">
             { (this.state.data_api_loaded !== DATA_API_STATUS.loaded) ?
                 (<div className="text-left"><h3>{this.state.data_api_loaded}</h3></div>)

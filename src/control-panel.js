@@ -3,6 +3,7 @@ import {PureComponent} from 'react';
 //import { datetostring } from "./server/util.mjs";
 import GridView from "./grid-view.js";
 //import Log from './logger.js';
+import ProgressBar from "./progress-bar.js";
 
 export default class ControlPanel extends PureComponent
 {
@@ -33,9 +34,9 @@ export default class ControlPanel extends PureComponent
   };
 
   render() {
+
     return (
       <div className="control-panel" onClick={this._onClickNull}>
-        {this.props.apimsg && (<div className="text-right"><h3>{this.props.apimsg}</h3></div>)}
         <div className="text-right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowPrefecture}>ABOUT DATA...</button></div></div>
         <div className={ this.SHOW_HIDE_STYLES[ this.state.prefecture_view ? 1 : 0 ] }>
           <div className="text-right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowDescription}>DETAILS...</button></div></div>
@@ -147,7 +148,9 @@ export default class ControlPanel extends PureComponent
             </div>
           </div>
         </div>
+        {this.props.apimsg && (<div className="text-right"><h3>{this.props.apimsg}</h3></div>)}
+        {this.props.apiprogress && (<ProgressBar progress={this.props.apiprogress} />)}
       </div>
     );
   }
-}
+};
