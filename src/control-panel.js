@@ -3,6 +3,7 @@ import {PureComponent} from 'react';
 //import { datetostring } from "./server/util.mjs";
 import GridView from "./grid-view.js";
 //import Log from './logger.js';
+import ProgressBar from "./progress-bar.js";
 
 export default class ControlPanel extends PureComponent
 {
@@ -33,9 +34,9 @@ export default class ControlPanel extends PureComponent
   };
 
   render() {
+
     return (
       <div className="control-panel" onClick={this._onClickNull}>
-        {this.props.apimsg && (<div className="text-right"><h3>{this.props.apimsg}</h3></div>)}
         <div className="text-right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowPrefecture}>ABOUT DATA...</button></div></div>
         <div className={ this.SHOW_HIDE_STYLES[ this.state.prefecture_view ? 1 : 0 ] }>
           <div className="text-right"><div className="blue"><button className="btn-square-small" onClick={this._onClickShowDescription}>DETAILS...</button></div></div>
@@ -128,17 +129,28 @@ export default class ControlPanel extends PureComponent
         </div>
 
         <div className="text-right">
-          <div className="sns-text">
-            SHARE:
-          </div>
-          <div className="sns-icon">
-            <a href={`https://www.facebook.com/sharer/sharer.php?u=https://www.shizentai-factory.com/covid19map/#/${this.props.share}`} target="_blank" rel="noopener noreferrer"><i title="Share by facebook" className="fa fa-facebook fa-big"></i></a>
-          </div>
-          <div className="sns-icon">
-            <a href={`https://twitter.com/intent/tweet?url=https://www.shizentai-factory.com/covid19map/#/${this.props.share}&text=COVID-19+NUMBER+OF+INFECTED+MAP+ANIMATION`} target="_blank" rel="noopener noreferrer"><i title="Share by Twitter" className="fab fa-twitter-square"></i></a>
+          <div className="text-narrow-row">
+            <div className="sns-text">
+              SHARE:
+            </div>
+            <div className="sns-icon">
+              <a href={`https://www.facebook.com/sharer/sharer.php?u=https://www.shizentai-factory.com/covid19map/#/${this.props.share}`} target="_blank" rel="noopener noreferrer"><i title="Share by facebook" className="fa fa-facebook fa-big"></i></a>
+            </div>
+            <div className="sns-icon">
+              <a href={`https://twitter.com/intent/tweet?url=https://www.shizentai-factory.com/covid19map/#/${this.props.share}&text=COVID-19+NUMBER+OF+INFECTED+MAP+ANIMATION`} target="_blank" rel="noopener noreferrer"><i title="Share by Twitter" className="fab fa-twitter-square"></i></a>
+            </div>
           </div>
         </div>
+        <div className="text-right">
+          <div className="text-narrow-row">
+            <div className="sns-text">
+              <a href="https://www.facebook.com/shizentai.factory" target="_blank">© Shizentai Factory Co.</a>
+            </div>
+          </div>
+        </div>
+        {this.props.apimsg && (<div className="text-right"><h3>{this.props.apimsg}</h3></div>)}
+        {this.props.apiprogress && (<ProgressBar progress={this.props.apiprogress} />)}
       </div>
     );
   }
-}
+};

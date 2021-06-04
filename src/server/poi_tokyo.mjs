@@ -182,10 +182,10 @@ export default class PoiTokyo
     const csvdates = Array.from( csvs.keys() ).sort();
     for ( const date of csvdates )
     {
-      const rows = await parse_csv( csvs.get( date ) );
+      const rows = await parse_csv( csvs.get( date ) ).catch( ex => {} );
       if ( !( rows && rows.length > 0 && rows[ 0 ].length >= 2 && rows[ 0 ][ 0 ].match( /^[^\d]+$/ ) && rows[ 0 ][ 1 ].match( /^\(?\d+\)?$/ ) ) )  // 先頭行が「文字,数字」であるか検証
       {
-        Log.info( `CSV at ${date} is invalid` );
+        Log.error( `CSV at ${date} is invalid` );
         await remove_csv_cache( date, cache_dir ).catch( ex => {} );
         continue;
       }

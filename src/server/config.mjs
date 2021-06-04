@@ -80,7 +80,7 @@ export default function makeConfig()
     MAP_CHART_AVERAGE_DAYS: 10,  // 移動平均の日数 [day] 奇数であること
     MAP_CHART_AVERAGE_NAME: { ja: '平均', zh: '平均', en: 'average', ko: '평균' },
 
-    CREDIT_NAME: "© Shizentai Factory Co.",
+    CREDIT_NAME: '<a href="https://www.facebook.com/shizentai.factory" target="_blank">© Shizentai Factory Co.</a>',
 
     COOKIE_MAP_TOKEN: 'mbt',
     COOKIE_EXPIRE_DATE: 'edt',

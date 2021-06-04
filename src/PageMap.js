@@ -66,6 +66,7 @@ class PageMap extends React.Component
     timer_id: null,
     start_button_text: PLAYBUTTON_TEXT.start,
     data_api_loaded: DATA_API_STATUS.unloaded,
+    data_api_progress: null,
     inf_a: [],  // 感染者数 (アニメーション用)
     inf: []     // 感染者数
   };
@@ -181,31 +182,41 @@ class PageMap extends React.Component
     bgn.setDate( bgn.getDate() - config.ANIMATION_BEGIN_AT );
     return Math.max( 0, Math.floor( (bgn.getTime() - this.state.srcdata.begin_at.getTime())/(24*60*60*1000) ) );
   }
-  async downloadData()
+  async downloadData( cb_progress )
   {
+    const isNumber = v => typeof v == "number";
+    const setProgress = (ev, ini) => {
+      if ( isNumber( ev.total ) && ev.total > 0 && isNumber( ev.loaded ) )
+        cb_progress( ini + 25 * ev.loaded / ev.total );
+    };
     const setApiStatus = async status => setStateAsync( this, { data_api_loaded: status } );
+    cb_progress( 0 );
     await setApiStatus( DATA_API_STATUS.downloading );
     const host = config.SERVER_HOST || `${window.location.protocol}//${window.location.host}`;
-    const data = config.STANDALONE ? example_data : (await axios_instance().get( `${host}${config.SERVER_URI}` )).data;
+    const data = config.STANDALONE ? example_data : (await axios_instance().get( `${host}${config.SERVER_URI}`, { onDownloadProgress: ev => setProgress( ev, 0 ) } )).data;
+    cb_progress( 25 );
     await setApiStatus( DATA_API_STATUS.downloading_geometry );
-    const geojson = (await axios_instance().get( `${process.env.PUBLIC_URL}/japan_tiny.geojson` )).data;  // 緯度経度は小数点以下6桁でも十分
+    const geojson = (await axios_instance().get( `${process.env.PUBLIC_URL}/japan_tiny.geojson`, { onDownloadProgress: ev => setProgress( ev, 25 ) } )).data;  // 緯度経度は小数点以下6桁でも十分
+    cb_progress( 50 );
     await setApiStatus( DATA_API_STATUS.loading_geometry );
     const pref_geojsons = await load_geojson( geojson );
+    cb_progress( 75 );
     await setApiStatus( DATA_API_STATUS.loading );
     const srcdata = loader( data, pref_geojsons );
     const src_ids = srcdata.places.map( (v, i) => v.geopos && [ i ] ).filter( v => v ); // 位置情報がないPOI(東京都調査中、東京都都外)はヒストグラムを表示しない
     await setStateAsync( this, { pref_geojsons, srcdata, src_ids } );
+    cb_progress( 100 );
   }
   componentDidMount()
   {
-    this.downloadData()
+    this.downloadData( progress => this.setState( { data_api_progress: progress } ) )
       .then( () => {
-        this.setState( { data_api_loaded: DATA_API_STATUS.loaded } );
+        this.setState( { data_api_loaded: DATA_API_STATUS.loaded, data_api_progress: null } );
         this.redrawLayer( { begin_date: this.state.srcdata.begin_at, finish_date: this.state.srcdata.finish_at, max_day: this.state.srcdata.num_days, current_day: this.animationStartDay() } );
       } )
       .catch( ex => {
         Log.error( ex );
-        this.setState( { data_api_loaded: DATA_API_STATUS.error } );
+        this.setState( { data_api_loaded: DATA_API_STATUS.error, data_api_progress: null } );
       } )
   }
 
@@ -258,10 +269,10 @@ class PageMap extends React.Component
   {
     // クレジット表示
     const credit = document.getElementsByClassName('mapboxgl-ctrl-attrib-inner');
-    if ( credit[ 0 ] && !credit[ 0 ].innerText.match( new RegExp( config.CREDIT_NAME ) ) )
+    if ( credit[ 0 ] && !credit[ 0 ].innerHTML.match( new RegExp( config.CREDIT_NAME ) ) )
     {
       const span = document.createElement( 'span' );
-      span.innerText = config.CREDIT_NAME;
+      span.innerHTML = config.CREDIT_NAME;
       credit[ 0 ].appendChild( span );
     }
 
@@ -406,7 +417,7 @@ class PageMap extends React.Component
         <div className="navigation-control">
           <NavigationControl />
         </div>
-        <ControlPanel containerComponent={this.props.containerComponent} apimsg={(this.state.data_api_loaded !== DATA_API_STATUS.loaded) && this.state.data_api_loaded} srcdata={this.state.srcdata} onClickRelay={this._onClickOnChild} share={'map'} />
+        <ControlPanel containerComponent={this.props.containerComponent} apimsg={(this.state.data_api_loaded !== DATA_API_STATUS.loaded) && this.state.data_api_loaded} apiprogress={this.state.data_api_progress} srcdata={this.state.srcdata} onClickRelay={this._onClickOnChild} share={'map'} />
         <ChartPanel containerComponent={this.props.containerComponent}
                     srcdata={this.state.srcdata}
                     summary={this.state.selectedSummary}
