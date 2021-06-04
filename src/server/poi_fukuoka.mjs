@@ -51,9 +51,9 @@ export default class PoiFukuoka extends BasePoi
       cb_parse_csv: cr => parse_html( iconv.decode( cr.data, 'UTF8' ) ),
       //csv_encoding: 'UTF8',
       row_begin: 1,
-      min_columns: 8,
-      col_date: 4,
-      col_city: 7
+      min_columns: 5,
+      col_date: 3,
+      col_city: 5
     } );
   }
 }
