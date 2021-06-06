@@ -203,7 +203,7 @@ export default function makeConfig()
       LICENSE: license.CC
     },
     TOYAMA_HTML: {
-      DATA_URI: 'http://www.pref.toyama.jp/cms_sec/1205/kj00021798.html',
+      DATA_URI: 'https://www.pref.toyama.jp/kurashi/kenkou/kenkou/covid-19/index.html',
       LICENSE: license.FREE
     },  // URIをスクレイピングで探す
 

@@ -12,11 +12,9 @@ export default class PoiYamaguchi extends BasePoi
       pref_name: '山口県',
       alter_citys: ALTER_CITY_NAMES,
       csv_uri: config.YAMAGUCHI_CSV.DATA_URI,
-//      csv_encoding: 'CP932',
-      csv_encoding: 'UTF8',
       row_begin: 1,
       min_columns: 5,
-      col_date: 4,
+      col_date: 5,
       col_city: 3
     } );
   }
