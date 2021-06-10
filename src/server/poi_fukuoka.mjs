@@ -1,9 +1,9 @@
 import BasePoi from "./base_poi.mjs";
 import jsdom from 'jsdom';
-const { JSDOM } = jsdom;
 import iconv from "iconv-lite";
 import Log from './logger.mjs';
 import {axios_instance, parse_csv} from "./util.mjs";
+const { JSDOM } = jsdom;
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [

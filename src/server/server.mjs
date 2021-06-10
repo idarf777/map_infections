@@ -242,7 +242,7 @@ const CITIES = [
   [ 'hokkaido', PoiHokkaido ],
 ];
 const AVAILABLE_CITIES = [
-  //'fukuoka'
+  //'niigata'
 ].concat( (process.env.MAKE_DATA_CI_PREFECTURES || '').split( ',' ).map( s => s.trim() ) ).filter( s => s.length > 0 );
 
 async function exec_make_data()
