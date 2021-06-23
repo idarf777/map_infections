@@ -33,7 +33,8 @@ export default class BasePoi
     const set_irregular = new Set();
 
     const curdate = new Date();
-    const today = new Date( `${curdate.getFullYear()}-${curdate.getMonth()+1}-${curdate.getDate()}` );
+    const tomorrow = new Date( `${curdate.getFullYear()}-${curdate.getMonth()+1}-${curdate.getDate()}` );
+    tomorrow.setDate( tomorrow.getDate()+1 );
     const past_data = new Set();
     let past_rows = [];
     const current_year = new Date().getFullYear();
@@ -75,7 +76,7 @@ export default class BasePoi
         const tm = date.getTime();
         if ( !date || (past_data && past_data.has( tm )) ) // ログがある日ならスキップする
           continue;
-        if ( tm < config.DATA_SINCE.getTime()  ||  tm > today.getTime() )
+        if ( tm < config.DATA_SINCE.getTime()  ||  tm >= tomorrow.getTime() )
         {
           Log.info( `${pref_name} : row ${rownum} is invalid date ${new Date( tm )}` );
           continue;
