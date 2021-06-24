@@ -35,14 +35,18 @@ export default class BasePoi
     const curdate = new Date();
     const tomorrow = new Date( `${curdate.getFullYear()}-${curdate.getMonth()+1}-${curdate.getDate()}` );
     tomorrow.setDate( tomorrow.getDate()+1 );
+
+    // ローカルに保存しているデータ(すでに自治体のサーバから消えているなどで取得不能なデータ)をロードする
+    const past_dir = path.join( path.join( config.ROOT_DIRECTORY, config.DATA_PAST_DIR ), pref_name );
     const past_data = new Set();
     let past_rows = [];
     const current_year = new Date().getFullYear();
     for ( let year = config.DATA_SINCE.getFullYear(); year <= current_year; year++ )
     {
-      const buf = await fs.readFile( path.join( path.join( config.ROOT_DIRECTORY, config.DATA_PAST_DIR ), `${pref_name}/${year}.csv` ), "utf-8" ).catch( ex => {} );
-      if ( !buf )
+      const buf = await fs.readFile( path.join( past_dir, `${year}.csv` ), "utf-8" ).catch( ex => {} );
+      if ( buf == null )
         continue;
+      // 年を含まないCSV
       Log.info( `${pref_name} : parsing ${year}'s CSV...` );
       const past_csv = await parse_csv( buf );
       if ( !past_csv || past_csv.length === 0 )
@@ -54,6 +58,31 @@ export default class BasePoi
         return [ date, row[ 1 ] ];
       } ) );
     }
+    // 過去に生成したJSON
+    const jsonfiles = await BasePoi.enumerate_files(past_dir, new RegExp(/\.json$/));
+    for ( let i=0; i<jsonfiles.length; i++ )
+    {
+      Log.info( `${pref_name} : parsing ${jsonfiles[ i ]} ...` );
+      const rows = [];
+      const buf = await fs.readFile( jsonfiles[ i ], 'utf-8' ).catch( ex => {} );
+      if ( buf == null )
+        continue;
+      const json = JSON.parse( buf );
+      (json.spots || []).forEach( spot => {
+        let name = spot.name.substring( pref_name.length );
+        const m = name.match( `^\\(生活地:(.+?)\\)` );
+        if ( m )
+          name = m[ 1 ];
+        (spot.data || []).filter( data => data.date && data.infectors != null ).forEach( data => {
+          const date = new Date( data.date );
+          past_data.add( date.getTime() );
+          for ( let k=0; k<data.infectors; k++ )
+            rows.push( [ date, name ] );
+        } );
+      } );
+      past_rows = past_rows.concat( rows );
+    }
+
     Log.info( `${pref_name} : getting CSV...` );
     const map_poi = await DbPoi.getMap( pref_name );
     alter_citys && alter_citys.forEach( names => map_poi.set( names[ 0 ], map_poi.get( names[ 1 ] ) ) );
@@ -73,7 +102,7 @@ export default class BasePoi
         if ( row.length < min_columns )
           break;
         const date = cb_date ? cb_date( row ) : new Date( row[ col_date ] );
-        const tm = date.getTime();
+        const tm = date?.getTime();
         if ( !date || (past_data && past_data.has( tm )) ) // ログがある日ならスキップする
           continue;
         if ( tm < config.DATA_SINCE.getTime()  ||  tm >= tomorrow.getTime() )
@@ -131,4 +160,21 @@ export default class BasePoi
     const tms_finish = spots.map( spot => ((spot.data?.length || 0) > 0) && new Date( spot.data[ spot.data.length - 1 ].date ) ).filter( e => e ).sort( (a,b) => b.getTime() - a.getTime() );
     return { pref_code: map_poi.get( '' ).city_cd, name: pref_name, begin_at: datetostring( tms_begin[ 0 ] ), finish_at: datetostring( tms_finish[ 0 ] ), spots: spots.filter( spot => spot.data.reduce( (sum, v) => sum + v.infectors, 0 ) > 0 ) };
   }
+
+  static async enumerate_files( dir, regex )
+  {
+    const candidates = await fs.readdir( dir ).catch( ex => {} ) || [];
+    const files = [];
+    for ( let i=0; i<candidates.length; i++ )
+    {
+      const p = path.join( dir, candidates[ i ] );
+      if ( regex && !regex.test( p ) )
+        continue;
+      const stat = await fs.stat( p ).catch( ex => {} );
+      if ( stat?.isFile() )
+        files.push( p )
+    }
+    return files.sort();
+  }
 }
+

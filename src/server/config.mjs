@@ -115,7 +115,7 @@ export default function makeConfig()
 
     // 北海道
     HOKKAIDO_CSV: {
-      DATA_URI: 'https://www.harp.lg.jp/opendata/dataset/1369/resource/3132/010006_hokkaido_covid19_patients.csv',
+      DATA_URI: 'https://www.harp.lg.jp/opendata/dataset/1369/resource/3883/hokkaido_01shinkoukyoku_day.csv',
       LICENSE: license.CC
     },
 
