@@ -8,7 +8,7 @@ async function load_csv()
   const lastLinkIndex = resIndex.data.lastIndexOf( '時点の状況です。' );
   if ( lastLinkIndex < 0 )
     throw new Error( "bad html" );
-  const m = resIndex.data.substring( lastLinkIndex ).match( /^[\s\S]*?<a href="(https:\/\/opendata[^"]+)"/ );
+  const m = resIndex.data.substring( lastLinkIndex ).match( /^[\s\S]*?<a href="(https:\/\/opendata[^"]+?\.csv)"/ );
   if ( !m )
     throw new Error( "bad link" );
   return axios_instance( { responseType: 'arraybuffer' } ).get( m[ 1 ] );

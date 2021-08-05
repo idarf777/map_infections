@@ -1,139 +1,94 @@
 import BasePoi from "./base_poi.mjs";
 import iconv from "iconv-lite";
 import Log from "./logger.mjs";
-import encoding from 'encoding-japanese';
-import { promises as fs } from "fs";
-import fsx from "fs";
-import path from "path";
+import jschardet from "jschardet";
 import {axios_instance} from "./util.mjs";
+import jsdom from "jsdom";
+const { JSDOM } = jsdom;
 const config = global.covid19map.config;
 
 const ALTER_CITY_NAMES = [
-  ['善通寺', '善通寺市']
+  ['善通寺', '善通寺市'],
+  ['観音寺', '観音寺市']
 ];
 
-import {processPastYearData, savePastYearData} from "./processPastYearData.mjs";
-
-async function parse_html( html_, pref_name )
+function complement_uri( uri )
 {
+  const prefix = uri.match( /^https?:\/\// ) ? '' : config.KAGAWA_HTML.DATA_URI.match( uri.startsWith( '/' ) ? /^(https?:\/\/.+?)\// : /^(https?:\/\/.+?\/)/ )[ 1 ];
+  return `${prefix}${uri}`;
+}
 
-  // 前年以前のデータが有る場合は読み込む
-  let { pastCsv, lastYear } = await processPastYearData( pref_name) ;  // await が無いと、途中で戻ってくる。
-
-  // データをパースする
-  const today = new Date();
-  let year = today.getFullYear();
-  let prevMon = today.getMonth() + 1;
-
+function parse_cases( html, startYear )
+{
   const csv = [];
-  const re = new RegExp([
-    '<tr>[\\s\\S]+?',
-    '(<td>[\\s\\S]+?)<\\/tr>'].join(''), 'g');          // <tr> - </tr>  join は、RegExp()　の括弧の中を1つの文字列にする
-
-  const detected = encoding.detect(html_.data);  // 文字コード検出
-//  const _hText = encoding.convert( html.data, {
-//     from:detected,
-//     to:'UNICODE',
-//     type: 'string' });
-  const html = iconv.decode( html_.data, detected ) 
-  let no, p_no=0;
-  let mon, day, city;
-  let rowspan_date=0;
-
-  PARSE_BLOCK: while(true){
-    const m = re.exec(html);
-    if( !m )
-      break;
-
-    const m_1 = m[1].replace(/(?:\r|\n|\s{2,})/g,'')  // 見やすくするために改行とtab を削除
-    const hText = m_1.split("</td>");                 // <td> - </td> ブロック
-     
-    let index = 0;
-    //---- 通し番号
-    var mm = hText[index].match(/>(\d+)/);
-    if( mm != null ){
-      no = mm[1];
-    }else{
-      Log.error("???? get no error : " + hText[index]);
+  let currentYear = startYear;
+  let lastDate = null;
+  const tables = Array.from( new JSDOM( html ).window.document.querySelectorAll( "table" ) );
+  const table = tables.find( t => Array.from( t.querySelectorAll( "th" ) ).find( h => h.textContent.includes( "確認日" ) ) );
+  table.querySelectorAll( "tr" ).forEach( tr => {
+    const tds = Array.from( tr.querySelectorAll( "td" ) );
+    let date = null;
+    let idxCity = 4;
+    if (lastDate != null && tds.length === 4 )
+    {
+      date = lastDate;
+      idxCity--;
     }
-    index ++;
-    
-    //---- get date
-    mm = hText[index].match(/(\d+)月(\d+)日/);
-    if( mm != null){
-      mon = mm[1];
-      day = mm[2];
-      mm = hText[index].match(/rowspan="(\d+)/);
-      index ++;
-      if( mm != null ){
-        rowspan_date = mm[1];
+    else if ( tds.length >= 5 )
+    {
+      const m = tds[ 1 ].textContent.match( /(\d+)月(\d+)日/ );
+      if ( m )
+      {
+        date = new Date( currentYear, parseInt( m[ 1 ] ) - 1, parseInt( m[ 2 ] ) );
+        if ( lastDate && lastDate.getMonth() < date.getMonth() )
+        {
+          currentYear--;
+          date.setFullYear( currentYear )
+        }
+        lastDate = date;
       }
-    }else{
-      if( rowspan_date <= 1){
-        Log.error("???? get date error " + no + " : " + hText[index] );
-      }
-      rowspan_date --;
     }
+    if ( date == null )
+      return;
 
-    //---- age
-    index ++;
-    //---- sex
-    index ++;
-    //---- city
-  
-    mm = hText[index].match(/>(.+?)$/);
-    if( mm != null){
-      city = mm[1].replace(/<p[\s\S]+?>/,'').replace(/<\/p>/,'').replace(/&nbsp;/g,'');
-    }else{
-      Log.error("???? get city error : " + no + " " + hText[index]);
-    }
-    if( p_no == 0){
-      p_no = no;
-    }else if( p_no - 1 != no){
-      Log.error( "???? serial error " + no + " " + p_no) ;
-    }else{
-      p_no = no;
-    }
-    if( no == 119){
-      let x = 1;
-    }
-    //console.log(no + " " + mon + " " + day + " " + city);
+    let city = tds[ idxCity ].textContent.trim();
+    if ( city.match( /^[-－ｰー]$/ ) )
+      city = "";
 
-    // 前の年になった
-    if( Number(prevMon) < Number(mon)){
-      year --;
-    }
-    prevMon = mon;
-
-    // 保存されている年のデータがあるなら、終わり。
-    if( year <= lastYear){
-      break;
-    }
-    csv.push( [ new Date( year, mon-1, day), city ] );
-  
-    if( no == 1){
-      break;
-    }
-  }
-
-
-  //前の年のデータがあれば保存
-  await savePastYearData( csv, pref_name );   // await が無いとデバッグしにくい
-  // file から読み込んだ以前の年のデータを push
-  pastCsv.map( item  => csv.push(item));
-
+    csv.push( [ date, city ] );
+  } );
   return csv;
+}
+
+async function parse_html( html )
+{
+  let year = new Date().getFullYear();
+  const csv = parse_cases( html, year );
+  if ( csv.length > 0 )
+  {
+    const lastDate = csv[ csv.length - 1 ][ 0 ];
+    year = lastDate.getFullYear();
+    if ( lastDate.getMonth() === 0 && lastDate.getDate() <= 3 )
+      year--; // 終わりが三が日なら、過去の事例は昨年から始まると見なす
+  }
+  // 過去の事例
+  const tag = Array.from( new JSDOM( html ).window.document.querySelectorAll( 'a' ) ).find( tag => tag.textContent.match( /県内で確認された事例/ ) );
+  if ( tag == null )
+    return csv;
+  const cr = await axios_instance( { responseType: 'arraybuffer' } ).get( complement_uri( tag.href ) );
+  return csv.concat( parse_cases( iconv.decode( cr.data, jschardet.detect( cr.data ).encoding ), year ) );
 }
 
 export default class PoiKagawa extends BasePoi
 {
   static async load()
   {
+    const pref_name = '香川県';
     return BasePoi.process_csv( {
-      pref_name: '香川県',
+      pref_name,
       alter_citys: ALTER_CITY_NAMES,
       csv_uri: config.KAGAWA_HTML.DATA_URI,
-      cb_parse_csv: cr => parse_html( cr, '香川県' ),
+      cb_parse_csv: cr => parse_html( iconv.decode( cr.data, jschardet.detect( cr.data ).encoding ) ),
       row_begin: 0,
       min_columns: 2,
       col_date: 0,

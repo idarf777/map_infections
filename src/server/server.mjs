@@ -72,6 +72,60 @@ import PoiKagoshima from "./poi_kagoshima.mjs";
 import PoiOkinawa from "./poi_okinawa.mjs";
 
 
+const _CITIES = [
+  [ 'tokyo', PoiTokyo ],
+  [ 'chiba', PoiChiba ],
+  [ 'saitama', PoiSaitama ],
+  [ 'kanagawa', PoiKanagawa ],
+  [ 'niigata', PoiNiigata ],
+  [ 'aomori', PoiAomori ],
+  [ 'akita', PoiAkita ],
+  [ 'yamagata', PoiYamagata ],
+  [ 'iwate', PoiIwate ],
+  [ 'miyagi', PoiMiyagi ],
+  [ 'fukushima', PoiFukushima ],
+  [ 'toyama', PoiToyama ],
+  [ 'yamanashi', PoiYamanashi ],
+  [ 'shizuoka', PoiShizuoka ],
+  [ 'aichi', PoiAichi ],
+  [ 'nagano', PoiNagano ],
+  [ 'mie', PoiMie ],
+  [ 'wakayama', PoiWakayama ],
+  [ 'shiga', PoiShiga ],
+  [ 'gifu', PoiGifu ],
+  [ 'kyoto', PoiKyoto ],
+  [ 'nara', PoiNara ],
+  [ 'osaka', PoiOsaka ],
+  [ 'hyogo', PoiHyogo ],
+  [ 'ibaraki', PoiIbaraki ],
+  [ 'tochigi', PoiTochigi ],
+  [ 'gunma', PoiGunma ],
+  [ 'ishikawa', PoiIshikawa ],
+  [ 'yamaguchi', PoiYamaguchi ],
+  [ 'hiroshima', PoiHiroshima ],
+  [ 'okayama', PoiOkayama ],
+  [ 'shimane', PoiShimane ],
+  [ 'tottori', PoiTottori ],
+  [ 'tokushima', PoiTokushima ],
+  [ 'kagawa', PoiKagawa ],
+  [ 'kochi', PoiKochi ],
+  [ 'ehime', PoiEhime ],
+  [ 'fukuoka', PoiFukuoka ],
+  [ 'nagasaki', PoiNagasaki ],
+  [ 'saga', PoiSaga ],
+  [ 'oita', PoiOhita ],
+  [ 'kumamoto', PoiKumamoto ],
+  [ 'miyazaki', PoiMiyazaki ],
+  [ 'kagoshima', PoiKagoshima ],
+  [ 'okinawa', PoiOkinawa ],
+  [ 'fukui', PoiFukui ],
+  [ 'hokkaido', PoiHokkaido ],
+];
+const _AVAILABLE_CITIES = [
+  //'niigata'
+].concat( (process.env.MAKE_DATA_CI_PREFECTURES || '').split( ',' ).map( s => s.trim() ) ).filter( s => s.length > 0 );
+const CITIES = (_AVAILABLE_CITIES.length > 0) ? _CITIES.filter( c => _AVAILABLE_CITIES.some( v => c[ 0 ] === v ) ) : _CITIES;
+
 //import { example_data } from '../example_data.js';
 const COOKIE_OPTIONS = Object.freeze( { maxAge: config.COOKIE_EXPIRE*1000, path: config.SERVER_URI_PREFIX } );
 const RedisStore = connectRedis( session );
@@ -113,10 +167,11 @@ async function merge_jsons( jsons )
   // 欠けている都道府県を検出して表示する
   const errors = [];
   const suset = summary.reduce( ( set, s ) => set.add( s.pref_code ), new Set() );
-  for( const pref_code of Object.values( PREFECTURE_CODES ) )
+  for( const pref of CITIES )
   {
-     if ( !suset.has( pref_code ) )
-       errors.push( `pref_code = ${pref_code} (${(await DbPoi.get( pref_code )).name}) is missing` );
+    const pref_code = PREFECTURE_CODES[ pref[ 0 ] ];
+    if ( !suset.has( pref_code ) )
+      errors.push( `pref_code = ${pref_code} (${(await DbPoi.get( pref_code )).name}) is missing` );
   }
 
   const setfigure = v => Math.round( v * 1000000 ) * 0.000001;
@@ -192,65 +247,11 @@ async function execMakeData( cities )
   return { jsons: (await Promise.all( promises )).filter( v => v ), errors };
 }
 
-const CITIES = [
-  [ 'tokyo', PoiTokyo ],
-  [ 'chiba', PoiChiba ],
-  [ 'saitama', PoiSaitama ],
-  [ 'kanagawa', PoiKanagawa ],
-  [ 'niigata', PoiNiigata ],
-  [ 'aomori', PoiAomori ],
-  [ 'akita', PoiAkita ],
-  [ 'yamagata', PoiYamagata ],
-  [ 'iwate', PoiIwate ],
-  [ 'miyagi', PoiMiyagi ],
-  [ 'fukushima', PoiFukushima ],
-  [ 'toyama', PoiToyama ],
-  [ 'yamanashi', PoiYamanashi ],
-  [ 'shizuoka', PoiShizuoka ],
-  [ 'aichi', PoiAichi ],
-  [ 'nagano', PoiNagano ],
-  [ 'mie', PoiMie ],
-  [ 'wakayama', PoiWakayama ],
-  [ 'shiga', PoiShiga ],
-  [ 'gifu', PoiGifu ],
-  [ 'kyoto', PoiKyoto ],
-  [ 'nara', PoiNara ],
-  [ 'osaka', PoiOsaka ],
-  [ 'hyogo', PoiHyogo ],
-  [ 'ibaraki', PoiIbaraki ],
-  [ 'tochigi', PoiTochigi ],
-  [ 'gunma', PoiGunma ],
-  [ 'ishikawa', PoiIshikawa ],
-  [ 'yamaguchi', PoiYamaguchi ],
-  [ 'hiroshima', PoiHiroshima ],
-  [ 'okayama', PoiOkayama ],
-  [ 'shimane', PoiShimane ],
-  [ 'tottori', PoiTottori ],
-  [ 'tokushima', PoiTokushima ],
-  [ 'kagawa', PoiKagawa ],
-  [ 'kochi', PoiKochi ],
-  [ 'ehime', PoiEhime ],
-  [ 'fukuoka', PoiFukuoka ],
-  [ 'nagasaki', PoiNagasaki ],
-  [ 'saga', PoiSaga ],
-  [ 'oita', PoiOhita ],
-  [ 'kumamoto', PoiKumamoto ],
-  [ 'miyazaki', PoiMiyazaki ],
-  [ 'kagoshima', PoiKagoshima ],
-  [ 'okinawa', PoiOkinawa ],
-  [ 'fukui', PoiFukui ],
-  [ 'hokkaido', PoiHokkaido ],
-];
-const AVAILABLE_CITIES = [
-  //'fukuoka'
-].concat( (process.env.MAKE_DATA_CI_PREFECTURES || '').split( ',' ).map( s => s.trim() ) ).filter( s => s.length > 0 );
-
 async function exec_make_data()
 {
   const begintm = new Date();
   await mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) );
-  const cities = (AVAILABLE_CITIES.length > 0) ? CITIES.filter( c => AVAILABLE_CITIES.some( v => c[ 0 ] === v ) ) : CITIES;
-  const data = await (to_bool( process.env.MAKE_DATA_ORDERED ) ? execMakeDataSerial( cities ) : execMakeData( cities ));
+  const data = await (to_bool( process.env.MAKE_DATA_ORDERED ) ? execMakeDataSerial( CITIES ) : execMakeData( CITIES ));
   Log.info( 'merging data...' );
   const merged = await merge_jsons( data.jsons );
   Log.info( `MAKE DATA complete with ${data.errors.length} error${(data.errors.length > 1) ? 's':''} in ${(new Date().getTime() - begintm.getTime())/1000} sec.` );

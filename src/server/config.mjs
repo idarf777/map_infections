@@ -115,7 +115,7 @@ export default function makeConfig()
 
     // 北海道
     HOKKAIDO_CSV: {
-      DATA_URI: 'https://www.harp.lg.jp/opendata/dataset/1369/resource/3132/010006_hokkaido_covid19_patients.csv',
+      DATA_URI: 'https://www.harp.lg.jp/opendata/dataset/1369/resource/3883/hokkaido_01shinkoukyoku_day.csv',
       LICENSE: license.CC
     },
 
@@ -159,7 +159,7 @@ export default function makeConfig()
     CHIBA_PDF: {
       INDEX_URI: 'https://www.pref.chiba.lg.jp/shippei/press/2019/ncov-index.html',
       LICENSE: license.FREE
-    },  // PDFリンクをスクレイピングで探す
+    },  // CSVリンクをスクレイピングで探す
     SAITAMA_CSV: {
       INDEX_URI: 'https://opendata.pref.saitama.lg.jp/data/dataset/covid19-jokyo',
       LICENSE: license.FREE
@@ -203,7 +203,7 @@ export default function makeConfig()
       LICENSE: license.CC
     },
     TOYAMA_HTML: {
-      DATA_URI: 'http://www.pref.toyama.jp/cms_sec/1205/kj00021798.html',
+      DATA_URI: 'https://www.pref.toyama.jp/kurashi/kenkou/kenkou/covid-19/index.html',
       LICENSE: license.FREE
     },  // URIをスクレイピングで探す
 

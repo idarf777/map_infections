@@ -3,7 +3,7 @@ import {datetostring, parse_csv, sanitize_poi_name, axios_instance} from "./util
 import DbPoi from "./db_poi.mjs";
 import iconv from "iconv-lite";
 import mkdirp from "mkdirp";
-import encoding from 'encoding-japanese';
+import jschardet from "jschardet";
 import path from "path";
 import { promises as fs } from "fs";
 const config = global.covid19map.config;
@@ -32,14 +32,21 @@ export default class BasePoi
     const { pref_name, alter_citys, cb_alter_citys, csv_uri, cb_load_csv, cb_parse_csv, csv_encoding, row_begin, min_columns, col_date, cb_date, col_city, cb_city, cb_name } = arg;
     const set_irregular = new Set();
 
+    const curdate = new Date();
+    const tomorrow = new Date( `${curdate.getFullYear()}-${curdate.getMonth()+1}-${curdate.getDate()}` );
+    tomorrow.setDate( tomorrow.getDate()+1 );
+
+    // ローカルに保存しているデータ(すでに自治体のサーバから消えているなどで取得不能なデータ)をロードする
+    const past_dir = path.join( path.join( config.ROOT_DIRECTORY, config.DATA_PAST_DIR ), pref_name );
     const past_data = new Set();
     let past_rows = [];
     const current_year = new Date().getFullYear();
     for ( let year = config.DATA_SINCE.getFullYear(); year <= current_year; year++ )
     {
-      const buf = await fs.readFile( path.join( path.join( config.ROOT_DIRECTORY, config.DATA_PAST_DIR ), `${pref_name}/${year}.csv` ), "utf-8" ).catch( ex => {} );
-      if ( !buf )
+      const buf = await fs.readFile( path.join( past_dir, `${year}.csv` ), "utf-8" ).catch( ex => {} );
+      if ( buf == null )
         continue;
+      // 年を含まないCSV
       Log.info( `${pref_name} : parsing ${year}'s CSV...` );
       const past_csv = await parse_csv( buf );
       if ( !past_csv || past_csv.length === 0 )
@@ -51,6 +58,31 @@ export default class BasePoi
         return [ date, row[ 1 ] ];
       } ) );
     }
+    // 過去に生成したJSON
+    const jsonfiles = await BasePoi.enumerate_files(past_dir, new RegExp(/\.json$/));
+    for ( let i=0; i<jsonfiles.length; i++ )
+    {
+      Log.info( `${pref_name} : parsing ${jsonfiles[ i ]} ...` );
+      const rows = [];
+      const buf = await fs.readFile( jsonfiles[ i ], 'utf-8' ).catch( ex => {} );
+      if ( buf == null )
+        continue;
+      const json = JSON.parse( buf );
+      (json.spots || []).forEach( spot => {
+        let name = spot.name.substring( pref_name.length );
+        const m = name.match( `^\\(生活地:(.+?)\\)` );
+        if ( m )
+          name = m[ 1 ];
+        (spot.data || []).filter( data => data.date && data.infectors != null ).forEach( data => {
+          const date = new Date( data.date );
+          past_data.add( date.getTime() );
+          for ( let k=0; k<data.infectors; k++ )
+            rows.push( [ date, name ] );
+        } );
+      } );
+      past_rows = past_rows.concat( rows );
+    }
+
     Log.info( `${pref_name} : getting CSV...` );
     const map_poi = await DbPoi.getMap( pref_name );
     alter_citys && alter_citys.forEach( names => map_poi.set( names[ 0 ], map_poi.get( names[ 1 ] ) ) );
@@ -60,7 +92,7 @@ export default class BasePoi
     await mkdirp( cache_dir );
     await fs.writeFile( path.join( cache_dir, 'src' ), cr.data );
     Log.info( `${pref_name} parsing CSV...` );
-    const rows = await ( cb_parse_csv ? cb_parse_csv( cr ) : parse_csv( iconv.decode( cr.data, csv_encoding || encoding.detect( cr.data ) ) ) );
+    const rows = await ( cb_parse_csv ? cb_parse_csv( cr ) : parse_csv( iconv.decode( cr.data, csv_encoding || jschardet.detect( cr.data ).encoding ) ) );
     const map_city_infectors = new Map(); // 都市名 - (UNIXタイムスタンプ - 感染者数のマップ)のマップ
     const parse_rows = ( params ) => {
       const { row_begin, rows, min_columns, cb_date, col_date, cb_city, col_city, past_data } = params;
@@ -70,8 +102,14 @@ export default class BasePoi
         if ( row.length < min_columns )
           break;
         const date = cb_date ? cb_date( row ) : new Date( row[ col_date ] );
-        if ( !date || (past_data && past_data.has( date.getTime() )) ) // ログがある日ならスキップする
+        const tm = date?.getTime();
+        if ( !date || (past_data && past_data.has( tm )) ) // ログがある日ならスキップする
           continue;
+        if ( tm < config.DATA_SINCE.getTime()  ||  tm >= tomorrow.getTime() )
+        {
+          Log.info( `${pref_name} : row ${rownum} is invalid date ${new Date( tm )}` );
+          continue;
+        }
         const city = sanitize_poi_name( (cb_city && cb_city( row )) || row[ col_city ] || '' );
         if ( !map_poi.has( city ) )
         {
@@ -99,8 +137,6 @@ export default class BasePoi
     if ( unpublished.size > 0 )
       map_city_infectors.set( '', unpublished );
 
-    const curdate = new Date();
-    const today = new Date( `${curdate.getFullYear()}-${curdate.getMonth()+1}-${curdate.getDate()}` );
     const spots = Array.from( map_city_infectors.entries() ).map( pair => {
       let subtotal = 0;
       const key = pair[ 0 ];
@@ -111,11 +147,6 @@ export default class BasePoi
         geopos: poi.geopos(),
         name,
         data: Array.from( pair[ 1 ].keys() ).sort().map( tm => {
-          if ( tm < config.DATA_SINCE.getTime()  ||  tm > today.getTime() )
-          {
-            Log.info( `${pref_name} : ${pair[ 0 ]} invalid date ${new Date( tm )}` );
-            return null;
-          }
           const infectors = pair[ 1 ].get( tm );
           subtotal += infectors;
           return { date: datetostring( tm ), infectors, subtotal }
@@ -129,4 +160,21 @@ export default class BasePoi
     const tms_finish = spots.map( spot => ((spot.data?.length || 0) > 0) && new Date( spot.data[ spot.data.length - 1 ].date ) ).filter( e => e ).sort( (a,b) => b.getTime() - a.getTime() );
     return { pref_code: map_poi.get( '' ).city_cd, name: pref_name, begin_at: datetostring( tms_begin[ 0 ] ), finish_at: datetostring( tms_finish[ 0 ] ), spots: spots.filter( spot => spot.data.reduce( (sum, v) => sum + v.infectors, 0 ) > 0 ) };
   }
+
+  static async enumerate_files( dir, regex )
+  {
+    const candidates = await fs.readdir( dir ).catch( ex => {} ) || [];
+    const files = [];
+    for ( let i=0; i<candidates.length; i++ )
+    {
+      const p = path.join( dir, candidates[ i ] );
+      if ( regex && !regex.test( p ) )
+        continue;
+      const stat = await fs.stat( p ).catch( ex => {} );
+      if ( stat?.isFile() )
+        files.push( p )
+    }
+    return files.sort();
+  }
 }
+
