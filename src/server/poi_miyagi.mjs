@@ -42,8 +42,8 @@ async function parse_xlsx( promise )
   const csv = [];
   for ( let row = 4; row < rows; row++ )
   {
-    const cellDate = worksheet[ `E${row}` ];
-    const cellCity = worksheet[ `D${row}` ];
+    const cellDate = worksheet[ `B${row}` ];
+    const cellCity = worksheet[ `F${row}` ];
     const isValidDate = cellDate?.t === 'd';
     const isValidCity = cellCity?.t === 's';
     if ( cellCity.t === 'e' )

@@ -23,8 +23,8 @@ function parse_cases( html, startYear )
   const csv = [];
   let currentYear = startYear;
   let lastDate = null;
-  const tables = Array.from( new JSDOM( html ).window.document.querySelectorAll( "table[summary='発生状況一覧']" ) );
-  const table = tables.find( t => t.querySelectorAll( "tr" ).length > 2 ); // summaryが同じTABLEが複数ある
+  const tables = Array.from( new JSDOM( html ).window.document.querySelectorAll( "table" ) );
+  const table = tables.find( t => Array.from( t.querySelectorAll( "th" ) ).find( h => h.textContent.includes( "確認日" ) ) );
   table.querySelectorAll( "tr" ).forEach( tr => {
     const tds = Array.from( tr.querySelectorAll( "td" ) );
     let date = null;
