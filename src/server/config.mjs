@@ -173,7 +173,7 @@ export default function makeConfig()
       LICENSE: license.FREE
     },  // URIをスクレイピングで探す
     GUNMA_CSV: {
-      DATA_URI: 'http://stopcovid19.pref.gunma.jp/csv/01kanja.csv',
+      DATA_URI: 'https://stopcovid19.pref.gunma.jp/images/01kanja.csv',
       LICENSE: license.MIT
     },
 
