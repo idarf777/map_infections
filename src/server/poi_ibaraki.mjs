@@ -86,8 +86,8 @@ async function receive_html( url )
 
 async function parse_html( html )
 {
-  let year = new Date().getFullYear();
-  const csv = parse_cases( html, year );
+  const year = new Date().getFullYear();
+  let csv = parse_cases( html, year );
   // 過去の事例
   const tags = Array.from( new JSDOM( html ).window.document.querySelectorAll( 'a' ) ).filter( tag => tag.textContent.match( /陽性者一覧.+令和(\d+)年(\d+)月(\d+)日～/ ) );
   for ( let i=0; i<tags.length; i++ )
@@ -96,7 +96,7 @@ async function parse_html( html )
     const pm = tag.textContent.match( /令和(\d+)年(\d+)月(\d+)日～/ );
     const pastyear = parseInt( pm[ 1 ] ) + 2018; // 令和 -> 西暦
     if ( pastyear > 2020 )  // 2020年以前はパース済みのデータが存在する
-      csv.concat( parse_cases( await receive_html( tag.href ), pastyear ) );
+      csv = csv.concat( parse_cases( await receive_html( tag.href ), pastyear ) );
   }
   return csv;
 }

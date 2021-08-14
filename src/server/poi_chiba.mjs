@@ -15,10 +15,22 @@ async function parse_xlsx( promise )
   const range = worksheet['!ref'];
   const rows = parseInt( range.match( /^.+:[A-z]+(\d+)$/ )[ 1 ] );
   const csv = [];
-  for ( let row = 7; row < rows; row++ )
+  const columnIndex = { date: null, city: null };
+  for ( let row = 1; row < rows; row++ )
   {
-    const cellDate = worksheet[ `G${row}` ];
-    const cellCity = worksheet[ `E${row}` ];
+    const cellNo = worksheet[ `B${row}` ];
+    if ( cellNo?.t === 's' && cellNo.v.match( /No\./ ) ) // 見出しがなぜか2行ある
+    {
+      const cols = ['C','D','E','F','G','H','I','J'];
+      [ { col: 'date', str: '発症日' }, { col: 'city', str: '居住地' } ].forEach( v => {
+        columnIndex[ v.col ] = cols.find( c => worksheet[ `${c}${row}` ]?.t === 's' && worksheet[ `${c}${row}` ].v.match( v.str ) );
+      } );
+      continue;
+    }
+    if ( columnIndex.date == null || columnIndex.city == null )
+      continue;
+    const cellDate = worksheet[ `${columnIndex.date}${row}` ];
+    const cellCity = worksheet[ `${columnIndex.city}${row}` ];
     const isValidDate = cellDate?.t === 'd';
     const isValidCity = cellCity?.t === 's';
     if ( (!isValidDate && !isValidCity) || (!(isValidDate && isValidCity) && csv.length === 0) )
