@@ -79,10 +79,18 @@ const map_cityname = new Map();
 for ( const names of cityname_tokyo )
   map_cityname.set( names[ 0 ], names[ 1 ] );
 
-const CSV_MODS = [ '-1', '_1', '06', '05', '04', '03', '02', '01', '2', '' ];  // 修正版があるか調べてゆく
+const CSV_MODS = [ '', '-1', '_1', '06', '05', '04', '03', '02', '01', '2' ];
+function csv_cache_yeardate( date )
+{
+  return agh.sprintf( '%04d-%02d', date.getFullYear(), date.getMonth()+1 );
+}
+function csv_yeardate( date )
+{
+  return agh.sprintf( '%04d%02d', date.getFullYear(), date.getMonth()+1 );
+}
 function csv_prefix( date )
 {
-  return agh.sprintf( '%04d%02d%02d', date.getFullYear(), date.getMonth()+1, date.getDate() );
+  return agh.sprintf( `${csv_yeardate( date )}%02d`, date.getDate() );
 }
 function csv_filename( prefix, mod, cache_dir )
 {
@@ -90,28 +98,25 @@ function csv_filename( prefix, mod, cache_dir )
   return cache_dir ? path.join( cache_dir, filename ) : filename;
 }
 
+// キャッシュディレクトリに当該ファイルがあればCSVをそこからロードする
+// なければHTTP GETする
 async function load_csv( date, cache_dir )
 {
   const prefix = csv_prefix( date );
-  for ( const m of CSV_MODS )
+  const filedir = path.join( cache_dir, csv_cache_yeardate( date ) );
+  await mkdirp( filedir );
+  let cache = csv_filename( prefix, '', filedir );
+  const stat = await fs.lstat( cache ).catch( () => null );
+  if ( stat?.isFile() )
   {
-    try
-    {
-      const cache = csv_filename( prefix, m, cache_dir );
-      if ( !(await fs.lstat( cache ))?.isFile() )
-        continue;
-      Log.info( `loading ${cache} from cache ...` );
-      return fs.readFile( cache );
-    }
-    catch
-    {
-    }
+    Log.info( `loading ${cache} from cache ...` );
+    return fs.readFile( cache );
   }
   // キャッシュ上のファイルに更新があってもロードされない
   for ( const m of CSV_MODS )
   {
     const filename = csv_filename( prefix, m );
-    const cache = csv_filename( prefix, m, cache_dir );
+    cache = csv_filename( prefix, m, filedir );
     const uri = `${config.TOKYO_CSV.DATA_URI}${filename}`;
     const h = await axios_instance().head( uri, { validateStatus: false } ).catch( () => {} );
     if ( h?.status === 200 )
@@ -130,10 +135,41 @@ async function load_csv( date, cache_dir )
 async function remove_csv_cache( date, cache_dir )
 {
   const prefix = csv_prefix( date );
+  const filedir = path.join( cache_dir, csv_cache_yeardate( date ) );
   return Promise.all( CSV_MODS.map( m => {
-    const cache = csv_filename( prefix, m, cache_dir );
-    return fs.lstat( cache ).then( stat => stat.isFile() && fs.unlink( cache ) );
+    const cache = csv_filename( prefix, m, filedir );
+    return fs.lstat( cache ).then( stat => stat.isFile() && fs.unlink( cache ) ).catch( () => {} );
   } ) );
+}
+
+async function replace_files( dir )
+{
+  const basefiles = await fs.readdir( dir );
+  const bs = await Promise.all( basefiles.map( async p => {
+    const s = await fs.lstat( path.join( dir, p ) ).catch( () => null );
+    return s?.isFile() || false;
+  } ) );
+  const files = basefiles.filter( (v, i) => bs[ i ] ).sort();
+  for ( const filepath of files )
+  {
+    const m = filepath.match( /^((\d{4})(\d{2})(\d{2})).*\.csv$/ )
+    if ( m == null )
+      continue;
+    const year = Number( m[ 2 ] );
+    const month = Number( m[ 3 ] );
+    const date = Number( m[ 4 ] );
+    if ( year < 2020 || year >= 2100 )
+      continue; // 2020～2100年であればOK
+    const d = new Date( year, month - 1, date );
+    if ( year !== d.getFullYear() || month !== (d.getMonth() + 1) || date !== d.getDate() ) // 有効な日付か検証する
+      continue;
+    const srcfile = path.join( dir, filepath );
+    const dstdir = path.join( dir, csv_cache_yeardate( d ) );
+    const dstfile = path.join( dstdir, `${m[ 2 ]}${m[ 3 ]}${m[ 4 ]}.csv` );
+    await mkdirp( dstdir );
+    await fs.copyFile( srcfile, dstfile );
+    await fs.unlink( srcfile );
+  }
 }
 
 export default class PoiTokyo
@@ -176,6 +212,7 @@ export default class PoiTokyo
       prevdate.setDate( prevdate.getDate() - 1 );
       csvs.set( date, csvs.get( prevdate.getTime() ) || firstcsv );
     }
+    await replace_files( cache_dir );
 
     Log.info( 'parsing tokyo CSV...' );
     const map_city_infectors = new Map();
