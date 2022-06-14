@@ -157,7 +157,7 @@ export default function makeConfig()
       LICENSE: license.FREE
     },
     CHIBA_PDF: {
-      INDEX_URI: 'https://www.pref.chiba.lg.jp/shippei/press/2019/ncov-index.html',
+      INDEX_URI: 'https://www.pref.chiba.lg.jp/kenfuku/kansenshou/ncov/kansen-shiyo-sihyou.html',
       LICENSE: license.FREE
     },  // CSVリンクをスクレイピングで探す
     SAITAMA_CSV: {
@@ -165,9 +165,9 @@ export default function makeConfig()
       LICENSE: license.FREE
     },  // CSVリンクをスクレイピングで探す
     IBARAKI_HTML: {
-      DATA_URI: 'https://www.pref.ibaraki.jp/1saigai/2019-ncov/ichiran.html',
-      LICENSE: license.FREE
-    },  // スクレイピングでデータを拾う
+      DATA_URI: 'https://a01sa01to.com/opendata/api/raw/covid19_ibaraki/080004_ibaraki_covid19_patients.csv',
+      LICENSE: license.CC
+    },
     TOCHIGI_HTML: {
       DATA_URI: 'http://www.pref.tochigi.lg.jp/e04/welfare/hoken-eisei/kansen/hp/coronakensahasseijyoukyou.html',
       LICENSE: license.FREE
