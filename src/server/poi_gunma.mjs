@@ -10,22 +10,9 @@ const ALTER_CITY_NAMES = [
   ['桐生保健所管内', '桐生市'],
   ['館林保健所管内', '館林市'],
   ['富岡保健所管内', '富岡市'],
-  ['吾妻保健所管内', '東吾妻町']
+  ['吾妻保健所管内', '東吾妻町'],
+  ['藤岡保健所管内', '藤岡市'],
 ];
-function parse_date( row )
-{
-  const m = row[ 1 ].trim().match( /((\d+)[年/])?((\d+)[月/])((\d+)[日/])/ );
-  if ( !m )
-    return null;
-  let year = new Date().getFullYear();
-  if ( m[ 2 ] )
-  {
-    year = parseInt( m[ 2 ] );
-    if ( year < 2000 )
-      year += 2018; // 令和〇年を西暦にする
-  }
-  return new Date( `${year}/${parseInt( m[ 4 ] )}/${parseInt( m[ 6 ] )}` );
-}
 
 export default class PoiGunma extends BasePoi
 {
@@ -35,10 +22,10 @@ export default class PoiGunma extends BasePoi
         pref_name: '群馬県',
         alter_citys: ALTER_CITY_NAMES,
         csv_uri: config.GUNMA_CSV.DATA_URI,
-        csv_encoding: 'UTF8',
-        cb_date: row => parse_date( row ),
+        csv_encoding: 'CP932',
         row_begin: 1,
         min_columns: 6,
+        col_date: 1,
         col_city: 3
     });
   }

@@ -81,7 +81,7 @@ async function receive_html( url )
 async function parse_html( html )
 {
   let year = new Date().getFullYear();
-  const csv = parse_cases( html, year );
+  let csv = parse_cases( html, year );
   // 過去の事例
   const tag = Array.from( new JSDOM( html ).window.document.querySelectorAll( 'a' ) ).find( tag => tag.textContent.match( /感染者状況一覧/ ) );
   if ( tag )
@@ -91,7 +91,7 @@ async function parse_html( html )
     {
       const m = pasttags[ i ].href.match( /(\d{4})(\d{2})\.html$/ );
       if ( m )
-        csv.concat( parse_cases( await receive_html( pasttags[ i ].href ), parseInt( m[ 1 ] ) ) );
+        csv = csv.concat( parse_cases( await receive_html( pasttags[ i ].href ), parseInt( m[ 1 ] ) ) );
     }
   }
   return csv;

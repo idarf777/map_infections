@@ -25,7 +25,10 @@ yarn-error.log*
 
 *.local
 
-/json
+/json/*
+!/json/cache
+/json/cache/*
+!/json/cache/東京都
 
 /.idea
 /install/nginx

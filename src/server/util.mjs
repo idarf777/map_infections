@@ -276,9 +276,18 @@ export function axios_instance( options )
   };
   const interceptorId = rax.attach( instance );
   return {
-    get: (uri, op={}) => instance.get( uri, { ...op, raxConfig } ),
-    post: (uri, content, op={}) => instance.post( uri, content, { ...op, raxConfig } ),
-    head: (uri, op={}) => instance.head( uri, { ...op, raxConfig } ),
+    get: (uri, op={}) => {
+      console.log( `getting ${uri} ...` );
+      return instance.get( uri, { ...op, raxConfig } );
+    },
+    post: (uri, content, op={}) => {
+      console.log( `posting ${uri} ...` );
+      return instance.post( uri, content, { ...op, raxConfig } );
+    },
+    head: (uri, op={}) => {
+      console.log( `heading ${uri} ...` );
+      return instance.head( uri, { ...op, raxConfig } );
+    },
   };
 }
 
