@@ -181,7 +181,7 @@ Settings - debuggingのデバッグ用ポートとChrome拡張機能Jetbrains ID
 
 ### APIサーバ
 
-ステージング環境 /usr/share/nginx/nodeapp/staging/map_infections にファイルを配置し、テストする。
+必要に応じてビルドしてから、ステージング環境 /usr/share/nginx/nodeapp/staging/map_infections にファイルを配置し、テストする。
 
 ```
 sudo systemctl restart covid19map_server_staging
