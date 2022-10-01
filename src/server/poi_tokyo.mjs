@@ -250,7 +250,7 @@ export default class PoiTokyo
           city_whole_value += curvalue;
         }
         const subtotal = is_city_whole ? city_whole_value : curvalue
-        const prev_subtotal = (vals.length > 0) ? vals[ vals.length - 1 ].subtotal : subtotal;  // 初日の新規感染者はデータがない=0人
+        const prev_subtotal = (vals.length === 0) ? (is_city_whole ? (city_whole_value - curvalue) : subtotal) : vals[ vals.length - 1 ].subtotal;
         vals.push( {
           date: datetostring( date ),
           infectors: subtotal - prev_subtotal, //Math.max( (name === '調査中') ? (-Number.MAX_VALUE) : 0, subtotal - prev_subtotal ),
