@@ -74,7 +74,9 @@ const cityname_tokyo = [
   ['都外※', '都外'],
   ['調査中', '調査中'],
   ['調査中※', '調査中'],
+  ['都内総数', '総数'],
 ];
+const city_whole_name = { name: "総数", alternate: "千代田区" };
 const map_cityname = new Map();
 for ( const names of cityname_tokyo )
   map_cityname.set( names[ 0 ], names[ 1 ] );
@@ -215,6 +217,7 @@ export default class PoiTokyo
     Log.info( 'parsing tokyo CSV...' );
     const map_city_infectors = new Map();
     const csvdates = Array.from( csvs.keys() ).sort();
+    let city_whole_value = 0  // 全数把握をやめた後は累計値ではなくなった
     for ( const date of csvdates )
     {
       const rows = await parse_csv( csvs.get( date ) ).catch( ex => {} );
@@ -229,14 +232,18 @@ export default class PoiTokyo
         const name = sanitize_poi_name( map_cityname.get( sanitize_poi_name( d[ 0 ] ) ) );
         if ( !name )
           continue;
+        const is_city_whole = (name === city_whole_name.name);
         if ( !map_city_infectors.has( name ) )
         {
-          const poi = map_poi.get( name );
+          const poi = is_city_whole ? map_poi.get( city_whole_name.alternate ) : map_poi.get( name );
           map_city_infectors.set( name, { city_code: poi?.city_cd || 13000, geopos: poi?.geopos(), name: `東京都${name.replace( /^(都外|調査中)$/, "(生活地:$1)" )}`, data: [] } );
         }
         const vals = map_city_infectors.get( name ).data;
         const m = d[ 1 ].match( /(\d+)/ );
-        const subtotal = parseInt( (m && m[ 1 ]) || '0' );
+        const curvalue = parseInt( (m && m[ 1 ]) || '0' );
+        if ( is_city_whole )
+          city_whole_value += curvalue;
+        const subtotal = is_city_whole ? city_whole_value : curvalue
         const prev_subtotal = (vals.length > 0) ? vals[ vals.length - 1 ].subtotal : subtotal;  // 初日の新規感染者はデータがない=0人
         vals.push( {
           date: datetostring( date ),
