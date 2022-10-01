@@ -218,6 +218,7 @@ export default class PoiTokyo
     const map_city_infectors = new Map();
     const csvdates = Array.from( csvs.keys() ).sort();
     let city_whole_value = 0  // 全数把握をやめた後は累計値ではなくなった
+    let day_subtotal = 0;
     for ( const date of csvdates )
     {
       const rows = await parse_csv( csvs.get( date ) ).catch( ex => {} );
@@ -227,6 +228,7 @@ export default class PoiTokyo
         await remove_csv_cache( date, cache_dir ).catch( ex => {} );
         continue;
       }
+      let curday_subtotal = 0;
       for ( const d of rows )
       {
         const name = sanitize_poi_name( map_cityname.get( sanitize_poi_name( d[ 0 ] ) ) );
@@ -242,7 +244,11 @@ export default class PoiTokyo
         const m = d[ 1 ].match( /(\d+)/ );
         const curvalue = parseInt( (m && m[ 1 ]) || '0' );
         if ( is_city_whole )
+        {
+          if ( city_whole_value === 0 )
+            city_whole_value = day_subtotal;
           city_whole_value += curvalue;
+        }
         const subtotal = is_city_whole ? city_whole_value : curvalue
         const prev_subtotal = (vals.length > 0) ? vals[ vals.length - 1 ].subtotal : subtotal;  // 初日の新規感染者はデータがない=0人
         vals.push( {
@@ -250,7 +256,9 @@ export default class PoiTokyo
           infectors: subtotal - prev_subtotal, //Math.max( (name === '調査中') ? (-Number.MAX_VALUE) : 0, subtotal - prev_subtotal ),
           subtotal: subtotal
         } );
+        curday_subtotal += subtotal;
       }
+      day_subtotal = curday_subtotal;
     }
     for ( const spot of map_city_infectors.values() )
       spot.data = spot.data.filter( d => d.infectors !== 0 || (d === spot.data[ 0 ] && d.subtotal > 0) ); // 最初の日はinfectors==0でもsubtotal>0かもしれない
