@@ -28,19 +28,15 @@ jobs:
           REDIS_HOST: redis
           REDIS_PORT: 6379
 
-    strategy:
-      matrix:
-        node-version: [14.x]
-
     steps:
       - name: install sqlite3
         run: |
           sudo apt install libsqlite3-dev
           dpkg -L libsqlite3-dev
-      - name: install Node.js
-        uses: actions/setup-node@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version-file: ./.node-version
       - name: install git
         uses: actions/checkout@v2
       - name: Makedata
