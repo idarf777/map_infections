@@ -92,7 +92,7 @@ export default class BasePoi
     await mkdirp( cache_dir );
     await fs.writeFile( path.join( cache_dir, 'src' ), cr.data );
     Log.info( `${pref_name} parsing CSV...` );
-    const rows = await ( cb_parse_csv ? cb_parse_csv( cr ) : parse_csv( iconv.decode( cr.data, csv_encoding || jschardet.detect( cr.data ).encoding ) ) );
+    const rows = await ( cb_parse_csv ? cb_parse_csv( cr ) : parse_csv( typeof cr.data == "string" ? cr.data : iconv.decode( cr.data, csv_encoding || jschardet.detect( cr.data ).encoding ) ) );
     const map_city_infectors = new Map(); // 都市名 - (UNIXタイムスタンプ - 感染者数のマップ)のマップ
     const parse_rows = ( params ) => {
       const { row_begin, rows, min_columns, cb_date, col_date, cb_city, col_city, past_data } = params;

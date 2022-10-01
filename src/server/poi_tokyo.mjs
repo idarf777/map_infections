@@ -79,7 +79,6 @@ const map_cityname = new Map();
 for ( const names of cityname_tokyo )
   map_cityname.set( names[ 0 ], names[ 1 ] );
 
-const CSV_MODS = [ '', '-1', '_1', '06', '05', '04', '03', '02', '01', '2' ];
 function csv_cache_yeardate( date )
 {
   return agh.sprintf( '%04d-%02d', date.getFullYear(), date.getMonth()+1 );
@@ -88,13 +87,16 @@ function csv_yeardate( date )
 {
   return agh.sprintf( '%04d%02d', date.getFullYear(), date.getMonth()+1 );
 }
-function csv_prefix( date )
+function csv_filename( date )
 {
-  return agh.sprintf( `${csv_yeardate( date )}%02d`, date.getDate() );
+  return agh.sprintf( `${csv_yeardate( date )}%02d.csv`, date.getDate() );
 }
-function csv_filename( prefix, mod, cache_dir )
+function csv_filedir( date )
 {
-  const filename = `${prefix}${mod}.csv`;
+  return agh.sprintf( '%04d/', date.getFullYear() );
+}
+function csv_cache_filename( filename, cache_dir )
+{
   return cache_dir ? path.join( cache_dir, filename ) : filename;
 }
 
@@ -102,10 +104,10 @@ function csv_filename( prefix, mod, cache_dir )
 // なければHTTP GETする
 async function load_csv( date, cache_dir )
 {
-  const prefix = csv_prefix( date );
-  const filedir = path.join( cache_dir, csv_cache_yeardate( date ) );
-  await mkdirp( filedir );
-  let cache = csv_filename( prefix, '', filedir );
+  const filename = csv_filename( date );
+  const cachedir = path.join( cache_dir, csv_cache_yeardate( date ) );
+  await mkdirp( cachedir );
+  let cache = csv_cache_filename( filename, cachedir );
   const stat = await fs.lstat( cache ).catch( () => null );
   if ( stat?.isFile() )
   {
@@ -113,33 +115,29 @@ async function load_csv( date, cache_dir )
     return fs.readFile( cache );
   }
   // キャッシュ上のファイルに更新があってもロードされない
-  for ( const m of CSV_MODS )
+  cache = csv_cache_filename( filename, cachedir );
+  const uri = `${config.TOKYO_CSV.DATA_URI}${csv_filedir( date )}${filename}`;
+  const h = await axios_instance().head( uri, { validateStatus: false } ).catch( () => {} );
+  if ( h?.status === 200 )
   {
-    const filename = csv_filename( prefix, m );
-    cache = csv_filename( prefix, m, filedir );
-    const uri = `${config.TOKYO_CSV.DATA_URI}${filename}`;
-    const h = await axios_instance().head( uri, { validateStatus: false } ).catch( () => {} );
-    if ( h?.status === 200 )
-    {
-      Log.info( `trying GET ${uri} ...` );
-      const response = await axios_instance().get( uri );
-      if ( response )
-        Log.info( `status = ${response.status}` );
-      if ( response?.data )
-        await fs.writeFile( cache, response.data );
-      return response?.data;
-    }
+    Log.info( `trying GET ${uri} ...` );
+    const response = await axios_instance().get( uri );
+    if ( response )
+      Log.info( `status = ${response.status}` );
+    if ( response?.data )
+      await fs.writeFile( cache, response.data );
+    return response?.data;
   }
   return null;
 }
 async function remove_csv_cache( date, cache_dir )
 {
-  const prefix = csv_prefix( date );
-  const filedir = path.join( cache_dir, csv_cache_yeardate( date ) );
-  return Promise.all( CSV_MODS.map( m => {
-    const cache = csv_filename( prefix, m, filedir );
+  const filename = csv_filename( date );
+  const cachedir = path.join( cache_dir, csv_cache_yeardate( date ) );
+  return new Promise( () => {
+    const cache = csv_cache_filename( filename, cachedir );
     return fs.lstat( cache ).then( stat => stat.isFile() && fs.unlink( cache ) ).catch( () => {} );
-  } ) );
+  } );
 }
 
 async function replace_files( dir )

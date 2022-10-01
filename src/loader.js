@@ -43,7 +43,7 @@ export default function loader( json, geojsons )
         if ( new Date( spotdata.date ).getTime() === d.getTime() )
         {
           subtotal = spotdata.subtotal;
-          infectors = spotdata.infectors;
+          infectors = Math.max( 0, spotdata.infectors ); // 集計間違いでマイナスになることがある
           curdata++;
         }
       }
@@ -70,6 +70,7 @@ export default function loader( json, geojsons )
     const pref_summary = new Map();
     for ( const s of sm.subtotal )
     {
+      s.infectors = Math.max( 0, s.infectors ) // 集計間違いでマイナスになることがある
       pref_summary.set( s.date, s );  // 日付 - 感染者数のMap
       whole_summary.set( s.date, s.infectors + (whole_summary.get( s.date ) || 0) );
     }
