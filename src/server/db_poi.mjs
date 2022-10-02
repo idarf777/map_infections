@@ -29,6 +29,7 @@ export class Poi
     this.name = sanitize_poi_name( p.name );
     this.lat = p.latitude;
     this.lon = p.longitude;
+    this.name_en = p.name_en;
   }
   geopos()
   {
@@ -44,7 +45,7 @@ export default class DbPoi
   {
     const db = DB.get();
     return new Promise( (resolve, reject) => db.serialize( () => db.all(
-      `SELECT city_cd,pref,name,latitude,longitude FROM ${TABLE_NAME} WHERE city_cd BETWEEN 1 AND 47`,
+      `SELECT city_cd,pref,name,latitude,longitude,name_en FROM ${TABLE_NAME} WHERE city_cd BETWEEN 1 AND 47`,
       (err, rows) => {
         if ( err )
           reject( err );

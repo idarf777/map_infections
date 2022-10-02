@@ -113,6 +113,12 @@ export default function makeConfig()
     DATA_SINCE: new Date( '2020-01-01' ),
     DATA_PAST_DIR: 'json/past',
 
+    // 全国(県単位)
+    ZENKOKU_CSV: {
+      DATA_URI: 'https://covid19.mhlw.go.jp/public/opendata/newly_confirmed_cases_daily.csv',
+      LICENSE: license.FREE
+    },
+
     // 北海道
     HOKKAIDO_CSV: {
       DATA_URI: 'https://www.harp.lg.jp/opendata/dataset/1369/resource/3883/hokkaido_01shinkoukyoku_day.csv',

@@ -70,7 +70,8 @@ import PoiKumamoto from "./poi_kumamoto.mjs";
 import PoiMiyazaki from "./poi_miyazaki.mjs";
 import PoiKagoshima from "./poi_kagoshima.mjs";
 import PoiOkinawa from "./poi_okinawa.mjs";
-
+// 全国
+import PoiZenkoku from "./poi_zenkoku.mjs";
 
 const _CITIES = [
   [ 'tokyo', PoiTokyo ],
@@ -124,12 +125,13 @@ const _CITIES = [
 const _AVAILABLE_CITIES = [
   //'niigata'
 ].concat( (process.env.MAKE_DATA_CI_PREFECTURES || '').split( ',' ).map( s => s.trim() ) ).filter( s => s.length > 0 );
-const CITIES = (_AVAILABLE_CITIES.length > 0) ? _CITIES.filter( c => _AVAILABLE_CITIES.some( v => c[ 0 ] === v ) ) : _CITIES;
+export const CITIES = (_AVAILABLE_CITIES.length > 0) ? _CITIES.filter( c => _AVAILABLE_CITIES.some( v => c[ 0 ] === v ) ) : _CITIES;
 
 //import { example_data } from '../example_data.js';
 const COOKIE_OPTIONS = Object.freeze( { maxAge: config.COOKIE_EXPIRE*1000, path: config.SERVER_URI_PREFIX } );
 const RedisStore = connectRedis( session );
 const redis = new Redis();
+export const zenkokuData = [];
 
 async function merge_jsons( jsons )
 {
@@ -211,16 +213,21 @@ async function make_data( city )
 async function execMakeDataSerial( cities )
 {
   const jsons = new Array( cities.length );
+  const error_cities = [];
   const errors = [];
   for ( let i=0; i<cities.length; i++ )
   {
-    jsons[ i ] = await make_data( cities[ i ] ).catch( ex => {
+    const city = cities[ i ];
+    jsons[ i ] = await make_data( city ).catch( ex => {
       Log.error( ex );
-      errors.push( `${cities[ i ][ 0 ]}: ${ex.message}` );
+      Log.info( `${city[ 0 ]}: falling back...` );
+      error_cities.push( city[ 0 ] );
+      errors.push( `${city[ 0 ]}: ${ex.message} -> FALLBACK!` );
       return ex.pois;
     } );
-    Log.info( `${cities[ i ][ 0 ]} complete.` );
+    Log.info( `${city[ 0 ]} complete.` );
   }
+  (error_cities.length > 0) && Log.info( `    errors = ${error_cities.join( ' ' )}` );
   return { jsons: jsons.filter( v => v ), errors };
 }
 
@@ -233,8 +240,9 @@ async function execMakeData( cities )
   const promises = cities.map( async city => {
     const json = await make_data( city ).catch( ex => {
       Log.error( ex );
+      Log.info( `${cities[ i ][ 0 ]}: falling back...` );
       error_cities.push( city[ 0 ] );
-      errors.push( `${city[ 0 ]}: ${ex.message}` );
+      errors.push( `${city[ 0 ]}: ${ex.message} -> FALLBACK!` );
       return ex.pois;
     } );
     delete remain_cities[ city[ 0 ] ];
@@ -251,6 +259,10 @@ async function exec_make_data()
 {
   const begintm = new Date();
   await mkdirp( path.join( config.ROOT_DIRECTORY, config.SERVER_MAKE_DATA_CACHE_DIR ) );
+  Log.info( 'getting zenkoku data...' );
+  zenkokuData[ 0 ] = await PoiZenkoku.load().catch( ex => {
+    Log.error( ex );
+  } );
   const data = await (to_bool( process.env.MAKE_DATA_ORDERED ) ? execMakeDataSerial( CITIES ) : execMakeData( CITIES ));
   Log.info( 'merging data...' );
   const merged = await merge_jsons( data.jsons );
